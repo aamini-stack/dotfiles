@@ -12,11 +12,6 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm endeval "$(mise activate zsh)"
 
-eval "$(/Users/aamini/.local/bin/mise activate zsh)" # added by https://mise.run/zsh
+# Mise
 eval "$(mise activate zsh)" # this sets up interactive sessions
-
-# Added by Antigravity
-export PATH="/Users/aamini/.antigravity/antigravity/bin:$PATH"
-
