@@ -7,8 +7,6 @@ compinit
 alias python=python3
 alias vim='nvim'
 
-cd ~/Developer
-
 export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
 
 # pnpm
