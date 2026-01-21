@@ -1,0 +1,14 @@
+layout {
+    // Status bar at the top with tabs and time
+    pane size=1 borderless=true {
+        plugin location="tab-bar"
+    }
+
+    // Main content area
+    pane
+
+    // Compact status bar at bottom with datetime
+    pane size=1 borderless=true {
+        plugin location="status-bar"
+    }
+}
