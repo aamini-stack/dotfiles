@@ -20,4 +20,14 @@ config.color_scheme = "Catppuccin Mocha"
 config.font = wezterm.font('JetBrains Mono')
 
 config.default_domain = 'WSL:Ubuntu'
+
+-- Enable tab bar and show clock in right status
+wezterm.on('update-right-status', function(window, pane)
+  local date = wezterm.strftime '%H:%M  %b %d'
+  window:set_right_status(wezterm.format {
+    { Foreground = { Color = '#7aa2f7' } },
+    { Text = date },
+  })
+end)
+
 return config
