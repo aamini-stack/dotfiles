@@ -24,3 +24,4 @@ esac
 # Mise
 eval "$(mise activate zsh)" # this sets up interactive sessions
 export PATH="$HOME/.local/bin:$PATH"
+

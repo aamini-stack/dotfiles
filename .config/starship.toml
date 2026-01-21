@@ -32,6 +32,8 @@ symbol = " "
 
 [directory]
 read_only = " 󰌾"
+truncation_length = 100
+truncate_to_repo = false
 
 [docker_context]
 symbol = " "
@@ -56,9 +58,14 @@ symbol = " "
 
 [git_branch]
 symbol = " "
+disabled = true
+
+[git_status]
+disabled = true
 
 [git_commit]
 tag_symbol = '  '
+disabled = true
 
 [golang]
 symbol = " "
