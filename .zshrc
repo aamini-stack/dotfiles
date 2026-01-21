@@ -1,3 +1,5 @@
+# eval "$(oh-my-posh init zsh --config ~/Developer/dotfiles/nordtron.omp.json)"
+
 export XDG_CONFIG_HOME="$HOME/.config"
 
 eval "$(starship init zsh)"
