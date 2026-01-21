@@ -1,3 +1,21 @@
 [user]
-    name = "Aria Amini"
-    email = "amini5454@gmail.com"
+	name = aamini
+	email = amini5454@gmail.com
+[alias]
+	lg = log --graph --oneline --decorate --all
+[lines]
+	autoctrlf = input
+[core]
+	autocrlf = input
+[diff]
+	tool = default-difftool
+[difftool "default-difftool"]
+	cmd = code --wait --diff $LOCAL $REMOTE
+[merge]
+	tool = code
+[mergetool "code"]
+	cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+[sequence]
+	editor = code --wait --reuse-window
+[rebase]
+	updateRefs = true
