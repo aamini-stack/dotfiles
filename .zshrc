@@ -1,7 +1,3 @@
-if [[ -z "$ZELLIJ" ]]; then
-    exec zellij attach -c
-fi
-
 export XDG_CONFIG_HOME="$HOME/.config"
 
 eval "$(starship init zsh)"

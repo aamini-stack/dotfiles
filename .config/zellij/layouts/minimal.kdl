@@ -33,7 +33,7 @@ layout {
                 command_git_branch_interval "10"
                 command_git_branch_rendermode "static"
 
-                command_git_status_command "bash -c 'output=`git status --porcelain 2>/dev/null`; u=`echo \"$output\" | grep -c \"^??\"`; s=`echo \"$output\" | grep -c \"^[MADRCU]\"`; m=`echo \"$output\" | grep -c \"^.[MADRCU]\"`; d=`echo \"$output\" | grep -c \"D\"`; [ $((u+s+m+d)) -gt 0 ] && echo \"U$u A$s M$m D$d\" || echo \"✓\"'"
+                command_git_status_command "bash -c 'output=`git status --porcelain 2>/dev/null`; u=`echo \"$output\" | grep -c \"^??\"`; s=`echo \"$output\" | grep -c \"^[MADRCU]\"`; m=`echo \"$output\" | grep -c \"^.[MD]\"`; d=`echo \"$output\" | grep -c \"D\"`; out=\"\"; [ $u -gt 0 ] && out=\"${out}U$u \"; [ $s -gt 0 ] && out=\"${out}+$s \"; [ $m -gt 0 ] && out=\"${out}~$m \"; [ $d -gt 0 ] && out=\"${out}-$d \"; [ -z \"$out\" ] && echo \"✓\" || echo \"$out\"'"
                 command_git_status_format "#[fg=#f9e2af]{stdout}"
                 command_git_status_interval "5"
                 command_git_status_rendermode "static"
