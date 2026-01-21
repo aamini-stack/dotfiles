@@ -27,6 +27,7 @@ vim.o.softtabstop = 2
 vim.o.expandtab = true
 vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.o.colorcolumn = '81'
 
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
