@@ -1,0 +1,44 @@
+{
+	"permissions": {
+		"allow": [
+			"Edit(./**)",
+			"Edit(/tmp/**)",
+			"Edit(~/.docker)",
+			"Bash(pnpm test:*)",
+			"Bash(pnpm install:*)",
+			"Bash(pnpm lint:*)",
+			"WebFetch(domain:localhost)",
+			"Skill"
+		],
+		"deny": ["Bash(git:*)", "Edit(.git/**)", "WebFetch"],
+		"defaultMode": "bypassPermissions"
+	},
+	"enabledPlugins": {
+		"frontend-design@claude-plugins-official": true,
+		"superpowers@superpowers-marketplace": true,
+		"code-review@claude-plugins-official": true,
+		"ralph-loop@claude-plugins-official": true,
+		"typescript-lsp@claude-plugins-official": true
+	},
+	"extraKnownMarketplaces": {
+		"superpowers-marketplace": {
+			"source": {
+				"source": "git",
+				"url": "https://github.com/obra/superpowers-marketplace.git"
+			}
+		}
+	},
+	"sandbox": {
+		"enabled": true,
+		"allowUnsandboxedCommands": false,
+		"autoAllowBashIfSandboxed": true,
+		"excludedCommands": ["docker"],
+		"network": {
+			"allowUnixSockets": [
+				"/var/run/docker.sock",
+				"/Users/aamini/.docker/run/docker.sock"
+			],
+			"allowLocalBinding": true
+		}
+	}
+}
