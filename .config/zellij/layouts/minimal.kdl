@@ -6,14 +6,14 @@ layout {
                 format_left "{command_user}"
                 format_center ""
                 format_right "{datetime}"
-                datetime "{format}"
+                datetime "󰥔 {format}"
                 datetime_format "%a %b %d  %H:%M"
                 datetime_timezone "America/Los_Angeles"
                 background "#1e1e2e"
                 border_enabled "false"
 
                 command_user_command "whoami"
-                command_user_format "#[fg=#89B4FA,bold]{stdout} "
+                command_user_format "#[fg=#89B4FA,bold] {stdout} "
                 command_user_interval "60"
                 command_user_rendermode "static"
             }
@@ -28,12 +28,12 @@ layout {
                 background "#1e1e2e"
                 border_enabled "false"
 
-                command_git_branch_command "bash -c \"git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'no git'\""
+                command_git_branch_command "bash -c \"git branch --show-current 2>/dev/null || echo 'no git'\""
                 command_git_branch_format "#[fg=#f38ba8] {stdout} "
                 command_git_branch_interval "10"
                 command_git_branch_rendermode "static"
 
-                command_git_status_command "bash -c \"git status --porcelain 2>/dev/null | wc -l | xargs -I {} sh -c 'if [ {} -gt 0 ]; then echo \\\"*\\\"; else echo \\\"\\\"; fi'\""
+                command_git_status_command "bash -c 'output=`git status --porcelain 2>/dev/null`; u=`echo \"$output\" | grep -c \"^??\"`; s=`echo \"$output\" | grep -c \"^[MADRCU]\"`; m=`echo \"$output\" | grep -c \"^.[MADRCU]\"`; d=`echo \"$output\" | grep -c \"D\"`; [ $((u+s+m+d)) -gt 0 ] && echo \"U$u A$s M$m D$d\" || echo \"✓\"'"
                 command_git_status_format "#[fg=#f9e2af]{stdout}"
                 command_git_status_interval "5"
                 command_git_status_rendermode "static"
