@@ -1,8 +1,9 @@
 layout {
     default_tab_template {
+        // Top status bar - username and date/time
         pane size=1 borderless=true {
             plugin location="https://github.com/dj95/zjstatus/releases/latest/download/zjstatus.wasm" {
-                format_left ""
+                format_left "{command_user}"
                 format_center ""
                 format_right "{datetime}"
                 datetime "{format}"
@@ -10,8 +11,33 @@ layout {
                 datetime_timezone "America/Los_Angeles"
                 background "#1e1e2e"
                 border_enabled "false"
+
+                command_user_command "whoami"
+                command_user_format "#[fg=#89B4FA,bold]{stdout} "
+                command_user_interval "60"
+                command_user_rendermode "static"
             }
         }
         children
+        // Bottom status bar - git branch and status
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/latest/download/zjstatus.wasm" {
+                format_left "{command_git_branch}{command_git_status}"
+                format_center ""
+                format_right ""
+                background "#1e1e2e"
+                border_enabled "false"
+
+                command_git_branch_command "bash -c \"git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'no git'\""
+                command_git_branch_format "#[fg=#f38ba8] {stdout} "
+                command_git_branch_interval "10"
+                command_git_branch_rendermode "static"
+
+                command_git_status_command "bash -c \"git status --porcelain 2>/dev/null | wc -l | xargs -I {} sh -c 'if [ {} -gt 0 ]; then echo \\\"*\\\"; else echo \\\"\\\"; fi'\""
+                command_git_status_format "#[fg=#f9e2af]{stdout}"
+                command_git_status_interval "5"
+                command_git_status_rendermode "static"
+            }
+        }
     }
 }
