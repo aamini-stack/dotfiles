@@ -1,14 +1,14 @@
 layout {
-    // Status bar at the top with tabs and time
+    // Status bar at top with datetime
     pane size=1 borderless=true {
-        plugin location="tab-bar"
+        plugin location="status-bar"
     }
 
     // Main content area
     pane
 
-    // Compact status bar at bottom with datetime
+    // Tab bar at bottom
     pane size=1 borderless=true {
-        plugin location="status-bar"
+        plugin location="tab-bar"
     }
 }
