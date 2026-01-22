@@ -26,5 +26,5 @@ echo "Running stow to symlink dotfiles..."
 cd "$SCRIPT_DIR"
 LC_ALL=C stow -v --target="$HOME" .
 
-echo "Done! Installed tools: stow, zsh, mise, starship, nvim, zellij, lazygit, delta, yazi"
+echo "Done!"
 echo "Run 'nix flake update && nix profile upgrade dotfiles' to upgrade packages later."

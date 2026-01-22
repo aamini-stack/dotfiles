@@ -16,6 +16,7 @@
         zsh
         mise
         starship
+        oh-my-posh
         neovim
         zellij
         wezterm
