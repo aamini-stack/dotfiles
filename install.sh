@@ -22,7 +22,7 @@ if nix profile list | grep -q "dotfiles"; then
     nix profile upgrade dotfiles
 else
     echo "Installing dotfiles profile..."
-    nix profile install "${SCRIPT_DIR}#default"
+    nix profile add "${SCRIPT_DIR}#default"
 fi
 
 echo "Done!"
