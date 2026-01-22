@@ -1,4 +1,4 @@
-eval "$(oh-my-posh init zsh --config ~/Developer/dotfiles/catppuccin.omp.json)"
+eval "$(oh-my-posh init zsh --config ~/dotfiles/catppuccin.omp.json)"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 

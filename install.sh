@@ -18,4 +18,4 @@ stow -v --target="$HOME" .
 echo "Installing dotfiles tools via Nix..."
 nix profile add "${SCRIPT_DIR}#default"
 
-echo "Done! Tools installed and dotfiles linked."
+echo "Done!"
