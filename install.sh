@@ -11,18 +11,11 @@ if ! command -v nix &> /dev/null; then
     exit 0
 fi
 
-# Ensure flakes are enabled
-if ! nix flake --help &> /dev/null 2>&1; then
-    echo "Enabling Nix flakes..."
-    mkdir -p ~/.config/nix
-    echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-fi
-
-echo "Installing dotfiles tools via Nix..."
-nix profile install "${SCRIPT_DIR}#default"
-
 echo "Running stow to symlink dotfiles..."
 cd "$SCRIPT_DIR"
 stow -v --target="$HOME" .
+
+echo "Installing dotfiles tools via Nix..."
+nix profile add "${SCRIPT_DIR}#default"
 
 echo "Done! Tools installed and dotfiles linked."
