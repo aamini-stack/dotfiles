@@ -27,3 +27,4 @@ esac
 eval "$(mise activate zsh)" # this sets up interactive sessions
 export PATH="$HOME/.local/bin:$PATH"
 
+if [ -e /home/aamini/.nix-profile/etc/profile.d/nix.sh ]; then . /home/aamini/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
