@@ -2,8 +2,13 @@
 - stow
 - zsh
 - mise
-- starship
+- starship/ohmyposh
 - neovim
+- zellij
+- wezterm
+- lazygit
+- delta
+- yazi
 
 ```
 curl -sS https://starship.rs/install.sh | sh
