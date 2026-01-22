@@ -11,6 +11,10 @@ if ! command -v nix &> /dev/null; then
     exit 0
 fi
 
+echo "Running stow to symlink dotfiles..."
+cd "$SCRIPT_DIR"
+LC_ALL=C stow -v --target="$HOME" .
+
 # Install/upgrade dotfiles tools via Nix
 echo "Installing dotfiles tools via Nix..."
 if nix profile list | grep -q "dotfiles"; then
@@ -20,11 +24,6 @@ else
     echo "Installing dotfiles profile..."
     nix profile install "${SCRIPT_DIR}#default"
 fi
-
-# Now stow is available - symlink dotfiles
-echo "Running stow to symlink dotfiles..."
-cd "$SCRIPT_DIR"
-LC_ALL=C stow -v --target="$HOME" .
 
 echo "Done!"
 echo "Run 'nix flake update && nix profile upgrade dotfiles' to upgrade packages later."
