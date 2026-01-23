@@ -23,6 +23,7 @@
         lazygit
         delta
         yazi
+        fzf
       ];
     in
     {

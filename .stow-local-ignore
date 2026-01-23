@@ -1,9 +1,0 @@
-AGENTS.md
-README.md
-install.sh
-flake.nix
-flake.lock
-.git
-
-# Ignore everything in .claude except settings.json
-^/\.claude/(?!settings\.json$).+$
