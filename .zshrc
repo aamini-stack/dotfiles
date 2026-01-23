@@ -19,6 +19,7 @@ alias vim='nvim'
 
 export EDITOR='nvim'
 export VISUAL='nvim'
+alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
 
 export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
 
