@@ -1,3 +1,6 @@
+# ALIASES
+alias g='lazygit'
+
 source ~/scripts/fzf.sh
 
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
