@@ -24,6 +24,7 @@
         delta
         yazi
         fzf
+        bat
       ];
     in
     {
