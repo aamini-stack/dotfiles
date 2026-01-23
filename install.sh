@@ -13,7 +13,7 @@ fi
 
 echo "Running stow to symlink dotfiles..."
 cd "$SCRIPT_DIR"
-LC_ALL=C stow -v --target="$HOME" .
+LC_ALL=C stow -v --target="$HOME" --dotfiles .
 
 # Install/upgrade dotfiles tools via Nix
 echo "Installing dotfiles tools via Nix..."
