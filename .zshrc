@@ -1,5 +1,6 @@
 # ALIASES
 alias g='lazygit'
+alias gt='git-town'
 
 source ~/scripts/fzf.sh
 export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"

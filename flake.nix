@@ -25,6 +25,7 @@
         yazi
         fzf
         bat
+        git-town
       ];
     in
     {

@@ -52,8 +52,6 @@ config.font = wezterm.font("JetBrains Mono")
 config.window_background_opacity = 0.75
 config.macos_window_background_blur = 20
 
-config.enable_tab_bar = false
-
 config.use_resize_increments = true
 
 return config
