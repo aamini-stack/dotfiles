@@ -4,13 +4,9 @@
 			"Edit(./**)",
 			"Edit(/tmp/**)",
 			"Edit(~/.docker)",
-			"Bash(pnpm test:*)",
-			"Bash(pnpm install:*)",
-			"Bash(pnpm lint:*)",
 			"WebFetch(domain:localhost)",
 			"Skill"
 		],
-		"deny": ["Bash(git:*)", "Edit(.git/**)", "WebFetch"],
 		"defaultMode": "bypassPermissions"
 	},
 	"enabledPlugins": {
