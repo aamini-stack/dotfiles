@@ -5,6 +5,7 @@ alias lg='lazygit'
 
 source ~/scripts/fzf.sh
 export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
+bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
 
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
 
