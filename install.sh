@@ -14,7 +14,7 @@ cd "$SCRIPT_DIR"
 LC_ALL=C stow -v --target="$HOME" --dotfiles .
 
 echo "Installing dotfiles profile..."
-nix profile add "${SCRIPT_DIR}/scripts/nix#default"
+nix profile add "${SCRIPT_DIR}/nix#default"
 
 echo "Done!"
 echo "Run 'nix flake update && nix profile upgrade dotfiles' to upgrade packages later."
