@@ -21,7 +21,7 @@
 		"enabled": true,
 		"allowUnsandboxedCommands": false,
 		"autoAllowBashIfSandboxed": true,
-		"excludedCommands": ["docker"]
+		"excludedCommands": ["docker"],
 		"network": {
 			"allowUnixSockets": [
 				"/var/run/docker.sock"
