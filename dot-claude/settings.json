@@ -1,12 +1,5 @@
 {
 	"permissions": {
-		"allow": [
-			"Edit(./**)",
-			"Edit(/tmp/**)",
-			"Edit(~/.docker)",
-			"WebFetch(domain:localhost)",
-			"Skill"
-		],
 		"defaultMode": "bypassPermissions"
 	},
 	"enabledPlugins": {
@@ -28,11 +21,10 @@
 		"enabled": true,
 		"allowUnsandboxedCommands": false,
 		"autoAllowBashIfSandboxed": true,
-		"excludedCommands": ["docker", "vitest", "playwright", "pnpm test*", "pnpm e2e*"],
+		"excludedCommands": ["docker"]
 		"network": {
 			"allowUnixSockets": [
-				"/var/run/docker.sock",
-				"/Users/aamini/.docker/run/docker.sock"
+				"/var/run/docker.sock"
 			],
 			"allowLocalBinding": true
 		}
