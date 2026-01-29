@@ -1,5 +1,10 @@
 {
 	"permissions": {
+		"allow": [
+			"Edit(/tmp/**)",
+			"Edit(~/.docker)",
+			"Skill"
+		],
 		"defaultMode": "bypassPermissions"
 	},
 	"enabledPlugins": {
