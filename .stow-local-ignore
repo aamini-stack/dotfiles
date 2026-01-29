@@ -4,4 +4,5 @@
 
 docs
 install.sh
-nix
+flake.nix
+flake.lock
