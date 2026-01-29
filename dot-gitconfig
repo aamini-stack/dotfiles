@@ -3,3 +3,5 @@
 [user]
 	name = Aria Amini
 	email = amini5454@gmail.com
+[credential]
+	helper = /mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
