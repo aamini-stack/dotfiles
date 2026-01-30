@@ -1,7 +1,6 @@
 # ALIASES
-alias g='git'
-alias gt='git-town'
 alias lg='lazygit'
+alias ls='exa -1 --icons --group-directories-first'
 
 source ~/scripts/fzf.sh
 export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
