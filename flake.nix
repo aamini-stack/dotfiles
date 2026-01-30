@@ -26,6 +26,7 @@
         fzf
         bat
         git-town
+        eza 
       ];
     in
     {
