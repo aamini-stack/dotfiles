@@ -6,5 +6,5 @@ cd ~
 git clone https://github.com/aamini-stack/dotfiles
 cd dotfiles
 ./install.sh
-sudo command -v zsh | sudo tee -a /etc/shells
-sudo chsh -s $(which zsh)
+command -v zsh | sudo tee -a /etc/shells
+chsh -s $(which zsh)
