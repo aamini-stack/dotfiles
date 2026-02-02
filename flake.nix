@@ -26,7 +26,8 @@
         fzf
         bat
         git-town
-        eza 
+        eza
+        ripgrep
       ];
     in
     {
