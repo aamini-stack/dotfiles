@@ -1,3 +1,5 @@
+export PATH="$PATH:$HOME/.nix-profile/bin"
+
 # ALIASES
 alias lg='lazygit'
 alias ls='exa -1 --icons --group-directories-first'
