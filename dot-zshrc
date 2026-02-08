@@ -1,42 +1,27 @@
 export PATH="$PATH:$HOME/.nix-profile/bin"
-
-# ALIASES
-alias lg='lazygit'
-alias ls='exa -1 --icons --group-directories-first'
-
-source ~/scripts/fzf.sh
-export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
-bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
-
-eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
-
-export XDG_CONFIG_HOME="$HOME/.config"
-
-eval "$(starship init zsh)"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
-
-autoload -Uz compinit
-compinit
-
-alias python=python3
-alias vim='nvim'
-
+export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
+export XDG_CONFIG_HOME="$HOME/.config"
 export EDITOR='nvim'
 export VISUAL='nvim'
-alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
-
-export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
-
-# pnpm
-export PNPM_HOME="/Users/aamini/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-
 # Mise
 eval "$(mise activate zsh)" # this sets up interactive sessions
 export PATH="$HOME/.local/bin:$PATH"
 
+# ALIASES
+alias lg='lazygit'
+alias ls='exa -1 --icons --group-directories-first'
+alias python=python3
+alias vim='nvim'
 
-if [ -e /home/aamini/.nix-profile/etc/profile.d/nix.sh ]; then . /home/aamini/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+source ~/scripts/fzf.sh
+export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
+bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
+alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
+
+eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
+
+autoload -Uz compinit
+compinit
+
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
