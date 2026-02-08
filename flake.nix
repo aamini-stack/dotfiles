@@ -28,6 +28,7 @@
         git-town
         eza
         ripgrep
+        unzip
       ];
     in
     {
