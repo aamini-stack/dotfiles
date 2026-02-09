@@ -19,7 +19,8 @@
 		"excludedCommands": ["docker"],
 		"network": {
 			"allowUnixSockets": [
-				"/var/run/docker.sock"
+				"/var/run/docker.sock",
+				"~/.docker/run/docker.sock"
 			],
 			"allowLocalBinding": true
 		}
