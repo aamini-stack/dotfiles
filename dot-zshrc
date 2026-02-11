@@ -1,7 +1,10 @@
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
 export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
 export EDITOR='nvim'
 export VISUAL='nvim'
 # Mise
@@ -24,10 +27,8 @@ eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.
 autoload -Uz compinit
 compinit
 
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-
 # pnpm
-export PNPM_HOME="/Users/aamini/Library/pnpm"
+export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
