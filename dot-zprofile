@@ -1,4 +1,4 @@
 # Source Nix profile first so nix-installed tools are available
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
-eval "$(mise activate zsh --shims)" # this sets up non-interactive sessions
+export PATH="$HOME/.local/share/mise/shims:$PATH"
