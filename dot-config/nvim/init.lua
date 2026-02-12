@@ -256,6 +256,7 @@ require('lazy').setup {
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'git_worktree')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -893,6 +894,28 @@ require('lazy').setup {
         end,
         desc = 'harpoon to file 5',
       },
+    },
+  },
+  'ThePrimeagen/git-worktree.nvim',
+
+  {
+    'kdheepak/lazygit.nvim',
+    lazy = true,
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
     },
   },
 }
