@@ -14,10 +14,35 @@ export VISUAL='nvim'
 
 # ALIASES
 alias lg='lazygit'
-git-wt-switch() {
-  local dir
-  dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | fzf)"
-  [ -n "$dir" ] && cd "$dir"
+gw() {
+  case "$1" in
+    add)
+      shift
+      cd "$(git rev-parse --git-common-dir)/.." && git worktree add "$@"
+      ;;
+    switch|sw)
+      shift
+      local dir
+      if [ -n "$1" ]; then
+        dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -m1 "/$1\$")"
+        if [ -z "$dir" ]; then
+          echo "No worktree matching '$1'"
+          return 1
+        fi
+      else
+        dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | fzf)"
+      fi
+      [ -n "$dir" ] && cd "$dir"
+      ;;
+    rm|remove)
+      shift
+      git worktree remove "$@"
+      ;;
+    *)
+      echo "Usage: gw <add|switch|rm> [args...]"
+      return 1
+      ;;
+  esac
 }
 alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
@@ -33,6 +58,25 @@ eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.
 # autocomplete
 autoload -Uz compinit
 compinit
+
+_gw() {
+  local -a subcmds worktrees
+  if (( CURRENT == 2 )); then
+    subcmds=(add switch sw rm remove)
+    _describe 'subcommand' subcmds
+  elif (( CURRENT == 3 )); then
+    case "$words[2]" in
+      switch|sw|rm|remove)
+        worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}' | xargs -n1 basename)"})
+        _describe 'worktree' worktrees
+        ;;
+      add)
+        _files
+        ;;
+    esac
+  fi
+}
+compdef _gw gw
 
 # pnpm
 export PNPM_HOME="$XDG_DATA_HOME/pnpm"
