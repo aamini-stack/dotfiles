@@ -3,7 +3,12 @@
     "allow": [
       "Edit(/tmp/**)",
       "Edit(~/.docker)",
-      "Skill"
+      "Skill",
+
+			"WebFetch(domain:registry.npmjs.org)",
+			"WebFetch(domain:telemetry.vercel.com)",
+			"WebFetch(domain:api.github.com)",
+			"WebFetch(domain:github.com)"
     ],
     "defaultMode": "bypassPermissions"
   },

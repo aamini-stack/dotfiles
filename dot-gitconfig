@@ -21,3 +21,4 @@
 	ship = town ship
 	sync = town sync
 	up = town up
+	lg = log --branches --remotes --tags --graph --oneline --decorate

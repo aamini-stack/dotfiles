@@ -14,7 +14,6 @@ export PATH="$HOME/.local/bin:$PATH"
 # ALIASES
 alias lg='lazygit'
 alias ls='exa -1 --icons --group-directories-first'
-alias python=python3
 alias vim='nvim'
 
 source ~/scripts/fzf.sh
