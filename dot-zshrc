@@ -1,4 +1,6 @@
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi 
+
+# Mise
 eval "$(mise activate zsh)"
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -9,9 +11,6 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export EDITOR='nvim'
 export VISUAL='nvim'
-# Mise
-eval "$(mise activate zsh)" # this sets up interactive sessions
-export PATH="$HOME/.local/bin:$PATH"
 
 # ALIASES
 alias lg='lazygit'
