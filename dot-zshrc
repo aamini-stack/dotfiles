@@ -14,11 +14,23 @@ export VISUAL='nvim'
 
 # ALIASES
 alias lg='lazygit'
+_gw_root() {
+  local gitdir
+  gitdir="$(git rev-parse --git-common-dir)" || return 1
+  gitdir="${gitdir:A}"
+  if [ "${gitdir:t}" = ".git" ]; then
+    echo "${gitdir:h:h}"
+  else
+    echo "$gitdir"
+  fi
+}
 gw() {
   case "$1" in
     add)
       shift
-      cd "$(git rev-parse --git-common-dir)/.." && git worktree add "$@"
+      local base
+      base="$(_gw_root)" || return 1
+      git worktree add "$base/$1" "${@:2}"
       ;;
     switch|sw)
       shift
@@ -34,12 +46,17 @@ gw() {
       fi
       [ -n "$dir" ] && cd "$dir"
       ;;
+    list|ls)
+      git worktree list
+      ;;
     rm|remove)
       shift
-      git worktree remove "$@"
+      local base
+      base="$(_gw_root)" || return 1
+      git worktree remove "$@" && [ ! -d "$PWD" ] && cd "$base"
       ;;
     *)
-      echo "Usage: gw <add|switch|rm> [args...]"
+      echo "Usage: gw <add|switch|list|rm> [args...]"
       return 1
       ;;
   esac
@@ -62,7 +79,7 @@ compinit
 _gw() {
   local -a subcmds worktrees
   if (( CURRENT == 2 )); then
-    subcmds=(add switch sw rm remove)
+    subcmds=(add switch sw list ls rm remove)
     _describe 'subcommand' subcmds
   elif (( CURRENT == 3 )); then
     case "$words[2]" in
