@@ -1,3 +1,4 @@
 dot-claude/*
 !dot-claude/settings.json
 !dot-claude/settings.local.json
+!dot-claude/skills
