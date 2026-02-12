@@ -22,3 +22,4 @@
 	sync = town sync
 	up = town up
 	lg = log --branches --remotes --tags --graph --oneline --decorate
+	wt-add = !cd \"$(git rev-parse --git-common-dir)/..\" && git worktree add

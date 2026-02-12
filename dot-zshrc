@@ -1,4 +1,6 @@
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi 
+eval "$(mise activate zsh)"
+export PATH="$HOME/.local/bin:$PATH"
 
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
@@ -13,6 +15,11 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # ALIASES
 alias lg='lazygit'
+git-wt-switch() {
+  local dir
+  dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | fzf)"
+  [ -n "$dir" ] && cd "$dir"
+}
 alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 
@@ -21,8 +28,10 @@ export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
 bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
 alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
 
+# oh-my-posh
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
 
+# autocomplete
 autoload -Uz compinit
 compinit
 
@@ -32,4 +41,4 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm end
+
