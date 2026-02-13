@@ -1,14 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Edit(/tmp/**)",
-      "Edit(~/.docker)",
+			"Bash",
       "WebFetch(domain:registry.npmjs.org)",
       "WebFetch(domain:telemetry.vercel.com)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:github.com)"
     ],
-    "defaultMode": "default"
+		"deny": [
+			"Bash(git *)"
+		],
+		"defaultMode": "dontAsk"
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
