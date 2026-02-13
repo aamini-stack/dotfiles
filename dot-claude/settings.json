@@ -30,5 +30,5 @@
       "docker"
     ]
   },
-  "fastMode": true
+  "skipDangerousModePermissionPrompt": true
 }

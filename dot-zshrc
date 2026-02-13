@@ -1,3 +1,5 @@
+#!/Users/aamini/.nix-profile/bin/zsh zsh
+
 # ── Initialization ────────────────────────────────────────────
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 eval "$(mise activate zsh)"
