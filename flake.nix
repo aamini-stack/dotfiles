@@ -15,11 +15,8 @@
         stow
         zsh
         mise
-        starship
         oh-my-posh
         neovim
-        zellij
-        wezterm
         lazygit
         delta
         yazi
