@@ -40,6 +40,7 @@
             "branch_icon": "\ue725 ",
             "cherry_pick_icon": "\ue29b ",
             "commit_icon": "\uf417 ",
+            "fetch_bare_info": true,
             "fetch_status": false,
             "fetch_upstream_icon": false,
             "merge_icon": "\ue727 ",
@@ -48,7 +49,7 @@
             "revert_icon": "\uf0e2 ",
             "tag_icon": "\uf412 "
           },
-          "template": "{{ .HEAD }} ",
+          "template": "{{ if not .IsBare }}{{ .HEAD }} {{ end }}",
           "style": "plain",
           "type": "git"
         },

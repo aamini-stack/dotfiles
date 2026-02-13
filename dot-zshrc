@@ -21,7 +21,7 @@ _gw_root() {
   if [ "${gitdir:t}" = ".git" ]; then
     echo "${gitdir:h:h}"
   else
-    echo "$gitdir"
+    echo "${gitdir:h}"
   fi
 }
 gw() {
@@ -55,8 +55,20 @@ gw() {
       base="$(_gw_root)" || return 1
       git worktree remove "$@" && [ ! -d "$PWD" ] && cd "$base"
       ;;
+    clone)
+      shift
+      local url="$1" dir="$2"
+      if [ -z "$url" ]; then
+        echo "Usage: gw clone <url> [directory]"
+        return 1
+      fi
+      if [ -z "$dir" ]; then
+        dir="${${url:t}%.git}"
+      fi
+      mkdir -p "$dir" && cd "$dir" && git clone --bare "$url" .bare && echo "gitdir: .bare" > .git && git worktree add main
+      ;;
     *)
-      echo "Usage: gw <add|switch|list|rm> [args...]"
+      echo "Usage: gw <add|clone|switch|list|rm> [args...]"
       return 1
       ;;
   esac
@@ -79,7 +91,7 @@ compinit
 _gw() {
   local -a subcmds worktrees
   if (( CURRENT == 2 )); then
-    subcmds=(add switch sw list ls rm remove)
+    subcmds=(add clone switch sw list ls rm remove)
     _describe 'subcommand' subcmds
   elif (( CURRENT == 3 )); then
     case "$words[2]" in
