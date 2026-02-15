@@ -26,6 +26,7 @@
         eza
         ripgrep
         unzip
+				opencode
       ];
     in
     {
