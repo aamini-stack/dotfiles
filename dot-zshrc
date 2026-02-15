@@ -83,7 +83,7 @@ gw() {
       if [ -z "$dir" ]; then
         dir="${${url:t}%.git}"
       fi
-      mkdir -p "$dir" && cd "$dir" && git clone --bare "$url" .bare && echo "gitdir: .bare" > .git && git worktree add main
+      mkdir -p "$dir" && cd "$dir" && git clone --bare "$url" .bare && { [ -d .git ] && rm -rf .git; echo "gitdir: .bare" > .git; } && git worktree add main
       ;;
     *)
       echo "Usage: gw <add|clone|switch|list|rm> [args...]"
@@ -117,3 +117,6 @@ bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
 
 # ── Prompt ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
+
+# opencode
+export PATH=/home/azureuser/.opencode/bin:$PATH
