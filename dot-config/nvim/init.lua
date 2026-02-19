@@ -520,7 +520,16 @@ require('lazy').setup {
 
         -- Web
         html = {},
-        cssls = {},
+        cssls = {
+          settings = {
+            css = {
+              validate = true,
+              lint = {
+                unknownAtRules = 'ignore',
+              },
+            },
+          },
+        },
         tailwindcss = {},
 
         -- Linters
