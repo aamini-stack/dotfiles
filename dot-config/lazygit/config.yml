@@ -1,3 +1,4 @@
+promptToReturnFromSubprocess: false
 gui:
   sidePanelWidth: 0.2
 git:
