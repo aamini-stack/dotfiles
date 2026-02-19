@@ -19,7 +19,12 @@
       "Bash(pnpm test:watch)",
       "Bash(pnpm e2e)",
       "Bash(pnpm e2e:update)",
-      "Bash(pnpm verify)"
+      "Bash(pnpm verify)",
+
+      "WebFetch(domain:aamini-stack-mkhhi1qe.hcp.westus.azmk8s.io)",
+      "WebFetch(domain:imdbgraph.ariaamini.com)",
+      "Bash(playwriter skill:*)",
+      "Bash(playwriter:*)"
     ]
   },
   "enabledPlugins": {
