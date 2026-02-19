@@ -1,7 +1,9 @@
 #!/Users/aamini/.nix-profile/bin/zsh zsh
 
-# Clear path
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+# Clear path if on WSL (Perf)
+if [[ $(uname -r) =~ WSL ]]; then
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+fi
 
 # ── Initialization ────────────────────────────────────────────
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
