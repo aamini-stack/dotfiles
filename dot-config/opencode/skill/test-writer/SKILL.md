@@ -39,51 +39,54 @@ Run tests from the app directory (e.g., `cd apps/paas`):
 Example (rate limiter with fake timers):
 
 ```ts
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { RateLimiter } from './rate-limiter'
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { RateLimiter } from "./rate-limiter";
 
-const TEST_IP = '192.168.1.1'
-let limiter: RateLimiter
+const TEST_IP = "192.168.1.1";
+let limiter: RateLimiter;
 
 beforeEach(() => {
-	limiter = new RateLimiter()
-	vi.useFakeTimers()
-	vi.setSystemTime(0)
-})
+  limiter = new RateLimiter();
+  vi.useFakeTimers();
+  vi.setSystemTime(0);
+});
 
 afterEach(() => {
-	vi.useRealTimers()
-})
+  vi.useRealTimers();
+});
 
-describe('RateLimiter', () => {
-	test('Block after limit is reached', () => {
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 })
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 1 })
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 0 })
-		expect(limiter.consume(TEST_IP)).toEqual({ success: false, retryAfter: 15 })
-		vi.advanceTimersByTime(15 * 60 * 1000 + 1)
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 0 })
-	})
+describe("RateLimiter", () => {
+  test("Block after limit is reached", () => {
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 });
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 1 });
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 0 });
+    expect(limiter.consume(TEST_IP)).toEqual({
+      success: false,
+      retryAfter: 15,
+    });
+    vi.advanceTimersByTime(15 * 60 * 1000 + 1);
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 0 });
+  });
 
-	test('Refill tokens after cooldown', () => {
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 })
-		vi.advanceTimersByTime(15 * 60 * 1000 + 1)
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 })
-	})
+  test("Refill tokens after cooldown", () => {
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 });
+    vi.advanceTimersByTime(15 * 60 * 1000 + 1);
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 });
+  });
 
-	test("Don't fill tokens before window passes", () => {
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 })
-		vi.advanceTimersByTime(14 * 60 * 1000)
-		expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 1 })
-	})
+  test("Don't fill tokens before window passes", () => {
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 2 });
+    vi.advanceTimersByTime(14 * 60 * 1000);
+    expect(limiter.consume(TEST_IP)).toEqual({ success: true, remaining: 1 });
+  });
 
-	test('Handling multiple IPs independently', () => {
-		const ip1 = '192.168.1.1'
-		const ip2 = '192.168.1.2'
-		expect(limiter.consume(ip1)).toEqual({ success: true, remaining: 2 })
-		expect(limiter.consume(ip2)).toEqual({ success: true, remaining: 2 })
-	})
-})
+  test("Handling multiple IPs independently", () => {
+    const ip1 = "192.168.1.1";
+    const ip2 = "192.168.1.2";
+    expect(limiter.consume(ip1)).toEqual({ success: true, remaining: 2 });
+    expect(limiter.consume(ip2)).toEqual({ success: true, remaining: 2 });
+  });
+});
 ```
 
 ## Database Tests (`*.test.ts`)
@@ -92,26 +95,26 @@ describe('RateLimiter', () => {
 2. Optional: Use `initDb()` to seed test data:
 
 ```ts
-import { test, initDb } from '@/mocks/test-extend-db'
-import { describe, expect } from 'vitest'
-import { shows } from './__fixtures__/shows'
-import { show } from '@/db/tables'
+import { test, initDb } from "@/mocks/test-extend-db";
+import { describe, expect } from "vitest";
+import { shows } from "./__fixtures__/shows";
+import { show } from "@/db/tables";
 
-describe('search tests', () => {
-	// Seed database with test data from fixtures
-	initDb(async (db) => {
-		await db.insert(show).values(shows)
-	})
+describe("search tests", () => {
+  // Seed database with test data from fixtures
+  initDb(async (db) => {
+    await db.insert(show).values(shows);
+  });
 
-	test('exact title', async ({ db }) => {
-		const results = await fetchSuggestions(db, 'Game of Thrones')
-		expect(results[0]).toEqual({
-			title: 'Game of Thrones',
-			imdbId: 'tt0944947',
-			rating: 9.2,
-		})
-	})
-})
+  test("exact title", async ({ db }) => {
+    const results = await fetchSuggestions(db, "Game of Thrones");
+    expect(results[0]).toEqual({
+      title: "Game of Thrones",
+      imdbId: "tt0944947",
+      rating: 9.2,
+    });
+  });
+});
 ```
 
 ## Browser Tests (`*.test.tsx`)
@@ -225,77 +228,77 @@ test('error message', async ({ worker }) => {
 
 ```json
 [
-	{
-		"imdbId": "tt0417299",
-		"title": "Avatar: The Last Airbender",
-		"startYear": "2005",
-		"endYear": "2008",
-		"rating": 9.3,
-		"numVotes": 410746
-	},
-	{
-		"imdbId": "tt9018736",
-		"title": "Avatar: The Last Airbender",
-		"startYear": "2024",
-		"endYear": null,
-		"rating": 7.2,
-		"numVotes": 80299
-	},
-	{
-		"imdbId": "tt10732794",
-		"title": "The King's Avatar",
-		"startYear": "2019",
-		"endYear": "2019",
-		"rating": 8.1,
-		"numVotes": 1776
-	},
-	{
-		"imdbId": "tt6859260",
-		"title": "The King's Avatar",
-		"startYear": "2017",
-		"endYear": null,
-		"rating": 7.4,
-		"numVotes": 1617
-	},
-	{
-		"imdbId": "tt15776622",
-		"title": "Avataro Sentai Donbrothers",
-		"startYear": "2022",
-		"endYear": "2023",
-		"rating": 8.1,
-		"numVotes": 345
-	}
+  {
+    "imdbId": "tt0417299",
+    "title": "Avatar: The Last Airbender",
+    "startYear": "2005",
+    "endYear": "2008",
+    "rating": 9.3,
+    "numVotes": 410746
+  },
+  {
+    "imdbId": "tt9018736",
+    "title": "Avatar: The Last Airbender",
+    "startYear": "2024",
+    "endYear": null,
+    "rating": 7.2,
+    "numVotes": 80299
+  },
+  {
+    "imdbId": "tt10732794",
+    "title": "The King's Avatar",
+    "startYear": "2019",
+    "endYear": "2019",
+    "rating": 8.1,
+    "numVotes": 1776
+  },
+  {
+    "imdbId": "tt6859260",
+    "title": "The King's Avatar",
+    "startYear": "2017",
+    "endYear": null,
+    "rating": 7.4,
+    "numVotes": 1617
+  },
+  {
+    "imdbId": "tt15776622",
+    "title": "Avataro Sentai Donbrothers",
+    "startYear": "2022",
+    "endYear": "2023",
+    "rating": 8.1,
+    "numVotes": 345
+  }
 ]
 ```
 
 2\. Set up handlers `__mocks__/handlers.ts`:
 
 ```ts
-import suggestions from '@/mocks/data/suggestions.json' with { type: 'json' }
-import { http, HttpResponse } from 'msw'
+import suggestions from "@/mocks/data/suggestions.json" with { type: "json" };
+import { http, HttpResponse } from "msw";
 
 export default [
-	http.get('/api/suggestions', () => {
-		return HttpResponse.json(suggestions)
-	}),
-]
+  http.get("/api/suggestions", () => {
+    return HttpResponse.json(suggestions);
+  }),
+];
 ```
 
 3\. Import `@/mocks/test-extend-server` if a server test (.ts) or
 `@/mocks/test-extend-browser` if a browser test (.tsx):
 
 ```ts
-import { test } from '@/mocks/test-extend-server'
-import { describe, expect } from 'vitest'
-import { fetchGitHubRepos } from './github-repos'
+import { test } from "@/mocks/test-extend-server";
+import { describe, expect } from "vitest";
+import { fetchGitHubRepos } from "./github-repos";
 
-describe('GitHub Repositories', () => {
-	test('fetches repositories from GitHub API', async () => {
-		const repos = await fetchGitHubRepos('test_token')
-		expect(repos).toHaveLength(3)
-		expect(repos[0].name).toBe('test-repo')
-	})
-})
+describe("GitHub Repositories", () => {
+  test("fetches repositories from GitHub API", async () => {
+    const repos = await fetchGitHubRepos("test_token");
+    expect(repos).toHaveLength(3);
+    expect(repos[0].name).toBe("test-repo");
+  });
+});
 ```
 
 4\. (Optional): Setup inline mocks (For error scenarios or one-off requests):
@@ -332,24 +335,24 @@ test('no results', async ({ worker }) => {
 Example:
 
 ```ts
-import { expect, test } from '@playwright/test'
+import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-	await page.goto('/', { waitUntil: 'networkidle' })
-})
+  await page.goto("/", { waitUntil: "networkidle" });
+});
 
-test('search bar click navigation works', async ({ page }) => {
-	const searchBar = page.getByRole('combobox')
-	await searchBar.click()
-	await searchBar.fill('Avatar')
-	await page.getByTestId('loading-spinner').waitFor({ state: 'hidden' })
-	const avatarDropdownOption = page.getByText('Avatar: The Last Airbender')
-	await expect(avatarDropdownOption).toBeVisible()
-	await avatarDropdownOption.click()
-	await expect(page).toHaveURL(/.*\/ratings\/tt0417299/)
-})
+test("search bar click navigation works", async ({ page }) => {
+  const searchBar = page.getByRole("combobox");
+  await searchBar.click();
+  await searchBar.fill("Avatar");
+  await page.getByTestId("loading-spinner").waitFor({ state: "hidden" });
+  const avatarDropdownOption = page.getByText("Avatar: The Last Airbender");
+  await expect(avatarDropdownOption).toBeVisible();
+  await avatarDropdownOption.click();
+  await expect(page).toHaveURL(/.*\/ratings\/tt0417299/);
+});
 
-test('Screenshot Homepage', async ({ page }) => {
-	await expect(page).toHaveScreenshot()
-})
+test("Screenshot Homepage", async ({ page }) => {
+  await expect(page).toHaveScreenshot();
+});
 ```
