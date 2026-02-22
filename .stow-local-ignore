@@ -2,7 +2,7 @@
 \.gitignore
 \.gitmodules
 
-docs
-install.sh
+dot-opencode/*
+!dot-config/opencode/opencode.json
 flake.nix
 flake.lock
