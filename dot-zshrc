@@ -1,4 +1,9 @@
 #!/Users/aamini/.nix-profile/bin/zsh zsh
+# Lima BEGIN
+# Make sure iptables and mount.fuse3 are available
+PATH="$PATH:/usr/sbin:/sbin"
+export PATH
+# Lima END
 
 # Clear path if on WSL (Perf)
 if [[ $(uname -r) =~ WSL ]]; then
@@ -126,3 +131,4 @@ eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.
 
 # opencode
 export PATH=/home/azureuser/.opencode/bin:$PATH
+if [ -e /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh ]; then . /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
