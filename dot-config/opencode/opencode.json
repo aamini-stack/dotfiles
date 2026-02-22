@@ -1,30 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": {
-    "*": "allow",
-    "external_directory": "deny",
-    "edit": {
-      "*": "allow",
-      ".git/**": "deny"
-    },
-    "bash": {
-      "*": "ask",
-      "git *": "ask",
-      "git commit *": "allow",
-      "git status *": "allow",
-      "git log *": "allow",
-      "git stat *": "allow",
-      "pnpm i": "allow",
-      "pnpm test": "allow",
-      "pnpm e2e": "allow",
-      "pnpm lint": "allow",
-      "pnpm build": "allow",
-      "pnpm typecheck": "allow",
-      "pnpm format": "allow",
-      "pnpm format:fix": "allow",
-      "pnpm test:unit": "allow",
-      "pnpm test:integration": "allow",
-      "pnpm verify": "allow"
-    }
+    "*": "allow"
   }
 }
