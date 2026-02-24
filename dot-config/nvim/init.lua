@@ -29,9 +29,7 @@ vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.o.colorcolumn = '81'
 
-vim.schedule(function()
-  vim.o.clipboard = 'unnamedplus'
-end)
+vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 
 -- =============================================================================
 --  KEYMAPS
@@ -67,9 +65,7 @@ vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
-  callback = function()
-    vim.hl.on_yank()
-  end,
+  callback = function() vim.hl.on_yank() end,
 })
 
 -- lazy.nvim
@@ -77,9 +73,7 @@ local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
-  if vim.v.shell_error ~= 0 then
-    error('Error cloning lazy.nvim:\n' .. out)
-  end
+  if vim.v.shell_error ~= 0 then error('Error cloning lazy.nvim:\n' .. out) end
 end
 ---@type vim.Option
 local rtp = vim.opt.rtp
@@ -136,12 +130,8 @@ require('lazy').setup {
 
         map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'Git [H]unk [S]tage' })
         map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'Git [H]unk [R]eset' })
-        map('v', '<leader>hs', function()
-          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'Git [H]unk [S]tage' })
-        map('v', '<leader>hr', function()
-          gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'Git [H]unk [R]eset' })
+        map('v', '<leader>hs', function() gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' } end, { desc = 'Git [H]unk [S]tage' })
+        map('v', '<leader>hr', function() gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' } end, { desc = 'Git [H]unk [R]eset' })
       end,
     },
   },
@@ -213,9 +203,7 @@ require('lazy').setup {
 
         -- `cond` is a condition used to determine whether this plugin should be
         -- installed and loaded.
-        cond = function()
-          return vim.fn.executable 'make' == 1
-        end,
+        cond = function() return vim.fn.executable 'make' == 1 end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
@@ -297,17 +285,20 @@ require('lazy').setup {
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
-        builtin.live_grep {
-          grep_open_files = true,
-          prompt_title = 'Live Grep in Open Files',
-        }
-      end, { desc = '[S]earch [/] in Open Files' })
+      vim.keymap.set(
+        'n',
+        '<leader>s/',
+        function()
+          builtin.live_grep {
+            grep_open_files = true,
+            prompt_title = 'Live Grep in Open Files',
+          }
+        end,
+        { desc = '[S]earch [/] in Open Files' }
+      )
 
       -- Shortcut for searching your Neovim configuration files
-      vim.keymap.set('n', '<leader>sn', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[S]earch [N]eovim files' })
+      vim.keymap.set('n', '<leader>sn', function() builtin.find_files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
     end,
   },
 
@@ -463,9 +454,7 @@ require('lazy').setup {
           --
           -- This may be unwanted, since they displace some of your code
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
-            map('<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-            end, '[T]oggle Inlay [H]ints')
+            map('<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }) end, '[T]oggle Inlay [H]ints')
           end
         end,
       })
@@ -596,9 +585,7 @@ require('lazy').setup {
     keys = {
       {
         '<leader>f',
-        function()
-          require('conform').format { async = true, lsp_format = 'fallback' }
-        end,
+        function() require('conform').format { async = true, lsp_format = 'fallback' } end,
         mode = '',
         desc = '[F]ormat buffer',
       },
@@ -647,9 +634,7 @@ require('lazy').setup {
           -- Build Step is needed for regex support in snippets.
           -- This step is not supported in many windows environments.
           -- Remove the below condition to re-enable on windows.
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
+          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then return end
           return 'make install_jsregexp'
         end)(),
         dependencies = {
@@ -787,9 +772,7 @@ require('lazy').setup {
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      statusline.section_location = function() return '%2l:%-2v' end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -868,15 +851,11 @@ require('lazy').setup {
     'theprimeagen/harpoon',
     branch = 'harpoon2',
     dependencies = { 'nvim-lua/plenary.nvim' },
-    config = function()
-      require('harpoon'):setup()
-    end,
+    config = function() require('harpoon'):setup() end,
     keys = {
       {
         '<leader>A',
-        function()
-          require('harpoon'):list():append()
-        end,
+        function() require('harpoon'):list():append() end,
         desc = 'harpoon file',
       },
       {
@@ -889,37 +868,27 @@ require('lazy').setup {
       },
       {
         '<leader>1',
-        function()
-          require('harpoon'):list():select(1)
-        end,
+        function() require('harpoon'):list():select(1) end,
         desc = 'harpoon to file 1',
       },
       {
         '<leader>2',
-        function()
-          require('harpoon'):list():select(2)
-        end,
+        function() require('harpoon'):list():select(2) end,
         desc = 'harpoon to file 2',
       },
       {
         '<leader>3',
-        function()
-          require('harpoon'):list():select(3)
-        end,
+        function() require('harpoon'):list():select(3) end,
         desc = 'harpoon to file 3',
       },
       {
         '<leader>4',
-        function()
-          require('harpoon'):list():select(4)
-        end,
+        function() require('harpoon'):list():select(4) end,
         desc = 'harpoon to file 4',
       },
       {
         '<leader>5',
-        function()
-          require('harpoon'):list():select(5)
-        end,
+        function() require('harpoon'):list():select(5) end,
         desc = 'harpoon to file 5',
       },
     },
