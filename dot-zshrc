@@ -1,4 +1,4 @@
-#!/Users/aamini/.nix-profile/bin/zsh zsh
+#!/$HOME/.nix-profile/bin/zsh zsh
 
 # Clear path if on WSL (Perf)
 if [[ $(uname -r) =~ WSL ]]; then
@@ -32,6 +32,7 @@ alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 alias lg='lazygit'
 alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
+alias opencode='limactl shell mac opencode'
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
