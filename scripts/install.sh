@@ -22,10 +22,11 @@ nix profile add ".#default" --extra-experimental-features nix-command --extra-ex
 ./scripts/stow.sh
 
 # Change default shell
-rm -f ~/.bash_profile
-cat > ~/.bash_profile <<EOF
-export SHELL=`which zsh`
-if [ -x $SHELL ]; then
-  exec "$SHELL" -l
+command -v zsh | sudo tee -a /etc/shells
+STATUS="$(passwd --status $USER | awk '{print $2}')"
+if [[ $STATUS = 'L' ]]; then
+  echo "User has no password. Please set one as it is required to change the default shell to zsh"
+  sudo passwd $USER 
 fi
-EOF
+echo "Changing Shell"
+chsh -s "$(which zsh)" "$USER"
