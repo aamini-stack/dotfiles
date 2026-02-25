@@ -30,7 +30,6 @@ esac
 alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 alias lg='lazygit'
-alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
