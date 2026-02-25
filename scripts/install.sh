@@ -6,7 +6,6 @@ if ! command -v nix >/dev/null 2>&1; then
   sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
   . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 fi
-cd "$REPO_DIR"
 nix profile add ".#default" --extra-experimental-features nix-command --extra-experimental-features flakes
 
 ./scripts/stow.sh
