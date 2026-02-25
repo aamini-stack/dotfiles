@@ -28,6 +28,7 @@
         unzip
         opencode
         fd
+        azure-cli
       ];
     in
     {
