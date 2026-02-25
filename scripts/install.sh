@@ -20,3 +20,12 @@ cd "$REPO_DIR"
 nix profile add ".#default" --extra-experimental-features nix-command --extra-experimental-features flakes
 
 ./scripts/stow.sh
+
+# Change default shell
+rm -f ~/.bash_profile
+cat > ~/.bash_profile <<EOF
+export SHELL=`which zsh`
+if [ -x $SHELL ]; then
+  exec "$SHELL" -l
+fi
+EOF

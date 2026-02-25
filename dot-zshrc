@@ -1,4 +1,4 @@
-#!/$HOME/.nix-profile/bin/zsh zsh
+#!~/.nix-profile/bin/zsh zsh
 
 # Clear path if on WSL (Perf)
 if [[ $(uname -r) =~ WSL ]]; then
