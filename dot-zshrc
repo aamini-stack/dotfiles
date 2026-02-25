@@ -17,7 +17,6 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 export TERM=xterm-256color
-
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
@@ -40,14 +39,11 @@ compinit
 
 # ── FZF ───────────────────────────────────────────────────────
 source ~/scripts/fzf.sh
-export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --exclude ~/!Developer'
+export FZF_DEFAULT_COMMAND='fd . --hidden ~/Developer'
 export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
 
-# ── Prompt ────────────────────────────────────────────────────
+# ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
 
-# opencode
-export PATH=/home/azureuser/.opencode/bin:$PATH
-if [ -e /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh ]; then . /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
