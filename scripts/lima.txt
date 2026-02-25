@@ -6,3 +6,6 @@ limactl remove default
 limactl create --name default template:docker -y
 limactl start --mount-none
 limactl shell default zsh
+
+$ increase memory
+limactl edit default --memory 12
