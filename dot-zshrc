@@ -17,7 +17,7 @@ export VISUAL='nvim'
 export TERM=xterm-256color
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
-export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.local/bin" # Used by lima vms
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 export PNPM_HOME="$XDG_DATA_HOME/pnpm"
