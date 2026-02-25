@@ -1,0 +1,10 @@
+*
+!Developer
+!Developer/**
+!.config
+!.config/**
+.pnpm-store
+node_modules
+.git
+.output
+.turbo

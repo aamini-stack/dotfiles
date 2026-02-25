@@ -1,9 +1,4 @@
 #!/Users/aamini/.nix-profile/bin/zsh zsh
-# Lima BEGIN
-# Make sure iptables and mount.fuse3 are available
-PATH="$PATH:/usr/sbin:/sbin"
-export PATH
-# Lima END
 
 # Clear path if on WSL (Perf)
 if [[ $(uname -r) =~ WSL ]]; then
@@ -24,7 +19,8 @@ export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 export TERM=xterm-256color
 
 # ── Path ──────────────────────────────────────────────────────
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$PATH:/usr/sbin:/sbin"
+export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 case ":$PATH:" in
@@ -42,88 +38,11 @@ alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
 autoload -Uz compinit
 compinit
 
-# ── Git Worktrees (gw) ───────────────────────────────────────
-_gw_root() {
-  local gitdir
-  gitdir="$(git rev-parse --git-common-dir)" || return 1
-  gitdir="${gitdir:A}"
-  if [ "${gitdir:t}" = ".git" ]; then
-    echo "${gitdir:h:h}"
-  else
-    echo "${gitdir:h}"
-  fi
-}
-gw() {
-  case "$1" in
-    add)
-      shift
-      local base
-      base="$(_gw_root)" || return 1
-      git worktree add "$base/$1" "${@:2}"
-      ;;
-    switch|sw)
-      shift
-      local dir
-      if [ -n "$1" ]; then
-        dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -m1 "/$1\$")"
-        if [ -z "$dir" ]; then
-          echo "No worktree matching '$1'"
-          return 1
-        fi
-      else
-        dir="$(git worktree list --porcelain | awk '/^worktree /{print $2}' | fzf)"
-      fi
-      [ -n "$dir" ] && cd "$dir"
-      ;;
-    list|ls)
-      git worktree list
-      ;;
-    rm|remove)
-      shift
-      local base
-      base="$(_gw_root)" || return 1
-      git worktree remove "$@" && [ ! -d "$PWD" ] && cd "$base"
-      ;;
-    clone)
-      shift
-      local url="$1" dir="$2"
-      if [ -z "$url" ]; then
-        echo "Usage: gw clone <url> [directory]"
-        return 1
-      fi
-      if [ -z "$dir" ]; then
-        dir="${${url:t}%.git}"
-      fi
-      mkdir -p "$dir" && cd "$dir" && git clone --bare "$url" .bare && { [ -d .git ] && rm -rf .git; echo "gitdir: .bare" > .git; } && git worktree add main
-      ;;
-    *)
-      echo "Usage: gw <add|clone|switch|list|rm> [args...]"
-      return 1
-      ;;
-  esac
-}
-_gw() {
-  local -a subcmds worktrees
-  if (( CURRENT == 2 )); then
-    subcmds=(add clone switch sw list ls rm remove)
-    _describe 'subcommand' subcmds
-  elif (( CURRENT == 3 )); then
-    case "$words[2]" in
-      switch|sw|rm|remove)
-        worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}' | xargs -n1 basename)"})
-        _describe 'worktree' worktrees
-        ;;
-      add)
-        _files
-        ;;
-    esac
-  fi
-}
-compdef _gw gw
-
 # ── FZF ───────────────────────────────────────────────────────
 source ~/scripts/fzf.sh
+export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --exclude ~/!Developer'
 export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
 
 # ── Prompt ────────────────────────────────────────────────────
