@@ -1017,6 +1017,7 @@ require('lazy').setup({
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
     opts = {},
   },
+  { import = 'plugins' },
 }, {
   ui = {
     icons = {},
