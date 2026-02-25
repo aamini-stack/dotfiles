@@ -12,16 +12,15 @@ eval "$(mise activate zsh)"
 # ── Environment ───────────────────────────────────────────────
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
-export JAVA_HOME='/Users/aamini/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home'
 export EDITOR='nvim'
 export VISUAL='nvim'
-export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 export TERM=xterm-256color
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -32,7 +31,6 @@ alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 alias lg='lazygit'
 alias e='nvim $(fzf --preview "~/scripts/fzf-preview.sh {}")'
-alias opencode='limactl shell mac opencode'
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
@@ -41,9 +39,9 @@ compinit
 # ── FZF ───────────────────────────────────────────────────────
 source ~/scripts/fzf.sh
 export FZF_DEFAULT_COMMAND='fd . --hidden ~/Developer'
-export FZF_CTRL_T_OPTS="--preview '~/scripts/fzf-preview.sh {}'"
+export FZF_CTRL_T_OPTS="--preview '~/.fzf/fzf-preview.sh {}'"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-bindkey ^f 'fzf ~ --preview ~/scripts/fzf-preview.sh {}'
+bindkey ^f 'fzf ~ --preview ~/.fzf/fzf-preview.sh {}'
 
 # ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
