@@ -1,0 +1,8 @@
+# Delete
+limactl stop
+limactl remove default
+
+# create
+limactl create --name default template:docker -y
+limactl start --mount-none
+limactl shell default zsh

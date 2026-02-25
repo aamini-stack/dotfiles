@@ -36,7 +36,7 @@ autoload -Uz compinit
 compinit
 
 # ── FZF ───────────────────────────────────────────────────────
-source ~/scripts/fzf.sh
+source ~/.fzf/fzf.sh
 export FZF_DEFAULT_COMMAND='fd . --hidden ~/Developer'
 export FZF_CTRL_T_OPTS="--preview '~/.fzf/fzf-preview.sh {}'"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
