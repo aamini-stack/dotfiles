@@ -30,6 +30,7 @@ esac
 alias ls='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 alias lg='lazygit'
+alias k='kubectl'
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
