@@ -1,10 +1,4 @@
-export const NotificationPlugin = async ({
-  project,
-  client,
-  $,
-  directory,
-  worktree,
-}) => {
+export const NotificationPlugin = async ({ project, client, $, directory, worktree }) => {
   return {
     event: async ({ event }) => {
       // Send notification on session completion

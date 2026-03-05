@@ -254,7 +254,6 @@ require('lazy').setup({
 
   require 'kickstart.debug',
   require 'kickstart.indent_line',
-  require 'kickstart.lint',
   require 'kickstart.autopairs',
   -- require 'kickstart.plugins.neo-tree',
 
