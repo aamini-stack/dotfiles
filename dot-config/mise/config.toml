@@ -1,4 +1,4 @@
 [tools]
 node = "22"
 uv = "latest"
-
+"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
