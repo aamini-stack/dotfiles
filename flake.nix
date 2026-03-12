@@ -29,6 +29,7 @@
         opencode
         fd
         azure-cli
+        difftastic
       ];
     in
     {
