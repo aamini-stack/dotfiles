@@ -71,7 +71,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 vim.o.number = true
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 vim.o.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
