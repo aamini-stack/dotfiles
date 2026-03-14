@@ -27,6 +27,19 @@ alias vim='nvim'
 alias lg='lazygit'
 alias k='kubectl'
 
+# Start a Lima instance on demand, then log in over SSH.
+lsh() {
+  local instance="${1:-default}"
+
+  command -v limactl >/dev/null 2>&1 || {
+    echo "limactl not found in PATH" >&2
+    return 127
+  }
+
+  limactl start "$instance" || return $?
+  ssh "lima-$instance"
+}
+
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
 compinit
@@ -40,4 +53,8 @@ bindkey ^f 'fzf ~ --preview ~/.fzf/fzf-preview.sh {}'
 
 # ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
-
+# Lima BEGIN
+# Make sure iptables and mount.fuse3 are available
+PATH="$PATH:/usr/sbin:/sbin"
+export PATH
+# Lima END
