@@ -5,3 +5,4 @@ uv = "latest"
 "pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
 pnpm = "latest"
 helm = "latest"
+"npm:opencode-ai" = "latest"

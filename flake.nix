@@ -26,9 +26,7 @@
         eza
         ripgrep
         unzip
-        opencode
         fd
-        azure-cli
         difftastic
       ];
     in
