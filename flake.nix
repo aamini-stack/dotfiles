@@ -16,6 +16,10 @@
         zsh
         mise
         oh-my-posh
+        git
+        stdenv.cc
+        gnumake
+        tree-sitter
         neovim
         lazygit
         delta
@@ -28,6 +32,7 @@
         unzip
         fd
         difftastic
+        just
       ];
     in
     {
