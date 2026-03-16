@@ -28,18 +28,25 @@ alias vim='nvim'
 alias lg='lazygit'
 alias k='kubectl'
 
-# Start a Lima instance on demand, then log in over SSH.
-lsh() {
-  local instance="${1:-default}"
+# Auto-connect new interactive host shells to a Lima VM.
+# REMOVE THE EXEC COMMAND TO ALLOW GOING BACK TO MAC HOST WHEN RUNNING 'exit'
+auto_lima_ssh() {
+  local instance="${LIMA_AUTO_SSH_INSTANCE:-default}"
+  local ssh_config="$HOME/.lima/$instance/ssh.config"
+  local hostagent_socket="$HOME/.lima/$instance/ha.sock"
 
-  command -v limactl >/dev/null 2>&1 || {
-    echo "limactl not found in PATH" >&2
-    return 127
-  }
+  [[ -o interactive ]] || return 0
+  [[ -n "${LIMA_AUTO_SSH_DISABLED:-}" ]] && return 0
+  [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_TTY:-}" ]] && return 0
+  [[ "${SHLVL:-1}" -gt 1 ]] && return 0
+  [[ -t 0 && -t 1 ]] || return 0
 
-  limactl start "$instance" || return $?
-  ssh "lima-$instance"
+  [[ -f "$ssh_config" ]] || return 0
+  [[ -S "$hostagent_socket" ]] || return 0
+  ssh -F "$ssh_config" "lima-$instance"
 }
+
+auto_lima_ssh
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
@@ -54,6 +61,7 @@ bindkey ^f 'fzf ~ --preview ~/.fzf/fzf-preview.sh {}'
 
 # ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
+
 # Lima BEGIN
 # Make sure iptables and mount.fuse3 are available
 PATH="$PATH:/usr/sbin:/sbin"
