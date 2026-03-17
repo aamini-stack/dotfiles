@@ -55,10 +55,25 @@ compinit
 
 # ── FZF ───────────────────────────────────────────────────────
 source ~/.fzf/fzf.sh
-export FZF_DEFAULT_COMMAND='fd . --hidden'
-export FZF_CTRL_T_OPTS="--preview '~/.fzf/fzf-preview.sh {}'"
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-bindkey ^f 'fzf ~ --preview ~/.fzf/fzf-preview.sh {}'
+
+export FZF_DEFAULT_COMMAND='fd --hidden . ~'
+export FZF_DEFAULT_OPTS="--preview '~/.fzf/fzf-preview.sh {}'"
+
+export FZF_COMPLETION_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_COMPLETION_OPTS="$FZF_DEFAULT_OPTS"
+
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_OPTS"
+export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
+
+_fzf_compgen_path() {
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || root="$1"
+  fd --hidden --follow --exclude ".git" . --base-directory "$root"
+}
+
+_fzf_compgen_dir() {
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || root="$1"
+  fd --type d --hidden --follow --exclude ".git" . --base-directory "$root"
+}
 
 # ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
