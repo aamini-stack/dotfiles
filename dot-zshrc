@@ -66,13 +66,11 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_OPTS"
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 
 _fzf_compgen_path() {
-  root="$(git rev-parse --show-toplevel 2>/dev/null)" || root="$1"
-  fd --hidden --follow --exclude ".git" . --base-directory "$root"
+  fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
 }
 
 _fzf_compgen_dir() {
-  root="$(git rev-parse --show-toplevel 2>/dev/null)" || root="$1"
-  fd --type d --hidden --follow --exclude ".git" . --base-directory "$root"
+  fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
 }
 
 # ── Theme- ────────────────────────────────────────────────────
