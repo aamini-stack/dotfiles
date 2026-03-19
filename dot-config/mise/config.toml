@@ -7,3 +7,4 @@ pnpm = "latest"
 helm = "latest"
 "npm:opencode-ai" = "latest"
 gh = "latest"
+aws-cli = { version = "latest", symlink_bins = "true" }
