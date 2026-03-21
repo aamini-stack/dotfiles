@@ -252,11 +252,6 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   { import = 'plugins' },
 
-  require 'kickstart.debug',
-  require 'kickstart.indent_line',
-  require 'kickstart.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
