@@ -28,6 +28,7 @@ alias vim='nvim'
 alias lg='lazygit'
 alias k='kubectl'
 alias copilot='copilot --yolo'
+alias tree='erd'
 
 # Auto-connect new interactive host shells to a Lima VM.
 # REMOVE THE EXEC COMMAND TO ALLOW GOING BACK TO MAC HOST WHEN RUNNING 'exit'
