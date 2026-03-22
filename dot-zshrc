@@ -29,7 +29,7 @@ alias lg='lazygit'
 alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
-alias y='yazi'
+alias y=''
 
 # Auto-connect new interactive host shells to a Lima VM.
 # REMOVE THE EXEC COMMAND TO ALLOW GOING BACK TO MAC HOST WHEN RUNNING 'exit'
@@ -58,11 +58,8 @@ compinit
 # ── FZF ───────────────────────────────────────────────────────
 source ~/.fzf/fzf.sh
 
-export FZF_DEFAULT_COMMAND='fd --hidden . ~'
+export FZF_DEFAULT_COMMAND='fd --hidden'
 export FZF_DEFAULT_OPTS="--preview '~/.fzf/fzf-preview.sh {}'"
-
-export FZF_COMPLETION_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_COMPLETION_OPTS="$FZF_DEFAULT_OPTS"
 
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_OPTS"
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
@@ -74,6 +71,9 @@ _fzf_compgen_path() {
 _fzf_compgen_dir() {
   fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
 }
+
+# ── Zoxide ────────────────────────────────────────────────────
+eval "$(zoxide init zsh)"
 
 # ── Theme- ────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"

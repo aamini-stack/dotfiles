@@ -3,6 +3,18 @@ node_modules
 .git
 .output
 .turbo
+.nix-store
+.local
+.cache
+.docker
+.npm
+.kube
+.codex
+.bun
+.cargo
+.rustup
+.azure
+.pulumi
 
 # Allow .worktrees to be searchable with fd
 !.worktrees

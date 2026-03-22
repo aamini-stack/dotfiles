@@ -33,6 +33,7 @@
         fd
         difftastic
         just
+        zoxide
       ];
     in
     {
