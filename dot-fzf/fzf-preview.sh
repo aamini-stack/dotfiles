@@ -28,6 +28,11 @@ fi
 
 type=$(file --brief --dereference --mime -- "$file")
 
+if [[ -d $file ]] || [[ $type =~ directory ]]; then
+  erd -- "$file"
+  exit
+fi
+
 if [[ ! $type =~ image/ ]]; then
   if [[ $type =~ =binary ]]; then
     file "$1"

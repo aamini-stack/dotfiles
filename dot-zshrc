@@ -66,7 +66,7 @@ export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 
 export FZF_COMPLETION_OPTS="--preview '~/.fzf/fzf-preview.sh {}' --border --info=inline"
 export FZF_COMPLETION_PATH_OPTS='--walker file,dir,follow,hidden'
-export FZF_COMPLETION_DIR_OPTS='--walker dir,follow'
+export FZF_COMPLETION_DIR_OPTS="--walker dir,follow"
 
 _fzf_compgen_path() {
   fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
@@ -75,6 +75,9 @@ _fzf_compgen_path() {
 _fzf_compgen_dir() {
   fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
 }
+
+autoload -U compinit; compinit
+source ~/.fzf/fzf-tab/fzf-tab.plugin.zsh
 
 # ── Zoxide ────────────────────────────────────────────────────
 eval "$(zoxide init zsh)"
