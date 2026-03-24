@@ -29,6 +29,10 @@ collect_conflicts() {
 
   while IFS= read -r line; do
     case "$line" in
+      *"cannot stow "*" over existing target "*" since neither a link nor a directory and --adopt not specified")
+        relative_path="${line#* over existing target }"
+        relative_path="${relative_path%% since neither a link nor a directory and --adopt not specified*}"
+        ;;
       *"existing target is neither a link nor a directory: "*|*"existing target is not owned by stow: "*)
         relative_path="${line##*: }"
         ;;
@@ -82,7 +86,7 @@ main() {
   local output_file
 
   output_file="$(mktemp)"
-  trap 'rm -f "$output_file"' EXIT
+  trap "rm -f '$output_file'" EXIT
 
   if run_stow "$output_file"; then
     return 0
