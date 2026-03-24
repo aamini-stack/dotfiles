@@ -18,4 +18,4 @@ if [[ $STATUS = 'L' ]]; then
   sudo passwd $USER 
 fi
 echo "Changing Default Shell (Please Enter Password)"
-sudo chsh -s "$(which zsh)" "$USER"
+sudo chsh -s "$(type -p zsh)" "$USER"
