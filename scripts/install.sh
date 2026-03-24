@@ -24,6 +24,15 @@ run_with_privileges() {
 }
 
 ensure_nix() {
+  local nix_sh="$HOME/.nix-profile/etc/profile.d/nix.sh"
+
+  if [[ -f "$nix_sh" ]]; then
+    # shellcheck disable=SC1090
+    . "$nix_sh"
+  fi
+
+  export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
+
   if ! command_exists nix; then
     if ! command_exists curl; then
       log "curl is required to install Nix"
@@ -32,14 +41,20 @@ ensure_nix() {
 
     log "Installing Nix"
     sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
+
+    if [[ -f "$nix_sh" ]]; then
+      # shellcheck disable=SC1090
+      . "$nix_sh"
+    fi
+
+    export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
   fi
 
-  if [[ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
-    # shellcheck disable=SC1090
-    . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+  if ! command_exists nix; then
+    log "Nix is installed but not available in this shell yet"
+    log "Run: . \"$nix_sh\""
+    return 1
   fi
-
-  export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
 }
 
 install_profile() {
