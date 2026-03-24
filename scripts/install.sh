@@ -65,6 +65,16 @@ install_profile() {
   hash -r
 }
 
+install_mise_tools() {
+  if ! command_exists mise; then
+    log "Skipping mise tool install because mise is not available"
+    return
+  fi
+
+  log "Installing mise tools"
+  mise i
+}
+
 change_default_shell() {
   local zsh_path current_shell shell_listed status os_name
 
@@ -109,6 +119,7 @@ main() {
   ensure_nix
   install_profile
   bash "$SCRIPT_DIR/stow.sh"
+  install_mise_tools
   change_default_shell
 }
 
