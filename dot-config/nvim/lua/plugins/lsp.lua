@@ -157,7 +157,7 @@ return {
         'oxlint',
         'html-lsp',
         'css-lsp',
-				'markdownlint-cli2'
+        'markdownlint-cli2',
         -- You can add other tools here that you want Mason to install
       })
 

@@ -9,3 +9,4 @@ helm = "latest"
 aws-cli = { version = "latest", symlink_bins = "true" }
 rust = "latest"
 "cargo:erdtree" = "latest"
+"npm:tree-sitter-cli" = "latest"
