@@ -3,7 +3,7 @@ return {
   config = function()
     require('minuet').setup {
       virtualtext = {
-        auto_trigger_ft = {},
+        auto_trigger_ft = { 'typescript', 'lua', 'python', 'bash' },
         keymap = {
           -- accept whole completion
           accept = '<A-A>',
@@ -35,7 +35,7 @@ return {
           api_key = 'TERM',
           name = 'Ollama',
           end_point = 'http://host.lima.internal:11434/v1/completions',
-          model = 'qwen2.5-coder:1.5b',
+          model = 'qwen2.5-coder:7b',
           optional = {
             max_tokens = 56,
             top_p = 0.9,
