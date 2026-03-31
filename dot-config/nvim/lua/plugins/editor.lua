@@ -1,5 +1,6 @@
 return {
   { 'NMAC427/guess-indent.nvim', opts = {} },
+  { 'numToStr/Comment.nvim' },
   {
     'lukas-reineke/indent-blankline.nvim',
     main = 'ibl',
