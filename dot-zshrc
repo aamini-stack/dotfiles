@@ -85,7 +85,7 @@ source ~/.fzf/fzf-tab/fzf-tab.plugin.zsh
 # ── Zoxide ────────────────────────────────────────────────────
 eval "$(zoxide init zsh)"
 
-# ── Theme- ────────────────────────────────────────────────────
+# ── Theme ─────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
 
 # Lima BEGIN
