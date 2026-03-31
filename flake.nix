@@ -34,6 +34,7 @@
         difftastic
         just
         zoxide
+        chafa  # ASCII art
       ];
     in
     {

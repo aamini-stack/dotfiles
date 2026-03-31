@@ -1,9 +1,5 @@
 return {
   {
-    'karb94/neoscroll.nvim',
-    opts = {},
-  },
-  {
     'MeanderingProgrammer/render-markdown.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
     opts = {},
