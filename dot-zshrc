@@ -11,6 +11,7 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export TERM=xterm-256color
 export OPENCODE_EXPERIMENTAL_OXFMT=1
+export OLLAMA_HOST="http://host.lima.internal:11434"
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin" # Used by lima vms
