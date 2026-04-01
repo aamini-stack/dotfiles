@@ -22,6 +22,7 @@ if ! command -v nix &> /dev/null; then
 fi
 
 # mise
+cd dotfiles
 export PATH="$PATH:$HOME/.local/bin"
 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
