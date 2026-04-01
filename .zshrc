@@ -1,9 +1,3 @@
-#!~/.nix-profile/bin/zsh zsh
-
-# ── Initialization ────────────────────────────────────────────
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
-eval "$(mise activate zsh)"
-
 # ── Environment ───────────────────────────────────────────────
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
@@ -22,6 +16,10 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
+
+# ── Initialization ────────────────────────────────────────────
+eval "$(mise activate zsh)"
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
 # ── Aliases ───────────────────────────────────────────────────
 alias ls='exa -1 --icons --group-directories-first'
