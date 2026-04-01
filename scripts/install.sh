@@ -2,7 +2,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 USER_NAME="${USER:-$(id -un)}"
 
 log() {
@@ -23,45 +22,19 @@ run_with_privileges() {
   fi
 }
 
-ensure_nix() {
-  local nix_sh="$HOME/.nix-profile/etc/profile.d/nix.sh"
-
-  if [[ -f "$nix_sh" ]]; then
-    # shellcheck disable=SC1090
-    . "$nix_sh"
+ensure_mise() {
+  if command_exists mise; then
+    return 0
   fi
 
-  export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
-
-  if ! command_exists nix; then
-    if ! command_exists curl; then
-      log "curl is required to install Nix"
-      return 1
-    fi
-
-    log "Installing Nix"
-    sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
-
-    if [[ -f "$nix_sh" ]]; then
-      # shellcheck disable=SC1090
-      . "$nix_sh"
-    fi
-
-    export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
-  fi
-
-  if ! command_exists nix; then
-    log "Nix is installed but not available in this shell yet"
-    log "Run: . \"$nix_sh\""
+  if ! command_exists apt-get; then
+    log "mise is not installed and apt-get is unavailable"
     return 1
   fi
-}
 
-install_profile() {
-  log "Installing dotfiles toolchain"
-  nix profile add "$REPO_ROOT#default" \
-    --extra-experimental-features nix-command \
-    --extra-experimental-features flakes
+  log "Installing mise with apt"
+  run_with_privileges apt-get update
+  run_with_privileges apt-get install -y mise
   hash -r
 }
 
@@ -116,8 +89,7 @@ change_default_shell() {
 }
 
 main() {
-  ensure_nix
-  install_profile
+  ensure_mise
   bash "$SCRIPT_DIR/stow.sh"
   install_mise_tools
   change_default_shell

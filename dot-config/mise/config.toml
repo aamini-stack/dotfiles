@@ -1,12 +1,33 @@
+[settings]
+experimental = true
+
 [tools]
 kubectl = "latest"
 node = "22"
 uv = "latest"
 "pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
-pnpm = "latest"
 helm = "latest"
 "npm:opencode-ai" = "latest"
-aws-cli = { version = "latest", symlink_bins = "true" }
-rust = "latest"
-"cargo:erdtree" = "latest"
 "npm:tree-sitter-cli" = "latest"
+"nix:bat" = "latest"
+"nix:chafa" = "latest"
+"nix:delta" = "latest"
+"nix:difftastic" = "latest"
+"nix:eza" = "latest"
+"nix:fd" = "latest"
+"nix:fzf" = "latest"
+"nix:git" = "latest"
+"nix:git-town" = "latest"
+"nix:gnumake" = "latest"
+"nix:just" = "latest"
+"nix:lazygit" = "latest"
+"nix:mise" = "latest"
+"nix:neovim" = "latest"
+"nix:oh-my-posh" = "latest"
+"nix:ripgrep" = "latest"
+"nix:stow" = "latest"
+"nix:tree-sitter" = "latest"
+"nix:unzip" = "latest"
+"nix:yazi" = "latest"
+"nix:zoxide" = "latest"
+"nix:zsh" = "latest"

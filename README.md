@@ -9,7 +9,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/aamini-stack/dotfiles/main/b
 This command:
 
 - clones the repo into `~/dotfiles`
-- installs the Nix-based toolchain from `flake.nix`
+- installs `mise` with `apt`
+- installs the toolchain with `mise i`
 - stows the dotfiles into `$HOME`
 - prompts before removing conflicting files
 - switches your default shell to `zsh`
