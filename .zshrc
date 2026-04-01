@@ -94,3 +94,4 @@ eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.
 PATH="$PATH:/usr/sbin:/sbin"
 export PATH
 # Lima END
+

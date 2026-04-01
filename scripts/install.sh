@@ -4,15 +4,12 @@ cd $HOME
 
 # stow
 sudo apt install stow -y
-stow -v --dotfiles --adopt .
+stow -v --target $HOME --dir "$HOME/dotfiles" .
 
+# zsh
 sudo apt install zsh -y
-if getent passwd "$USER" >/dev/null; then
-    sudo passwd "$USER"
-else
-    echo "User $USER does not exist – nothing to do."
-fi
-chsh "$(which zsh)" $USER
+sudo passwd "$USER"
+sudo chsh -s "$(which zsh)" $USER
 
 # nix
 [[ ! -e .config/nix/nix.conf ]] && cp dotfiles/dot-config/nix/nix.conf .config/nix/nix.conf
@@ -22,7 +19,6 @@ if ! command -v nix &> /dev/null; then
 fi
 
 # mise
-cd dotfiles
 export PATH="$PATH:$HOME/.local/bin"
 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
