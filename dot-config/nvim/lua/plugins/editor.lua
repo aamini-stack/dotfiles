@@ -201,7 +201,7 @@ return {
         sections = {
           {
             section = 'terminal',
-            cmd = 'chafa $HOME/.config/thomas.png --format symbols --symbols vhalf --size 60x17 --stretch; sleep .1',
+            cmd = 'chafa $HOME/.config/thomas.jpeg --format symbols --symbols vhalf --size 60x17 --stretch; sleep .1',
             height = 17,
             padding = 1,
           },
