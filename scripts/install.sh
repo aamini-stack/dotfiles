@@ -27,14 +27,14 @@ ensure_mise() {
     return 0
   fi
 
-  if ! command_exists apt-get; then
-    log "mise is not installed and apt-get is unavailable"
+  if ! command_exists curl; then
+    log "curl is required to install mise"
     return 1
   fi
 
-  log "Installing mise with apt"
-  run_with_privileges apt-get update
-  run_with_privileges apt-get install -y mise
+  log "Installing mise"
+  curl -fsSL https://mise.run | sh
+  export PATH="$HOME/.local/bin:$PATH"
   hash -r
 }
 
