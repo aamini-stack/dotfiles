@@ -2,13 +2,17 @@
 experimental = true
 
 [tools]
-kubectl = "latest"
 node = "22"
 uv = "latest"
+
 "pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
+kubectl = "latest"
 helm = "latest"
+
 "npm:opencode-ai" = "latest"
 "npm:tree-sitter-cli" = "latest"
+
+# nix packages
 "nix:bat" = "latest"
 "nix:chafa" = "latest"
 "nix:delta" = "latest"
