@@ -88,6 +88,7 @@ eval "$(zoxide init zsh)"
 # ── Theme ─────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
 
+source "$HOME/dotfiles/.env.local"
 # Lima BEGIN
 # Make sure iptables and mount.fuse3 are available
 PATH="$PATH:/usr/sbin:/sbin"
