@@ -35,4 +35,5 @@ helm = "latest"
 "nix:chafa" = "latest"
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"
+"nix:erdtree" = "latest"
 

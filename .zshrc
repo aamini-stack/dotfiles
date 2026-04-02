@@ -29,6 +29,7 @@ alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
 alias y='yazi'
+alias rg="rg --hidden --glob '!.git'"
 
 # VIM mode
 bindkey -v

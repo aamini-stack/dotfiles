@@ -185,7 +185,10 @@ return {
         enabled = true,
         timeout = 3000,
       },
-      picker = { enabled = true },
+      picker = {
+        enabled = true,
+        sources = { files = { hidden = true }, grep = { hidden = true } },
+      },
       quickfile = { enabled = true },
       scope = { enabled = true },
       scroll = { enabled = true },
@@ -198,19 +201,6 @@ return {
       },
       dashboard = {
         enabled = true,
-        sections = {
-          {
-            section = 'terminal',
-            cmd = 'chafa $HOME/.config/thomas.jpeg --format symbols --symbols vhalf --size 60x17 --stretch; sleep .1',
-            height = 17,
-            padding = 1,
-          },
-          {
-            pane = 2,
-            { section = 'keys', gap = 1, padding = 1 },
-            { section = 'startup' },
-          },
-        },
       },
     },
     keys = {

@@ -60,7 +60,7 @@ return {
     -- Note: If you customize your config for yourself,
     -- it’s best to remove the Telescope plugin config entirely
     -- instead of just disabling it here, to keep your config clean.
-    enabled = true,
+    enabled = false,
     event = 'VimEnter',
     dependencies = {
       'nvim-lua/plenary.nvim',
