@@ -20,7 +20,12 @@ fi
 
 # mise
 export PATH="$PATH:$HOME/.local/bin"
-export MISE_QUIET=1
-curl https://mise.run | sh
+MISE_QUIET=1 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh ./get-docker.sh
+sudo usermod -aG docker $USER
+
+sudo reboot
