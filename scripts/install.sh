@@ -3,6 +3,7 @@ set -euo pipefail
 cd $HOME
 
 # stow
+rm .zshrc
 sudo apt install stow -yq
 stow -v --target $HOME --dir "$HOME/dotfiles" .
 
