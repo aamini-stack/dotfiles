@@ -3,12 +3,11 @@ set -euo pipefail
 cd $HOME
 
 # stow
-sudo apt install stow -y
+sudo apt install stow -yq
 stow -v --target $HOME --dir "$HOME/dotfiles" .
 
 # zsh
-sudo apt install zsh -y
-sudo passwd "$USER"
+sudo apt install zsh -yq
 sudo chsh -s "$(which zsh)" $USER
 
 # nix
