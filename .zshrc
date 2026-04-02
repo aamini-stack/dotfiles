@@ -94,3 +94,5 @@ PATH="$PATH:/usr/sbin:/sbin"
 export PATH
 # Lima END
 
+
+if [ -e /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh ]; then . /home/aamini.linux/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
