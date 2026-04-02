@@ -20,7 +20,7 @@ fi
 
 # mise
 export PATH="$PATH:$HOME/.local/bin"
+export MISE_QUIET=1
 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
-mise i --silent
-
+mise i
