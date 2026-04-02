@@ -72,11 +72,11 @@ export FZF_COMPLETION_PATH_OPTS='--walker file,dir,follow,hidden'
 export FZF_COMPLETION_DIR_OPTS="--walker dir,follow"
 
 _fzf_compgen_path() {
-  fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
+  fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 }
 
 _fzf_compgen_dir() {
-  fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" -X realpath --relative-to "$PWD"
+  fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 }
 
 autoload -U compinit; compinit
