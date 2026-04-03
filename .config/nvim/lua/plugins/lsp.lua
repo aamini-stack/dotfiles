@@ -9,12 +9,7 @@ return {
         ---@module 'mason.settings'
         ---@type MasonSettings
         ---@diagnostic disable-next-line: missing-fields
-        opts = {
-          python = {
-            venv = 'uv',
-            installer = 'uv',
-          },
-        },
+        opts = {},
       },
       -- Maps LSP server names between nvim-lspconfig and Mason package names.
       'mason-org/mason-lspconfig.nvim',
@@ -147,11 +142,7 @@ return {
       ---@type table<string, vim.lsp.Config>
       local servers = vim.tbl_extend('error', typescript_servers, python_servers, general_servers)
 
-      -- Tools installed externally (e.g. via uv) — skip Mason for these
-      local skip_mason = { 'basedpyright', 'ruff' }
-      local ensure_installed = vim.tbl_filter(function(name)
-        return not vim.tbl_contains(skip_mason, name)
-      end, vim.tbl_keys(servers or {}))
+      local ensure_installed = vim.tbl_keys(servers or {})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       for name, server in pairs(servers) do
