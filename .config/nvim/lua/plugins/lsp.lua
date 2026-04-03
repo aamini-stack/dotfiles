@@ -82,10 +82,30 @@ return {
       -- jsonCapabilities.textDocument.completion.completionItem.snippetSupport = true
 
       --  See `:help lsp-config` for information about keys and how to configure
+
+      -- ── TypeScript / JavaScript / React ──────────────────────────────
       ---@type table<string, vim.lsp.Config>
-      local servers = {
-        -- TypeScript/JavaScript/React
+      local typescript_servers = {
         tsgo = {},
+        oxlint = {},
+        ['tailwindcss-language-server'] = {},
+        ['html-lsp'] = {},
+        ['css-lsp'] = {},
+        ['json-lsp'] = {
+          filetypes = { 'json', 'jsonc', 'json5' },
+        },
+      }
+
+      -- ── Python ───────────────────────────────────────────────────────
+      ---@type table<string, vim.lsp.Config>
+      local python_servers = {
+        basedpyright = {},
+        ruff = {},
+      }
+
+      -- ── General / multi-language ────────────────────────────────────
+      ---@type table<string, vim.lsp.Config>
+      local general_servers = {
         stylua = {},
         lua_ls = {
           on_init = function(client)
@@ -114,16 +134,13 @@ return {
             Lua = {},
           },
         },
-        ['tailwindcss-language-server'] = {},
         shellcheck = {},
-        oxlint = {},
-        ['html-lsp'] = {},
-        ['css-lsp'] = {},
-        ['json-lsp'] = {
-          filetypes = { 'json', 'jsonc', 'json5' },
-        },
         ['markdownlint-cli2'] = {},
       }
+
+      -- Merge all server groups
+      ---@type table<string, vim.lsp.Config>
+      local servers = vim.tbl_extend('error', typescript_servers, python_servers, general_servers)
 
       local ensure_installed = vim.tbl_keys(servers or {})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -191,11 +208,16 @@ return {
         end
       end,
       formatters_by_ft = {
+        -- Lua
         lua = { 'stylua' },
+        -- TypeScript / JavaScript
         javascript = { 'oxfmt' },
         javascriptreact = { 'oxfmt' },
         typescript = { 'oxfmt' },
         typescriptreact = { 'oxfmt' },
+        -- Python
+        python = { 'ruff_organize_imports', 'ruff_format' },
+        -- Web / data
         css = { 'oxfmt' },
         html = { 'oxfmt' },
         json = { 'oxfmt' },
@@ -213,6 +235,7 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint-cli2' },
+        python = { 'ruff' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
