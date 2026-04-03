@@ -96,13 +96,6 @@ return {
         },
       }
 
-      -- ── Python ───────────────────────────────────────────────────────
-      ---@type table<string, vim.lsp.Config>
-      local python_servers = {
-        basedpyright = {},
-        ruff = {},
-      }
-
       -- ── General / multi-language ────────────────────────────────────
       ---@type table<string, vim.lsp.Config>
       local general_servers = {
@@ -138,9 +131,12 @@ return {
         ['markdownlint-cli2'] = {},
       }
 
+      vim.lsp.enable 'basedpyright'
+      vim.lsp.enable 'ruff'
+
       -- Merge all server groups
       ---@type table<string, vim.lsp.Config>
-      local servers = vim.tbl_extend('error', typescript_servers, python_servers, general_servers)
+      local servers = vim.tbl_extend('error', typescript_servers, general_servers)
 
       local ensure_installed = vim.tbl_keys(servers or {})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
