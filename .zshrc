@@ -86,7 +86,7 @@ source ~/.fzf/fzf-tab/fzf-tab.plugin.zsh
 eval "$(zoxide init zsh)"
 
 # ── Theme ─────────────────────────────────────────────────────
-eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/catppuccin.omp.json)"
+eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/theme.toml)"
 
 # Lima BEGIN
 # Make sure iptables and mount.fuse3 are available
