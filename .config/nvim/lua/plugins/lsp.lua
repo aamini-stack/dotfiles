@@ -98,6 +98,7 @@ return {
       -- ── General / multi-language ────────────────────────────────────
       ---@type table<string, vim.lsp.Config>
       local general_servers = {
+        taplo = {},
         stylua = {},
         lua_ls = {
           on_init = function(client)
