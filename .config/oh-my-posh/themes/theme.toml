@@ -8,6 +8,30 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   type = 'prompt'
   alignment = 'left'
   newline = true
+  
+  [[blocks.segments]]
+    type = 'os'
+    style = 'plain'
+    template = '{{.Icon}} '
+
+  [[blocks.segments]]
+    type = 'text'
+    style = 'plain'
+    foreground = 'green'
+    template = '['
+
+  [[blocks.segments]]
+    type = 'session'
+    style = 'plain'
+    background = 'transparent'
+    foreground = 'green'
+    template = '{{ .UserName }}@{{ .HostName }}'
+
+  [[blocks.segments]]
+    type = 'text'
+    style = 'plain'
+    foreground = 'green'
+    template = '] '
 
   [[blocks.segments]]
     type = 'path'
@@ -24,7 +48,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     style = 'plain'
     foreground = 'p:grey'
     background = 'transparent'
-    template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+    template = ' git:{{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
 
     [blocks.segments.properties]
       branch_icon = ''
@@ -58,7 +82,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
       "{{if eq .Code 0}}magenta{{end}}",
     ]
     background = 'transparent'
-    template = '❯'
+    template = '$'
 
 [transient_prompt]
   foreground_templates = [
@@ -66,7 +90,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     "{{if eq .Code 0}}magenta{{end}}",
   ]
   background = 'transparent'
-  template = '❯ '
+  template = '$ '
 
 [secondary_prompt]
   foreground = 'magenta'
