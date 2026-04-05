@@ -208,7 +208,7 @@ return {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
       'MunifTanjim/nui.nvim',
       -- OPTIONAL:
-      --   `nvim-notify` is only needed, if you want to use the notification view.
+      'nvim-notify',
       --   If not available, we use `mini` as the fallback
       'rcarriga/nvim-notify',
     },
@@ -240,7 +240,6 @@ return {
     ---@type snacks.Config
     opts = {
       bigfile = { enabled = true },
-      explorer = { enabled = true },
       indent = { enabled = true },
       input = { enabled = true },
       notifier = {
@@ -272,7 +271,6 @@ return {
       { '<leader>/', function() Snacks.picker.grep() end, desc = 'Grep' },
       { '<leader>:', function() Snacks.picker.command_history() end, desc = 'Command History' },
       { '<leader>n', function() Snacks.picker.notifications() end, desc = 'Notification History' },
-      { '<leader>e', function() Snacks.explorer() end, desc = 'File Explorer' },
       -- find
       { '<leader>fb', function() Snacks.picker.buffers() end, desc = 'Buffers' },
       { '<leader>fc', function() Snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, desc = 'Find Config File' },
@@ -415,13 +413,13 @@ return {
         desc = "Open the file manager in nvim's working directory",
       },
       {
-        '<c-up>',
+        '<C-+>',
         '<cmd>Yazi toggle<cr>',
         desc = 'Resume the last yazi session',
       },
     },
     opts = {
-      open_for_directories = false,
+      open_for_directories = true,
       keymaps = {
         show_help = '<f1>',
       },

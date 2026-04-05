@@ -5,94 +5,95 @@ final_space = true
 console_title_template = '{{ .Shell }} in {{ .Folder }}'
 
 [[blocks]]
-  type = 'prompt'
-  alignment = 'left'
-  newline = true
-  
-  [[blocks.segments]]
-    type = 'os'
-    style = 'plain'
-    template = '{{.Icon}} '
+type = 'prompt'
+alignment = 'left'
+newline = true
 
-  [[blocks.segments]]
-    type = 'text'
-    style = 'plain'
-    foreground = 'green'
-    template = '['
+[[blocks.segments]]
+type = 'os'
+style = 'plain'
+template = '{{.Icon}} '
 
-  [[blocks.segments]]
-    type = 'session'
-    style = 'plain'
-    background = 'transparent'
-    foreground = 'green'
-    template = '{{ .UserName }}@{{ .HostName }}'
+[[blocks.segments]]
+type = 'text'
+style = 'plain'
+foreground = 'green'
+template = '['
 
-  [[blocks.segments]]
-    type = 'text'
-    style = 'plain'
-    foreground = 'green'
-    template = '] '
+[[blocks.segments]]
+type = 'session'
+style = 'plain'
+background = 'transparent'
+foreground = 'green'
+template = '{{ .UserName }}@{{ .HostName }}'
 
-  [[blocks.segments]]
-    type = 'path'
-    style = 'plain'
-    background = 'transparent'
-    foreground = 'blue'
-    template = '{{ .Path }}'
+[[blocks.segments]]
+type = 'text'
+style = 'plain'
+foreground = 'green'
+template = '] '
 
-    [blocks.segments.properties]
-      style = 'full'
+[[blocks.segments]]
+type = 'path'
+style = 'plain'
+background = 'transparent'
+foreground = 'blue'
+template = '{{ .Path }}'
 
-  [[blocks.segments]]
-    type = 'git'
-    style = 'plain'
-    foreground = 'p:grey'
-    background = 'transparent'
-    template = ' git:{{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+[blocks.segments.properties]
+style = 'full'
 
-    [blocks.segments.properties]
-      branch_icon = ''
-      commit_icon = '@'
-      fetch_status = true
+[[blocks.segments]]
+type = 'git'
+style = 'plain'
+foreground = 'p:grey'
+background = 'transparent'
+template = ' git:{{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
 
-[[blocks]]
-  type = 'rprompt'
-  overflow = 'hidden'
-
-  [[blocks.segments]]
-    type = 'executiontime'
-    style = 'plain'
-    foreground = 'yellow'
-    background = 'transparent'
-    template = '{{ .FormattedMs }}'
-
-    [blocks.segments.properties]
-      threshold = 5000
+[blocks.segments.properties]
+branch_icon = ''
+commit_icon = '@'
+fetch_status = true
 
 [[blocks]]
-  type = 'prompt'
-  alignment = 'left'
-  newline = true
+type = 'rprompt'
+overflow = 'hidden'
 
-  [[blocks.segments]]
-    type = 'text'
-    style = 'plain'
-    foreground_templates = [
-      "{{if gt .Code 0}}red{{end}}",
-      "{{if eq .Code 0}}magenta{{end}}",
-    ]
-    background = 'transparent'
-    template = '$'
+[[blocks.segments]]
+type = 'executiontime'
+style = 'plain'
+foreground = 'yellow'
+background = 'transparent'
+template = '{{ .FormattedMs }}'
+
+[blocks.segments.properties]
+threshold = 5000
+
+[[blocks]]
+type = 'prompt'
+alignment = 'left'
+newline = true
+
+[[blocks.segments]]
+type = 'text'
+style = 'plain'
+foreground_templates = [
+  "{{if gt .Code 0}}red{{end}}",
+  "{{if eq .Code 0}}magenta{{end}}",
+]
+background = 'transparent'
+template = '$'
 
 [transient_prompt]
-  foreground_templates = [
-    "{{if gt .Code 0}}red{{end}}",
-    "{{if eq .Code 0}}magenta{{end}}",
-  ]
-  background = 'transparent'
-  template = '$ '
+newline = true
+foreground_templates = [
+  "{{if gt .Code 0}}red{{end}}",
+  "{{if eq .Code 0}}magenta{{end}}",
+]
+background = 'transparent'
+template = '$ '
 
 [secondary_prompt]
-  foreground = 'magenta'
-  background = 'transparent'
-  template = '❯❯ '
+foreground = 'magenta'
+background = 'transparent'
+template = '❯❯ '

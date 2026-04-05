@@ -71,13 +71,13 @@ export FZF_COMPLETION_OPTS="--preview '~/.fzf/fzf-preview.sh {}' --border --info
 export FZF_COMPLETION_PATH_OPTS='--walker file,dir,follow,hidden'
 export FZF_COMPLETION_DIR_OPTS="--walker dir,follow"
 
-_fzf_compgen_path() {
-  fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-}
-
-_fzf_compgen_dir() {
-  fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-}
+# _fzf_compgen_path() {
+#   fd --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# }
+#
+# _fzf_compgen_dir() {
+#   fd --type d --hidden --follow --exclude .git . "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# }
 
 autoload -U compinit; compinit
 source ~/.fzf/fzf-tab/fzf-tab.plugin.zsh
