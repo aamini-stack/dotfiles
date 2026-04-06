@@ -26,16 +26,16 @@ helm = "latest"
 "nix:ripgrep" = "latest"
 "nix:git-town" = "latest"
 "nix:lazygit" = "latest"
+"nix:erdtree" = "latest"
 
 # dev tools
 "nix:neovim" = "latest"
 "npm:opencode-ai" = "latest"
+# nvim deps
 "npm:tree-sitter-cli" = "latest"
 "nix:tree-sitter" = "latest"
-"nix:chafa" = "latest"
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"
-"nix:erdtree" = "latest"
 "nix:xclip" = "latest"
 make = "latest"
 "nix:gcc" = "latest"
