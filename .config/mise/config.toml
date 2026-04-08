@@ -34,6 +34,8 @@ helm = "latest"
 # nvim deps
 "npm:tree-sitter-cli" = "latest"
 "nix:tree-sitter" = "latest"
+"npm:oxfmt" = "latest"
+# nvim util deps
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"
 "nix:xclip" = "latest"
