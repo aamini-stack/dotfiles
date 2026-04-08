@@ -61,7 +61,7 @@ compinit
 # ── FZF ───────────────────────────────────────────────────────
 source <(fzf --zsh)
 
-export FZF_DEFAULT_COMMAND='fd --hidden'
+export FZF_DEFAULT_COMMAND='fd --hidden --ignore '
 export FZF_DEFAULT_OPTS=""
 
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_OPTS"
@@ -72,12 +72,19 @@ export FZF_COMPLETION_PATH_OPTS='--walker file,dir,follow,hidden'
 export FZF_COMPLETION_DIR_OPTS="--walker dir,follow"
 
 _fzf_compgen_path() {
-  fd --hidden --follow --exclude .git .
+  fd --hidden --follow --exclude ".git" . "$1"
 }
 
 _fzf_compgen_dir() {
-  fd --type d --hidden --follow --exclude .git .
+  fd --type d --hidden --follow --exclude ".git" . "$1"
 }
+# _fzf_compgen_path() {
+#   fd --hidden --follow --exclude .git
+# }
+#
+# _fzf_compgen_dir() {
+#   fd --type d --hidden --follow --exclude .git
+# }
 
 autoload -U compinit; compinit
 source ~/.fzf/fzf-tab/fzf-tab.plugin.zsh
