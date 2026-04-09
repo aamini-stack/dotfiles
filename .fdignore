@@ -17,6 +17,8 @@ node_modules
 .pulumi
 .venv
 .copilot
+.nix-defexpr
+.nix-profile
 
 # Allow .worktrees to be searchable with fd
 !.worktrees
