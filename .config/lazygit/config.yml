@@ -1,4 +1,4 @@
-promptToReturnFromSubprocess: false
+promptToReturnFromSubprocess: true
 git:
   pagers:
     - pager: delta --dark --paging=never --line-numbers --side-by-side --tabs 2
