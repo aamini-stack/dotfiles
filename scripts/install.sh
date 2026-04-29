@@ -17,7 +17,7 @@ export PATH="$PATH:$HOME/.local/bin"
 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
-mise activate
+eval "$(mise activate bash)"
 
 stow --restow -v --target="$HOME" --dotfiles .
 sudo chsh -s "$(which zsh)" $USER
