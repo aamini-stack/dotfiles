@@ -18,6 +18,11 @@ if ! command -v nix &> /dev/null; then
   . $HOME/.nix-profile/etc/profile.d/nix.sh
 fi
 
+# tmux plugin manager (tpm)
+if [ ! -d "$HOME/.config/tmux/plugins/tpm" ]; then
+  git clone https://github.com/tmux-plugins/tpm.git ~/.config/tmux/plugins/tpm
+fi
+
 # mise
 export PATH="$PATH:$HOME/.local/bin"
 curl https://mise.run | sh
