@@ -19,7 +19,7 @@ mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/
 mise i
 eval "$(mise activate bash)"
 
-stow --restow -v --target="$HOME" --dotfiles .
+stow --restow -v --target="$HOME" .
 sudo chsh -s "$(which zsh)" $USER
 
 # tmux plugin manager (tpm)
