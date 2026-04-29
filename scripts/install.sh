@@ -13,7 +13,6 @@ mkdir -p .config/mise
 ln -sf $HOME/dotfiles/.config/mise/config.toml $HOME/.config/mise/config.toml
 mkdir -p .config/nix
 ln -sf $HOME/dotfiles/.config/nix/nix.conf $HOME/.config/nix/nix.conf
-cp $HOME/dotfiles/mise.toml .
 export PATH="$PATH:$HOME/.local/bin"
 curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
