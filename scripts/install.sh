@@ -18,12 +18,10 @@ curl https://mise.run | sh
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
 eval "$(mise activate bash)"
-
-cd dotfiles
 rm -r $HOME/.config/nix 
 rm -r $HOME/.config/mise
 rm .zshrc
-stow --restow -v --target="$HOME" .
+stow --restow -v --target="$HOME" dotfiles
 sudo chsh -s "$(which zsh)" $USER
 
 # tmux plugin manager (tpm)
