@@ -21,7 +21,7 @@ eval "$(mise activate bash)"
 rm -r $HOME/.config/nix 
 rm -r $HOME/.config/mise
 rm .zshrc
-stow --restow -v --target="$HOME" dotfiles
+stow --restow -v --target="$HOME" .
 sudo chsh -s "$(which zsh)" $USER
 
 # tmux plugin manager (tpm)
@@ -33,3 +33,4 @@ fi
 # sudo sh ./get-docker.sh
 # sudo usermod -aG docker $USER
 # sudo reboot
+
