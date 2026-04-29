@@ -19,6 +19,10 @@ mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/
 mise i
 eval "$(mise activate bash)"
 
+cd dotfiles
+rm -r $HOME/.config/nix 
+rm -r $HOME/.config/mise
+rm .zshrc
 stow --restow -v --target="$HOME" .
 sudo chsh -s "$(which zsh)" $USER
 
