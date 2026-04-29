@@ -22,7 +22,7 @@ eval "$(mise activate zsh)"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
 # ── Aliases ───────────────────────────────────────────────────
-alias ls='exa -1 --icons --group-directories-first'
+alias l='exa -1 --icons --group-directories-first'
 alias vim='nvim'
 alias lg='lazygit'
 alias k='kubectl'
