@@ -15,6 +15,7 @@ fi
 
 curl https://mise.run | sh
 sudo apt install stow -y
+rm .zshrc
 cd dotfiles
 stow --restow -v --target="$HOME" .
 cd $HOME
