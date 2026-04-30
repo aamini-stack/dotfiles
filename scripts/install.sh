@@ -10,7 +10,7 @@ fi
 
 # tmux plugin manager (tpm)
 if [ ! -d "$HOME/.config/tmux/plugins/tpm" ]; then
-  git clone https://github.com/tmux-plugins/tpm.git ~/.config/tmux/plugins/tpm
+  git clone https://github.com/tmux-plugins/tpm.git ~/tmux/plugins/tpm
 fi
 
 # mise
