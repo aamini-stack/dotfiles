@@ -259,6 +259,10 @@ return {
         notification = {
           -- wo = { wrap = true } -- Wrap notifications
         },
+        lazygit = {
+          height = 0,
+          width = 0,
+        },
       },
       dashboard = {
         enabled = true,
