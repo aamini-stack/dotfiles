@@ -15,7 +15,9 @@ fi
 
 curl https://mise.run | sh
 sudo apt install stow -y
+cd dotfiles
 stow --restow -v --target="$HOME" .
+cd $HOME
 
 export PATH="$PATH:~/.local/bin"
 echo 'export PATH="$PATH:~/.local/bin"' >> ~/.bashrc
