@@ -17,8 +17,9 @@ curl https://mise.run | sh
 sudo apt install stow -y
 stow --restow -v --target="$HOME" .
 
+export PATH="$PATH:~/.local/bin"
 echo 'export PATH="$PATH:~/.local/bin"' >> ~/.bashrc
-echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+echo "eval \"\$(/home/aamini.linux/.local/bin/mise activate bash)\"" >> ~/.bashrc
 
 mise plugin list | grep -q "^nix" || mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
