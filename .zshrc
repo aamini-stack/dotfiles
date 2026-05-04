@@ -29,6 +29,7 @@ alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
+alias pr="gh-dash"
 
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
