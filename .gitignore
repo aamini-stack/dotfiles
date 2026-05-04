@@ -1,3 +1,4 @@
 .env*.local
 
+.config/tmux/plugins
 .pi

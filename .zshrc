@@ -28,8 +28,15 @@ alias lg='lazygit'
 alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
-alias y='yazi'
 alias rg="rg --hidden --glob '!.git'"
+
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	command yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
 
 # Auto-connect new interactive host shells to a Lima VM.
 # REMOVE THE EXEC COMMAND TO ALLOW GOING BACK TO MAC HOST WHEN RUNNING 'exit'
