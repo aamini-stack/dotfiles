@@ -649,4 +649,8 @@ return {
       { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
     },
   },
+  {
+    'sphamba/smear-cursor.nvim',
+    opts = {},
+  },
 }
