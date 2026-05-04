@@ -3,7 +3,7 @@
 Bootstrap a fresh machine with:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/aamini-stack/dotfiles/main/bootstrap.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/aamini-stack/dotfiles/main/scripts/install.sh)
 ```
 
 This command:
@@ -17,5 +17,7 @@ This command:
 
 Notes:
 
-- set `DOTFILES_DIR` if you want the repo cloned somewhere other than `~/dotfiles`
-- if stow finds existing files, the installer shows the exact paths and asks before removing them
+- set `DOTFILES_DIR` if you want the repo cloned somewhere other than
+  `~/dotfiles`
+- if stow finds existing files, the installer shows the exact paths and asks
+  before removing them
