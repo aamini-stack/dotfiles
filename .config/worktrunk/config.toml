@@ -1,5 +1,17 @@
 worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
 
+[[pre-start]]
+mise = "if [ -f mise.toml ] || [ -f .mise.toml ]; then mise trust; fi"
+
+[[pre-start]]
+env = "if [ -f {{ primary_worktree_path }}/.env.local ]; then cp {{ primary_worktree_path }}/.env.local .env.local; fi"
+
+[[pre-start]]
+pnpm = "if [ -f pnpm-lock.yaml ]; then pnpm i; fi"
+
+[[pre-start]]
+uv = "if [ -f uv.lock ]; then uv sync; fi"
+
 # # User Configuration
 #
 # Create with `wt config create`. Values shown are defaults unless noted otherwise.
@@ -249,15 +261,3 @@ worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
 # ## Hooks
 #
 # See `wt hook` (https://worktrunk.dev/hook/) for hook types, execution order, template variables, and examples. User hooks apply to all projects; project hooks (https://worktrunk.dev/config/#project-configuration) apply only to that repository.
-
-[[pre-start]]
-mise = "if [ -f mise.toml ] || [ -f .mise.toml ]; then mise trust; fi"
-
-[[pre-start]]
-env = "if [ -f {{ primary_worktree_path }}/.env.local ]; then cp {{ primary_worktree_path }}/.env.local .env.local; fi"
-
-[[pre-start]]
-pnpm = "if [ -f pnpm-lock.yaml ]; then pnpm i; fi"
-
-[[pre-start]]
-uv = "if [ -f uv.lock ]; then uv sync; fi"
