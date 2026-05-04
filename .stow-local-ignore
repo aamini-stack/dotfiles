@@ -2,6 +2,7 @@
 \.gitignore
 \.gitmodules
 
+.tmux
+.config/gh
 README.md
-bootstrap.sh
 scripts
