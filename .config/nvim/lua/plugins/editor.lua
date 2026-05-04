@@ -489,4 +489,6 @@ return {
     'sphamba/smear-cursor.nvim',
     opts = {},
   },
+
+  { 'vim-test/vim-test' },
 }
