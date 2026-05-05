@@ -2,14 +2,12 @@ return { -- Highlight, edit, and navigate code
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
   config = function()
-    local filetypes = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'query', 'tsx', 'typescript', 'vim', 'vimdoc' }
-    require('nvim-treesitter').setup {
-      ensure_installed = filetypes,
-      auto_install = true,
-    }
+    local parsers = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'query', 'tsx', 'typescript', 'vim', 'vimdoc' }
+    require('nvim-treesitter').setup {}
+    require('nvim-treesitter').install(parsers):wait(300000)
     vim.api.nvim_create_autocmd('FileType', {
-      pattern = filetypes,
-      callback = function() vim.treesitter.start() end,
+      pattern = parsers,
+      callback = function(args) vim.treesitter.start(args.buf) end,
     })
   end,
 }

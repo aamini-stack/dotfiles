@@ -29,7 +29,7 @@ helm = "latest"
 "nix:erdtree" = "latest"
 
 # dev tools
-"neovim" = "0.11"
+"neovim" = "0.12.2"
 "opencode" = "latest"
 "github-cli" = "latest"
 # nvim deps
