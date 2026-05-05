@@ -12,7 +12,7 @@ fi
 
 # stow
 sudo apt update -y
-sudo apt install stow -y
+sudo apt install stow zsh -y
 if [ -f "$HOME/.zshrc" ]; then
   rm "$HOME/.zshrc"
 fi
@@ -35,12 +35,10 @@ mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
 
 # zsh
-sudo usermod -s "$(which zsh)" $USER
-# command -v zsh | sudo tee -a /etc/shells
-# sudo chsh -s "$(which zsh)" $USER
+zsh_path="$(command -v zsh)"
+sudo usermod -s "$zsh_path" "$USER"
 
 # tpm (tmux plugin manager)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone "https://github.com/tmux-plugins/tpm.git" "$HOME/.tmux/plugins/tpm"
 fi
-

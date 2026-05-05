@@ -5,7 +5,9 @@ limactl remove default
 # create
 limactl create --name default template:docker -y
 limactl start --mount-none
-limactl shell default zsh
+
+# reconnect
+ssh -F ~/.lima/default/ssh.config lima-default
 
 $ increase memory
 limactl edit default --memory 12

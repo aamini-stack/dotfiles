@@ -31,6 +31,12 @@ alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
 
+# Keep Lima reconnects as plain SSH instead of going through `limactl shell`.
+lima() {
+  local instance="${LIMA_INSTANCE:-default}"
+  ssh -F "$HOME/.lima/$instance/ssh.config" "lima-$instance" "$@"
+}
+
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	command yazi "$@" --cwd-file="$tmp"

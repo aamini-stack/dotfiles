@@ -10,6 +10,7 @@ This command:
 
 - clones the repo into `~/dotfiles`
 - installs `mise` with `apt`
+- installs `zsh` with `apt`
 - installs the toolchain with `mise i`
 - stows the dotfiles into `$HOME`
 - prompts before removing conflicting files
@@ -21,3 +22,5 @@ Notes:
   `~/dotfiles`
 - if stow finds existing files, the installer shows the exact paths and asks
   before removing them
+- when reconnecting to a Lima VM, use `ssh -F ~/.lima/default/ssh.config lima-default`
+  or the `lima` shell function from `.zshrc`
