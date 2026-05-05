@@ -22,7 +22,7 @@ cd $HOME
 
 # nix
 if ! command -v nix &> /dev/null; then
-  sudo sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
+  sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
   . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 fi
 
