@@ -7,9 +7,6 @@ if [ ! -d "$HOME/dotfiles" ]; then
   git clone "https://github.com/aamini-stack/dotfiles.git" "$HOME/dotfiles"
 fi
 
-# wsl
-# sudo cp dotfiles/misc/wsl.conf /etc/wsl.conf
-
 # stow
 sudo apt update -y
 sudo apt install stow zsh -y
@@ -39,6 +36,6 @@ zsh_path="$(command -v zsh)"
 sudo usermod -s "$zsh_path" "$USER"
 
 # tpm (tmux plugin manager)
-if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-  git clone "https://github.com/tmux-plugins/tpm.git" "$HOME/.tmux/plugins/tpm"
-fi
+if "test ! -d ~/.tmux/plugins/tpm" \
+   "run 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm && ~/.tmux/plugins/tpm/bin/install_plugins'"
+
