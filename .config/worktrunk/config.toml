@@ -3,8 +3,8 @@ worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
 [[pre-start]]
 mise = "if [ -f mise.toml ] || [ -f .mise.toml ]; then mise trust; fi"
 
-[step.copy-ignored]
-exclude = ['.env*.local']
+[[post-start]]
+copy = "wt step copy-ignored"
 
 # # User Configuration
 #
