@@ -13,3 +13,6 @@ $ increase memory
 limactl edit default --memory 12
 limactl edit default --cpus 8
 limactl edit default --disk 100
+
+# Restart
+limactl stop default && limactl remove default && limactl create --mount-none --cpus=4 --disk=100 --memory=12 default -y && limactl start && lima
