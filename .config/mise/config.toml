@@ -39,6 +39,8 @@ helm = "latest"
 "npm:tree-sitter-cli" = "latest"
 "nix:tree-sitter" = "latest"
 "npm:oxfmt" = "latest"
+"pipx:basedpyright" = "latest"
+"pipx:ruff" = "latest"
 # nvim util deps
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"

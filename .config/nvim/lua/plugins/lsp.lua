@@ -98,8 +98,6 @@ return {
       -- ── General / multi-language ────────────────────────────────────
       ---@type table<string, vim.lsp.Config>
       local general_servers = {
-        basedpyright = {},
-        ruff = {},
         taplo = {},
         lua_ls = {
           on_init = function(client)
@@ -129,6 +127,10 @@ return {
           },
         },
       }
+
+      -- Python tools are managed by uv because this system Python has no pip.
+      vim.lsp.enable 'basedpyright'
+      vim.lsp.enable 'ruff'
 
       -- Merge all server groups
       ---@type table<string, vim.lsp.Config>
