@@ -23,12 +23,35 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 
 # ── Aliases ───────────────────────────────────────────────────
 alias ls='eza -1 --icons --group-directories-first'
-alias vim='nvim'
 alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
+
+nvim()
+{
+    local nvim_new_dir_file="${XDG_CACHE_HOME:-$HOME/.cache}/nvim/newdir"
+    mkdir -p "$(dirname "$nvim_new_dir_file")"
+    rm -f "$nvim_new_dir_file"
+
+    NVIM_NEW_DIR_FILE="$nvim_new_dir_file" command nvim "$@"
+
+    if [ -f "$nvim_new_dir_file" ]; then
+            local nvim_new_dir="$(cat "$nvim_new_dir_file")"
+            rm -f "$nvim_new_dir_file" > /dev/null
+
+            if [ -n "$nvim_new_dir" ] && [ -d "$nvim_new_dir" ]; then
+                    cd "$nvim_new_dir"
+            fi
+    fi
+}
+
+vim()
+{
+    nvim "$@"
+}
+
 lg()
 {
     export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir

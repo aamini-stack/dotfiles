@@ -19,7 +19,11 @@ local function lazygit()
               vim.fn.delete(new_dir_file)
 
               if new_dir ~= '' and vim.fn.isdirectory(new_dir) == 1 then
-                vim.fn.chdir(new_dir)
+                vim.api.nvim_set_current_dir(new_dir)
+                if vim.env.NVIM_NEW_DIR_FILE and vim.env.NVIM_NEW_DIR_FILE ~= '' then
+                  vim.fn.mkdir(vim.fn.fnamemodify(vim.env.NVIM_NEW_DIR_FILE, ':h'), 'p')
+                  vim.fn.writefile({ new_dir }, vim.env.NVIM_NEW_DIR_FILE)
+                end
                 Snacks.notify.info('Changed directory to ' .. new_dir, { title = 'lazygit' })
               end
             end)
