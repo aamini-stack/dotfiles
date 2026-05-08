@@ -154,3 +154,6 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 # if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
 #  exec tmux
 # fi
+
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+
