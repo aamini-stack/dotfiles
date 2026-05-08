@@ -1,3 +1,35 @@
+local function lazygit()
+  local new_dir_file = vim.fn.stdpath 'cache' .. '/lazygit-new-dir'
+  vim.fn.delete(new_dir_file)
+
+  Snacks.lazygit {
+    env = { LAZYGIT_NEW_DIR_FILE = new_dir_file },
+    win = {
+      on_buf = function(self)
+        vim.api.nvim_create_autocmd('TermClose', {
+          buffer = self.buf,
+          once = true,
+          callback = function()
+            vim.schedule(function()
+              if vim.fn.filereadable(new_dir_file) ~= 1 then
+                return
+              end
+
+              local new_dir = vim.trim(table.concat(vim.fn.readfile(new_dir_file), '\n'))
+              vim.fn.delete(new_dir_file)
+
+              if new_dir ~= '' and vim.fn.isdirectory(new_dir) == 1 then
+                vim.fn.chdir(new_dir)
+                Snacks.notify.info('Changed directory to ' .. new_dir, { title = 'lazygit' })
+              end
+            end)
+          end,
+        })
+      end,
+    },
+  }
+end
+
 return {
   'folke/snacks.nvim',
   priority = 1000,
@@ -105,7 +137,7 @@ return {
     { '<leader>bd', function() Snacks.bufdelete() end, desc = 'Delete Buffer' },
     { '<leader>cR', function() Snacks.rename.rename_file() end, desc = 'Rename File' },
     { '<leader>gB', function() Snacks.gitbrowse() end, desc = 'Git Browse', mode = { 'n', 'v' } },
-    { '<leader>gg', function() Snacks.lazygit() end, desc = 'Lazygit' },
+    { '<leader>gg', lazygit, desc = 'Lazygit' },
     { '<leader>un', function() Snacks.notifier.hide() end, desc = 'Dismiss All Notifications' },
     { '<c-/>', function() Snacks.terminal() end, desc = 'Toggle Terminal' },
     { '<c-_>', function() Snacks.terminal() end, desc = 'which_key_ignore' },
