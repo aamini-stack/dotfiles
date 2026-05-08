@@ -24,12 +24,22 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 # ── Aliases ───────────────────────────────────────────────────
 alias ls='eza -1 --icons --group-directories-first'
 alias vim='nvim'
-alias lg='lazygit'
 alias k='kubectl'
 alias copilot='copilot --yolo'
 alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
+lg()
+{
+    export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
+
+    lazygit "$@"
+
+    if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
+            cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
+            rm -f $LAZYGIT_NEW_DIR_FILE > /dev/null
+    fi
+}
 
 # Keep Lima reconnects as plain SSH instead of going through `limactl shell`.
 lima() {
