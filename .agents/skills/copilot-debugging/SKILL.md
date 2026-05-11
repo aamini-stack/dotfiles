@@ -101,6 +101,12 @@ Portal fails with `ErrorLoadingExtensionAndDefinition` and
 7. Switch to `Scoped Conversations` in that same iframe.
 8. Fill only the upper API form:
    `Competency = BicepDeploymentDebug` and the working prompt below.
+   Use Playwright `locator.fill()` when the SideLoad frame is controllable. If
+   you must use raw CDP against the sandbox iframe, use the native
+   `HTMLInputElement`/`HTMLTextAreaElement` value setter and dispatch an
+   `InputEvent`. Do not set `.value` plus plain `Event('input')`; the DOM may
+   show the new values while the React component still submits stale defaults
+   such as `ArgStorage` and `Get a list of all storage accounts in westus`.
 9. Click the upper `Submit` button. Do not click `Open Copilot sidecar`.
 10. Inspect all Portal sandbox iframes and choose the Copilot iframe by live
    text, not by newest target ID. The newest sandbox iframe can be blank while
@@ -108,8 +114,10 @@ Portal fails with `ErrorLoadingExtensionAndDefinition` and
 11. Inspect the Copilot iframe. It must show the exact prompt and the activity
    `Deploy built-in Bicep debug sample and request confirmation`.
 12. Approve the confirmation card.
-13. Wait for LRO output. A successful run shows `Deployment accepted by ARM`,
-   `rg-copilot-bicep-debug - Succeeded`, and `Deployment succeeded!`.
+13. Wait for LRO output. The current VM debug sample is expected to reach ARM
+    and fail the nested VM deployment. A good run shows `Deployment accepted by
+    ARM`, `vm-debug-nested - Failed`, `rg-copilot-bicep-debug - Succeeded`, and
+    `Deployment failed!`.
 
 ## Working Bicep Debug Manifest
 
@@ -168,14 +176,29 @@ Approve
 Deny
 ```
 
-Expected successful approved output:
+Expected approved output for the intentional VM failure sample:
 
 ```text
 Compiling bicep templates...
 Submitting deployment to ARM...
 Deployment accepted by ARM.
+vm-debug-nested - Failed
 rg-copilot-bicep-debug - Succeeded
-Deployment succeeded!
+Deployment failed!
+```
+
+In the 2026-05-11 browser run, the Copilot endpoint/client did not expose ARM
+operation-level error text for the invalid VM size. The visible response and the
+`Deployment details` artifact identified the failed nested deployment
+(`vm-debug-nested`) and deployment ID, but the model follow-up stated that no
+further ARM failure details were returned. For detailed root cause, retrieve ARM
+deployment operations for the returned deployment ID and resource group.
+
+Azure CLI command shape verified in that run:
+
+```bash
+az deployment operation sub list --name <subscription-deployment-name> -o json
+az deployment operation group list --resource-group <resource-group> --name <nested-deployment-name> -o json
 ```
 
 ## SideLoad Target Discipline
@@ -296,6 +319,73 @@ socket.onopen = async () => {
 NODE
 ```
 
+Fill and submit the upper Scoped Conversations API form via raw CDP when
+Playwright frame locators cannot attach to the sandbox iframe. This uses the
+native value setter so React state updates before `Submit` is clicked:
+
+```bash
+node <<'NODE'
+const subscription = '<subscription-id>'
+const prompt = `Deploy the built-in Bicep debug sample to subscription ${subscription} in eastus. Use deployment label copilot-bicep-debug. Show the deployment confirmation first.`
+const ws = 'ws://<gateway>:9223/devtools/page/<sideload-target-id>'
+const socket = new WebSocket(ws)
+let id = 0
+const pending = new Map()
+socket.onmessage = (event) => {
+  const msg = JSON.parse(event.data)
+  if (msg.id && pending.has(msg.id)) {
+    pending.get(msg.id)(msg)
+    pending.delete(msg.id)
+  }
+}
+function send(method, params = {}) {
+  return new Promise((resolve) => {
+    const mid = ++id
+    pending.set(mid, resolve)
+    socket.send(JSON.stringify({ id: mid, method, params }))
+  })
+}
+socket.onopen = async () => {
+  await send('Runtime.enable')
+  const expression = `new Promise(async (resolve) => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+    const setNativeValue = (el, value) => {
+      const proto = el instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype
+      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value)
+      el.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        inputType: 'insertText',
+        data: value,
+      }))
+      el.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+    document.querySelectorAll('button')[1].click()
+    await sleep(1000)
+    setNativeValue(document.querySelectorAll('input')[0], 'BicepDeploymentDebug')
+    setNativeValue(document.querySelectorAll('textarea')[0], ${JSON.stringify(prompt)})
+    await sleep(1000)
+    document.querySelectorAll('button')[4].click()
+    await sleep(5000)
+    resolve(JSON.stringify({
+      text: document.body.innerText.slice(0, 2000),
+      values: [...document.querySelectorAll('input, textarea')]
+        .map((e, i) => ({ i, value: e.value }))
+        .slice(0, 4),
+    }))
+  })`
+  const res = await send('Runtime.evaluate', {
+    awaitPromise: true,
+    returnByValue: true,
+    expression,
+  })
+  console.log(res.result.result.value)
+  socket.close()
+}
+NODE
+```
+
 ## Network And Evidence
 
 Capture broad browser-visible traffic, but remember HTTP plugin execution can be
@@ -320,7 +410,8 @@ Useful evidence for success:
 - Copilot sidecar shows the exact working prompt.
 - Activity names `Deploy built-in Bicep debug sample and request confirmation`.
 - Confirmation card renders before side effects.
-- Approved retry shows compile, ARM submit, accepted, and terminal success.
+- Approved retry shows compile, ARM submit, accepted, and terminal success or
+  the intentional VM failure sequence for this sample.
 - For smoke validation, it is useful evidence if the sidecar shows the exact
   prompt, `Agent has been registered`, `Plugin has been registered`, and a Bicep
   deployment activity/tool handoff. Deployment can still fail later because of
@@ -368,6 +459,17 @@ correlation IDs, `Location`, and `Retry-After` when available.
   confirmation: verify the registered Monaco content exactly matches the
   manifest file. If Lua quotes are missing, the manifest was corrupted during
   paste; reload SideLoad and paste via direct CDP/file or a quoted heredoc.
+- Scoped submit still launches `ArgStorage` even though the visible form values
+  look correct: the automation changed DOM values without updating React state.
+  Refill the upper form using Playwright `locator.fill()` or the raw-CDP native
+  value setter helper above, then submit again from a fresh SideLoad blade.
+- VM sample reaches ARM but lacks root-cause error details: the endpoint/client
+  may only return deployment timeline entries. Use the deployment ID, resource
+  group, and failed nested deployment from the artifact/UI to query ARM
+  deployment operations directly. In Azure CLI, use
+  `az deployment operation sub list` and
+  `az deployment operation group list`; the inverse command shape
+  `az deployment sub operation list` is not recognized by current CLI.
 - `ECONNREFUSED 127.0.0.1:9222`: Playwriter used the Windows-local WebSocket
   URL. Use `ws://<wsl-gateway>:9223/...`.
 - Playwriter command times out while Portal is still working: rerun the command
