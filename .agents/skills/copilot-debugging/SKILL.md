@@ -76,6 +76,12 @@ the user already completed sign-in. If the retry still lands on `/auth/login/`,
 ask the user to finish sign-in in the debug Edge window, then navigate to the
 same URL again.
 
+If you need a fresh SideLoad blade instance, add any cache-busting query
+parameter before the `#view/...` fragment, not after it. Appending text after
+the hash changes the blade name, for example `SideLoad.ReactView&fresh=...`, and
+Portal fails with `ErrorLoadingExtensionAndDefinition` and
+`Blade name is invalid identifier`.
+
 ## Working E2E Flow
 
 1. Connect to Edge with direct CDP and select the Portal page.
@@ -94,7 +100,7 @@ same URL again.
    script contains single quotes.
 7. Switch to `Scoped Conversations` in that same iframe.
 8. Fill only the upper API form:
-   `Competency = BicepDeploymentDebugV3` and the working prompt below.
+   `Competency = BicepDeploymentDebug` and the working prompt below.
 9. Click the upper `Submit` button. Do not click `Open Copilot sidecar`.
 10. Inspect all Portal sandbox iframes and choose the Copilot iframe by live
    text, not by newest target ID. The newest sandbox iframe can be blank while
@@ -109,13 +115,18 @@ same URL again.
 
 This manifest was validated against the real RC Portal Copilot client on
 2026-05-11. It avoids putting Bicep source in the user prompt. The HTTP plugin
-Lua script supplies the built-in sample file, which avoids model refusal before
+Lua script supplies the built-in sample files, which avoids model refusal before
 tool selection.
+
+The sample intentionally uses a valid multi-file Bicep module layout with
+VM-shaped resources and an invalid VM size. This should compile, submit to ARM,
+and then exercise deployment failure diagnostics instead of stopping at model
+routing or Bicep syntax errors.
 
 Use the adjacent file:
 
 ```text
-bicep-deployment-debug-v3.manifest.json
+bicep-deployment-debug.manifest.json
 ```
 
 Paste that entire JSON object into the SideLoad Monaco editor. Prefer reading
@@ -151,7 +162,7 @@ Are you sure you want to deploy this Bicep configuration?
 
 Subscription: <subscription-id>
 Location: eastus
-Files: 1 file(s) - main.bicep
+Files: 2 file(s) - main.bicep, vm.bicep
 
 Approve
 Deny
@@ -178,6 +189,10 @@ Deployment succeeded!
   deployment output.
 - If Monaco content changes but `Register` remains disabled, the target is
   post-registration locked. Reload Portal and use a fresh SideLoad iframe.
+- If a retry shows old manifest behavior after a fresh registration, suspect a
+  stale Copilot sidecar or stale SideLoad target. Close old Copilot sidecars,
+  reload Portal, use a fresh SideLoad iframe, and verify the confirmation card
+  reflects the current manifest before approving.
 - If the sidecar shows an `ArgStorage` prompt such as `Get a list of all storage
   accounts in westus`, you clicked the lower `CopilotTopActions` path. Close the
   Copilot sidecar and use the upper API scoped form only.
@@ -244,7 +259,7 @@ Paste manifest into Monaco via direct CDP without shell-quoting damage:
 ```bash
 node <<'NODE'
 const fs = require('node:fs')
-const manifest = fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug-v3.manifest.json', 'utf8')
+const manifest = fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug.manifest.json', 'utf8')
 const ws = 'ws://<gateway>:9223/devtools/page/<sideload-target-id>'
 const socket = new WebSocket(ws)
 let id = 0
@@ -301,7 +316,7 @@ Track:
 Useful evidence for success:
 
 - Scoped conversation start posts `mode: "agent"` and
-  `competency.id: "BicepDeploymentDebugV3"`.
+  `competency.id: "BicepDeploymentDebug"`.
 - Copilot sidecar shows the exact working prompt.
 - Activity names `Deploy built-in Bicep debug sample and request confirmation`.
 - Confirmation card renders before side effects.
@@ -336,7 +351,7 @@ correlation IDs, `Location`, and `Retry-After` when available.
 ## Failure Guide
 
 - `Sorry, I can't help with that`: avoid pasted Bicep source, fenced code, raw
-  JSON, fake subscriptions, or the wrong competency. Use the V3 built-in sample
+  JSON, fake subscriptions, or the wrong competency. Use the built-in sample
   manifest and working prompt.
 - Query/storage agent runs: you used lower `CopilotTopActions` or left the
   default `ArgStorage` form in play. Close Copilot and use only the upper API
