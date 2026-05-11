@@ -80,6 +80,9 @@ same URL again.
 
 1. Connect to Edge with direct CDP and select the Portal page.
 2. Load the Portal URL above.
+   Use `playwriter -s <session> --timeout 120000 -e ...` for Portal loads,
+   login retries, and long Copilot waits. The Playwriter CLI execution default
+   can time out before an otherwise healthy Portal retry completes.
 3. Inspect `/json/list` and identify the active SideLoad iframe by text:
    `Plugin & Agent Test`, `Scoped Conversations`, `Register`, and `monaco === true`.
 4. Use one SideLoad iframe for both manifest registration and scoped submit.
@@ -93,10 +96,13 @@ same URL again.
 8. Fill only the upper API form:
    `Competency = BicepDeploymentDebugV3` and the working prompt below.
 9. Click the upper `Submit` button. Do not click `Open Copilot sidecar`.
-10. Inspect the Copilot iframe. It must show the exact prompt and the activity
+10. Inspect all Portal sandbox iframes and choose the Copilot iframe by live
+   text, not by newest target ID. The newest sandbox iframe can be blank while
+   an older sandbox iframe contains the Copilot sidecar.
+11. Inspect the Copilot iframe. It must show the exact prompt and the activity
    `Deploy built-in Bicep debug sample and request confirmation`.
-11. Approve the confirmation card.
-12. Wait for LRO output. A successful run shows `Deployment accepted by ARM`,
+12. Approve the confirmation card.
+13. Wait for LRO output. A successful run shows `Deployment accepted by ARM`,
    `rg-copilot-bicep-debug - Succeeded`, and `Deployment succeeded!`.
 
 ## Working Bicep Debug Manifest
@@ -126,6 +132,13 @@ script must still contain strings such as `'copilot-bicep-debug'`,
 
 Use a real selected subscription ID. Do not embed Bicep source, fenced code, raw
 JSON tool arguments, or numbered source lines in the prompt.
+
+If the user does not provide a subscription, use an explicitly selected Portal
+subscription. If you need a fallback and Azure CLI is logged in as the same
+user, `az account show --query id -o tsv` is a reasonable source for the
+default subscription. Do not depend on a browser `fetch` to
+`https://management.azure.com/subscriptions`; the Portal page can return `401`
+for that direct fetch even when Portal itself is authenticated.
 
 ```text
 Deploy the built-in Bicep debug sample to subscription <subscription-id> in eastus. Use deployment label copilot-bicep-debug. Show the deployment confirmation first.
@@ -159,6 +172,10 @@ Deployment succeeded!
 - Match targets by live text and state, never by stored target ID.
 - Portal may keep stale SideLoad and Copilot iframes alive after reloads.
 - Register and submit from the same verified SideLoad iframe.
+- After submitting, inspect iframe contents and choose the Copilot sidecar by
+  evidence: exact prompt text, `Agent has been registered`,
+  `Plugin has been registered`, activity text, confirmation card, or final
+  deployment output.
 - If Monaco content changes but `Register` remains disabled, the target is
   post-registration locked. Reload Portal and use a fresh SideLoad iframe.
 - If the sidecar shows an `ArgStorage` prompt such as `Get a list of all storage
@@ -338,6 +355,9 @@ correlation IDs, `Location`, and `Retry-After` when available.
   paste; reload SideLoad and paste via direct CDP/file or a quoted heredoc.
 - `ECONNREFUSED 127.0.0.1:9222`: Playwriter used the Windows-local WebSocket
   URL. Use `ws://<wsl-gateway>:9223/...`.
+- Playwriter command times out while Portal is still working: rerun the command
+  with the Playwriter CLI timeout flag, for example `--timeout 120000`. This is
+  separate from Playwright action or navigation timeouts inside the script.
 
 ## Cleanup
 
