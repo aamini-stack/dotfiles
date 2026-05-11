@@ -1,423 +1,593 @@
 ---
 name: copilot-debugging
-description: Debug Azure Copilot HTTP plugins against a real Copilot or Azure Portal client using the user's Chrome session, Playwriter, network traces, AXEAgents auth contracts, and service logs. Use when testing Copilot plugin behavior, confirmation flows, polling/LROs, token acquisition, or client/service mismatches.
+description:
+  Debug Azure Copilot HTTP plugins end-to-end in a real Azure Portal/Copilot
+  browser session using Playwriter direct CDP, network traces, AXEAgents auth
+  contracts, and service logs.
 ---
 
 # Copilot Plugin Debugging
 
-Use this skill to debug Azure Copilot HTTP plugins end-to-end with a real browser and client. Prefer the real client over synthetic curl tests when the issue involves auth, Copilot confirmation, polling, adaptive UI rendering, plugin routing, or headers.
+Use this skill to validate Azure Copilot HTTP plugins against the real Azure
+Portal/Copilot client. Prefer this over curl or synthetic tests when debugging
+auth, plugin routing, confirmation cards, LRO polling, scoped conversations,
+DevUI, or client/service mismatches.
 
-## Required Tools
+## Hard Rules
 
-- Load and follow the `playwriter` skill before browser automation.
-- Use the user's existing Chrome session through Playwriter extension mode unless the user explicitly asks for direct CDP.
-- If Playwriter reports no connected browser, ask the user to click the Playwriter extension icon on the target Copilot or Azure Portal tab.
-- If the target UI is Azure Portal Copilot in Edge, expect the chat surface to be hosted in a cross-origin sandbox iframe such as `CopilotFluentAI.ReactView`. Extension mode can capture top-level Portal traffic but may not enter that iframe. Use direct CDP for full automation.
-- Direct CDP requires the browser to expose a DevTools endpoint. Opening `edge://inspect` is usually not enough; Edge often must be launched with `--remote-debugging-port=9222`.
+- Always load and follow the `playwriter` skill first.
+- Always run `playwriter skill` before browser automation.
+- Always use Playwriter direct CDP for Azure Portal Copilot. Do not use
+  extension mode for Portal Copilot because the chat and sideload surfaces run
+  in cross-origin sandbox frames/workers.
+- Always print the CDP setup commands for the user before trying to connect.
+- Always use a temporary debug browser profile.
+- Never print bearer tokens. Redact `Authorization` values in summaries.
+- Verify the real client end-to-end; browser traces alone may not show HTTP
+  plugin execution because the orchestrator can call plugins server-side.
+
+## CDP Setup To Print First
+
+Print this block to the user before starting a Portal Copilot debugging session.
+
+```powershell
+# 1. Launch Edge with CDP from Windows PowerShell.
+# Close any previous debug Edge window first.
+& "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
+
+# Fallback path if needed:
+& "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
+
+# 2. Verify Edge is actually listening on Windows.
+Invoke-RestMethod http://127.0.0.1:9222/json/version
+
+# 3. If the agent runs in WSL/Linux, expose CDP to WSL.
+# Run PowerShell as Administrator.
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=9223 connectaddress=127.0.0.1 connectport=9222
+New-NetFirewallRule -DisplayName "Edge CDP from WSL" -Direction Inbound -LocalPort 9223 -Protocol TCP -Action Allow
+
+# 4. Confirm the proxy exists if troubleshooting.
+netsh interface portproxy show v4tov4
+```
+
+Then verify from WSL/Linux:
+
+```bash
+curl -sS --max-time 5 "http://$(ip route | awk '/default/ {print $3}'):9223/json/version"
+curl -sS --max-time 5 "http://$(ip route | awk '/default/ {print $3}'):9223/json/list"
+```
+
+Use the WSL-reachable `webSocketDebuggerUrl` returned by the first curl, for
+example:
+
+```bash
+playwriter session new --direct ws://172.28.240.1:9223/devtools/browser/<browser-id>
+```
+
+If WSL curl returns `Recv failure: Connection reset by peer`, the proxy exists
+but Edge is not listening on Windows. Run
+`Invoke-RestMethod http://127.0.0.1:9222/json/version` in Windows PowerShell and
+relaunch Edge with the exact CDP command until it succeeds.
+
+If Playwriter later reports `ECONNREFUSED 127.0.0.1:9222`, do not use the
+Windows-local WebSocket URL. Use the WSL-reachable URL from
+`http://<gateway>:9223/json/version`.
+
+## Standard Portal URL
+
+Use this RC Portal URL for sideloaded agent/plugin validation and DevUI
+visibility:
+
+```text
+https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&feature.azurepluginstore=true&exp.azurepluginstore=true&feature.inlinecopilot=true&feature.devui=true&feature.canarytraffic=true&exp.useRegionalEndpoint=true&exp.pluginstoredeclarativehttpplugins=true&exp.AzCopilot_ArgQueryGenerator_plugin=15.0&exp.AzCopilot_ArgQueryRunner_plugin=15.0&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&Microsoft_Azure_Copilot_clientoptimizations=false&feature.customportal=false&feature.canmodifyextensions=true#home
+```
+
+If Portal redirects to `/auth/login/`, stop and ask the user to finish sign-in
+in the debug Edge window. Then navigate to the same URL again.
+
+## Playwriter CDP Flow
+
+1. Run `playwriter skill`.
+2. Print the CDP setup commands above.
+3. Verify Windows CDP and WSL proxy.
+4. Start a direct CDP Playwriter session using the WSL-reachable browser
+   WebSocket URL.
+5. List pages and choose the Portal page by URL/title, not a stored target ID.
+6. Navigate to the standard Portal URL.
+7. Observe with `console.log(state.page.url())` and
+   `snapshot({ page: state.page })`.
+8. Open Copilot, enable Agent mode, and verify the Agent button is pressed.
+9. Open the SideLoad blade directly when sideloading.
+10. Register the full agent/plugin manifest.
+11. Start a scoped conversation to force tool selection.
+12. Capture browser-visible CopilotWeb/DirectLine traffic and correlate with
+    DevUI/service logs.
+
+Useful Playwriter commands:
+
+```bash
+playwriter -s <session> -e 'console.log(JSON.stringify(browser.contexts().map((c, ci) => ({ context: ci, pages: c.pages().map((p, pi) => ({ page: pi, title: p.title(), url: p.url() })) })), null, 2))'
+```
+
+```bash
+playwriter -s <session> -e 'state.page = context.pages().find((p) => p.url().includes("portal.azure.com")) ?? context.pages()[0]; console.log("URL:", state.page.url()); console.log(await snapshot({ page: state.page, showDiffSinceLastCall: false }));'
+```
+
+## SideLoad Blade
+
+Use the SideLoad blade directly. Do not depend on the Copilot banner. In current
+Portal builds, `globalThis.az.openBlade` may not exist on the top page even when
+`MsPortalFx` exists, so verify the actual blade UI loaded after any navigation
+attempt.
+
+```js
+az.openBlade({
+	extensionName: 'Microsoft_Azure_Copilot',
+	bladeName: 'SideLoad.ReactView',
+})
+```
+
+Expected hash if routing succeeds:
+
+```text
+#view/Microsoft_Azure_Copilot/SideLoad.ReactView
+```
+
+If direct hash navigation opens a shell with content title `undefined` or only
+shows `Console Error Info`, treat the blade as not loaded. Do not proceed to
+registration until the snapshot or target inspection shows the actual SideLoad
+UI with Register/Test/Scoped Conversations controls.
+
+Current reliable RC path when direct hash navigation is broken:
+
+1. Open Copilot from the Portal top bar.
+2. Inspect CDP iframe targets and identify the Copilot iframe by text such as
+   `Test your plugin or agent`.
+3. Enable Agent mode in the Copilot iframe.
+4. Click `Link to DevUI`. It may not navigate the iframe itself, but it causes
+   Portal to load the `Copilot testing`/SideLoad blade and create additional
+   sandbox iframe targets.
+5. Re-list CDP targets and identify the SideLoad iframe by text such as
+   `Plugin & Agent Test`, `Scoped Conversations`, `Test Plugins`, `Register`,
+   and `monaco === true`.
+
+Critical target discipline:
+
+- Use exactly one SideLoad iframe target for `Plugin & Agent Test` registration
+  and the following `Scoped Conversations` submit.
+- Do not register in one sandbox iframe and submit from a sibling sandbox
+  iframe. RC Portal can keep multiple live `SideLoad.ReactView` iframe instances
+  after reloads, direct hash attempts, or DevUI clicks.
+- Before acting, inspect each candidate iframe for `document.body.innerText`,
+  buttons, inputs, textareas, and Monaco model value. Pick the one whose current
+  state matches the next step.
+- If multiple SideLoad targets exist and one has corrupted Monaco content or
+  stale scoped form defaults, reload Portal and create a fresh SideLoad target
+  before continuing.
+- Treat target IDs as per-session only. Never store a target ID in the skill or
+  assume `sandbox-3` is always the active SideLoad iframe.
+
+Observed RC target pattern from a working direct CDP run:
+
+- `sandbox-1.reactblade-rc.portal.azure.net` hosted the Copilot sidecar.
+- `sandbox-2.reactblade-rc.portal.azure.net` and
+  `sandbox-3.reactblade-rc.portal.azure.net` both exposed the SideLoad editor
+  after DevUI link flow.
+- `sandbox-3` had the cleaner SideLoad text and was suitable for Monaco edits.
+- The top Portal page title changed to `Copilot testing - Microsoft Azure` even
+  though the top-page blade shell still showed content title `undefined`.
+- A later fresh run created `sandbox-5` as the active SideLoad iframe, with old
+  `sandbox-*` targets still alive. This is why matching by text/state is
+  mandatory.
+
+When Playwriter snapshots show only the Portal top page, inspect
+`http://<gateway>:9223/json/list`. Portal sandbox iframes can appear as separate
+CDP targets with `type: "iframe"`, `parentId` set to the Portal page target, and
+URLs under `sandbox-*.reactblade-rc.portal.azure.net`. Match targets by live
+page text/title, not a saved target ID.
+
+Do not create a new Playwriter session against an iframe target WebSocket URL.
+In this run,
+`playwriter session new --direct ws://.../devtools/page/<iframe-target>`
+succeeded, but the first execute failed with
+`browserContext.newPage: Cannot read properties of undefined (reading '_page')`.
+Use the browser-level Playwriter session for normal actions and raw
+CDP/WebSocket inspection for iframe targets when needed.
+
+Raw CDP iframe inspection pattern:
+
+```bash
+node -e 'const ws="ws://<gateway>:9223/devtools/page/<iframe-target-id>"; const socket=new WebSocket(ws); let id=0; const pending=new Map(); socket.onmessage=(event)=>{const msg=JSON.parse(event.data); if(msg.id&&pending.has(msg.id)){pending.get(msg.id)(msg); pending.delete(msg.id);}}; function send(method,params={}){return new Promise(resolve=>{const mid=++id; pending.set(mid,resolve); socket.send(JSON.stringify({id:mid,method,params}));});} socket.onopen=async()=>{await send("Runtime.enable"); const res=await send("Runtime.evaluate",{returnByValue:true,expression:"document.body && document.body.innerText"}); console.log(JSON.stringify(res,null,2)); socket.close();};'
+```
+
+For `Runtime.evaluate`, use primitive/string return values or inspect the full
+CDP response. Object values may appear as `{}` unless serialized explicitly.
+
+Registration rules:
+
+- Paste one complete JSON object with both `AiPlugins` and `AiAgents` arrays.
+- Read Monaco markers after paste. A disabled Register button usually means
+  schema validation failed.
+- Use the model enum accepted by the current validator. If the marker says
+  `gpt-5-mini`, use `gpt-5-mini`.
+- Treat disabled Register/Test buttons after a successful click as a possible
+  post-submit state, then verify with scoped conversation plus DevUI/service
+  traces.
+- For Bicep agent/plugin scoped testing, a manifest using `model: "gpt-5-mini"`,
+  `isLKG: true`, plugin
+  `allowedClients: ["Agent:BicepDeploymentDebugAgent", "AzurePortalRCAdvanced:BicepDeploymentDebug"]`,
+  and agent `allowedClients: ["AzurePortalRCAdvanced:BicepDeploymentDebug"]`
+  validated with no Monaco markers and enabled Register.
+- After `Register` succeeds, the same SideLoad iframe can keep `Register`
+  disabled even if you later replace the Monaco model with a new manifest. Use a
+  fresh SideLoad target for a second manifest/version test rather than assuming
+  the button will re-enable.
+- A clean registration state is: markers are empty, `Register` was enabled
+  before click, click returns successfully, and `Register` is disabled
+  afterward. If `Register` was already disabled before click, you did not
+  register the current manifest.
+
+Working raw-CDP Monaco pattern for SideLoad:
+
+- Set the editor with
+  `monaco.editor.getModels()[0].setValue(JSON.stringify(manifest, null, 2))`.
+- Wait briefly, then read `monaco.editor.getModelMarkers({})`.
+- Only click Register when markers are empty and the Register button is enabled.
+- After a successful Register click, observed state is
+  `Register.disabled === true`, `Test Plugins.disabled === true`, and markers
+  still empty.
+- When switching tabs, do not click `Scoped Conversations` and immediately call
+  `monaco.editor.getModels()[0].setValue(...)`; if the tab switch has not
+  rendered yet, this can write prompt text into the manifest editor and corrupt
+  the registration tab. Always verify the expected inputs/textareas are present
+  before filling scoped conversation fields.
+
+Use this CDP expression shape inside the iframe target:
+
+```js
+;(() => {
+	const value = JSON.stringify(manifest, null, 2)
+	const models = monaco.editor.getModels()
+	models[0].setValue(value)
+	return JSON.stringify({
+		modelCount: models.length,
+		valueLength: value.length,
+	})
+})()
+```
+
+Validation expression:
+
+```js
+;(() =>
+	JSON.stringify({
+		markers: monaco.editor.getModelMarkers({}).map((m) => ({
+			message: m.message,
+			severity: m.severity,
+			line: m.startLineNumber,
+			column: m.startColumn,
+		})),
+		buttons: Array.from(document.querySelectorAll('button')).map((b, i) => ({
+			i,
+			text: b.innerText,
+			disabled: b.disabled,
+		})),
+	}))()
+```
+
+## Scoped Conversation Rules
+
+Use scoped conversations to force the intended sideloaded agent/plugin.
+
+- Scoped conversations require Agent/Advanced mode.
+- The competency client string is `<Client>Advanced:<CompetencyId>`.
+- For RC Portal, use `AzurePortalRCAdvanced:<CompetencyId>`.
+- Add the exact scoped string to both the agent and plugin `allowedClients`.
+- Add `Agent:<AgentName>` to the plugin `allowedClients` so the agent can call
+  the plugin.
+- Set `isLKG: true` for scoped sideload testing unless intentionally testing
+  flights.
+- Keep `functions[*].name` aligned with `runtimes[*].run_for_functions`.
+
+Recommended Bicep test competency:
+
+```text
+BicepDeploymentDebug
+AzurePortalRCAdvanced:BicepDeploymentDebug
+```
+
+The scoped nudge should start an agent conversation through:
+
+```text
+POST https://copilotweb.canary.production.portalrp.azure.com/api/conversations/start?api-version=2025-08-15
+```
+
+Expected body shape:
+
+```json
+{
+	"conversationType": "Chat",
+	"mode": "agent",
+	"competency": { "id": "BicepDeploymentDebug", "displayName": "" }
+}
+```
+
+Observed scoped conversation behavior in RC Portal:
+
+- The SideLoad `Scoped Conversations` tab successfully posts the expected
+  `conversationType: "Chat"`, `mode: "agent"`, and `competency.id` to
+  `copilotweb.canary.production.portalrp.azure.com/api/conversations/start`.
+- The subsequent DirectLine `NudgeMessage` can include an
+  `azurecopilot/clientcontext` attachment whose `competency` is `null` and
+  `mode` is `chat`. Do not treat that alone as failure if the preceding
+  CopilotWeb conversation start had `mode: "agent"` and the expected competency.
+- Portal extension telemetry records the scoped nudge competency and prompt
+  length under `CopilotManager`/`Unified-Copilot-Nudge`; this is useful when
+  DirectLine attachments look misleading.
+- Browser-visible `copilotweb` and DirectLine calls prove scoped conversation
+  startup and user-turn delivery, but not necessarily HTTP plugin execution.
+  Continue to inspect Copilot activity, DevUI, and service logs.
+- After clicking `Submit`, verify the Copilot sidecar shows the exact prompt you
+  submitted. If it shows a prompt from a previous attempt, you used a stale
+  scoped iframe or clicked the wrong submit button.
+- If network capture prints no `copilotweb`/DirectLine events but the Copilot
+  sidecar updates, your capture was attached to the wrong target set or started
+  too late. Re-list targets and capture all Portal page, SideLoad iframe,
+  Copilot iframe, and worker targets before submit.
+- For the built-in SideLoad scoped form, fill the first `input` and first
+  `textarea` under the
+  `API: Scoped conversations with custom prompts and competency` section. The
+  lower `CopilotTopActions` component has separate default `ArgStorage` controls
+  and should not be mistaken for the API submit path unless intentionally
+  testing that component.
 
 ## AXEAgents Contract
 
 For this repo, the Copilot-facing service is AXEAgents/CnxPlugins.
 
 - First-party app/resource ID: `1dce83cb-ee48-4e43-bd08-a23fd936428e`.
-- Portal token acquisition must use `Az.getAuthorizationToken({ resourceName: "cnxplugins" })`.
-- API requests must pass `Authorization: authToken.header`, not the raw token object.
+- Portal token acquisition must use
+  `Az.getAuthorizationToken({ resourceName: "cnxplugins" })`.
+- API requests must pass `Authorization: authToken.header`, not the raw token
+  object.
 - Stable routes are under `/plugins`.
 - Preview routes are under `/preview-plugins`.
-- Regional hosts include `https://cnxpluginsweb.canary.production.portalrp.azure.com` and `https://cnxpluginsweb.production.portalrp.azure.com`.
-- Key request headers for correlation include `x-ms-correlation-id`, `x-ms-conversation-id`, `x-ms-client-request-id`, `x-ms-client-session-id`, `x-ms-plugin`, `x-ms-mode`, and `x-ms-agent`.
+- Regional hosts include
+  `https://cnxpluginsweb.canary.production.portalrp.azure.com` and
+  `https://cnxpluginsweb.production.portalrp.azure.com`.
+- Correlate with `x-ms-correlation-id`, `x-ms-conversation-id`,
+  `x-ms-client-request-id`, `x-ms-client-session-id`, `x-ms-plugin`,
+  `x-ms-mode`, and `x-ms-agent` when present.
 
-## Copilot Debug URLs And Flags
+## Bicep Plugin Contract
 
-Use the local cloned PortalFx docs before relying on memory. Relevant docs are under `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/`.
+Use the Bicep preview route as the deployment test target.
 
-Key files:
+- Deploy endpoint:
+  `POST https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/deploy`.
+- Status endpoint:
+  `GET https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/subscriptions/{subscription_id}/deployments/{deployment_name}`.
+- Auth type: `EntraOnBehalfOf`.
+- Auth scope: `1dce83cb-ee48-4e43-bd08-a23fd936428e/.default`.
+- Required request fields: `bicep_config`, `subscription_id`, `location`,
+  `async_response`, and `messageLocale`.
+- `bicep_config.parts[0].data.files` must contain objects with `file_name` and
+  `content`.
+- Without confirmation, the endpoint returns
+  `{"Data":{"Type":"Confirmation","Message":"..."}}` and must not perform side
+  effects.
+- With `confirmation: true` or `confirmation: "true"`, the endpoint starts
+  deployment and returns `202` with `Location` and `Retry-After`.
+- Current source sets `Retry-After: 10`, not `30`.
+- Current canary test code pins polling `Location` to
+  `https://cnxpluginsweb.canary.production.portalrp.azure.com`.
+- The mounted preview route is `/preview-plugins/bicep/...`; local isolated unit
+  tests mount the same router at root and therefore assert `/bicep/...` paths.
+  Prefer source-mounted behavior for real-client manifests.
 
-- `plugin-e2e-setup.md` — end-to-end Copilot/plugin debug URL and sideload setup.
-- `agents-sideloading.md` — debug mode behavior and what to inspect.
-- `scoped-conversations-copilot.md` — competency filter rules for scoped agent conversations.
-- `direct-agent-invocation.md` — constraints for direct agent execution experiments.
-- `http-confirmation.md` — HTTP confirmation response and retry schema.
-- `develop-httpplugin.md` — HTTP plugin headers, auth, data boundary, supported interactions.
+Minimal request body shape:
 
-Doc-backed debug flags for Copilot plugin E2E testing:
-
-```text
-https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&exp.pluginstoredeclarativehttpplugins=true&exp.AzCopilot_ArgQueryGenerator_plugin=15.0&exp.AzCopilot_ArgQueryRunner_plugin=15.0&exp.azurepluginstore=true&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&Microsoft_Azure_Copilot_clientoptimizations=false&feature.customportal=false&feature.canmodifyextensions=true#home
+```json
+{
+	"bicep_config": {
+		"artifactId": "bicep-op_test",
+		"name": "Bicep for Infrastructure plan",
+		"parts": [
+			{
+				"kind": "data",
+				"data": {
+					"files": [
+						{
+							"file_name": "main.bicep",
+							"content": "resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {}"
+						}
+					]
+				}
+			}
+		],
+		"metadata": { "type": "bicep" }
+	},
+	"subscription_id": "00000000-0000-0000-0000-000000000000",
+	"location": "eastus",
+	"async_response": true,
+	"messageLocale": "en-US"
+}
 ```
 
-In practice, use this fuller debug URL when validating sideloaded agents/plugins and DevUI visibility:
-
-```text
-https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&feature.azurepluginstore=true&exp.azurepluginstore=true&feature.inlinecopilot=true&feature.devui=true&feature.canarytraffic=true&exp.useRegionalEndpoint=true&exp.pluginstoredeclarativehttpplugins=true&exp.AzCopilot_ArgQueryGenerator_plugin=15.0&exp.AzCopilot_ArgQueryRunner_plugin=15.0&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&Microsoft_Azure_Copilot_clientoptimizations=false&feature.customportal=false&feature.canmodifyextensions=true#home
-```
-
-When sideloading a local CopilotExtension, append the documented test extension hash:
-
-```text
-#home?testExtensions=%7B%22Microsoft_Azure_Copilot%22:%22https://localhost:1339/copilotextension%22%7D
-```
-
-For the AXEAgents health/debug client in this workspace, use the documented ContainerService flight URL:
-
-```text
-https://ms.portal.azure.com/?feature.canmodifystamps=true&Microsoft_Azure_ContainerService=flight13#view/Microsoft_Azure_ContainerService/CnxPluginsClient.ReactView
-```
-
-`feature.unifiedcopilotdebug=true` makes Copilot show detailed debug information, including selected agent/plugin, execution details, handler responses, arguments/parameters, and technical identifiers. Use it when validating that the orchestrator selected and invoked the expected plugin.
-
-Additional doc-backed flags can be necessary depending on which Copilot debug surface is being tested:
-
-- `feature.azurepluginstore=true` — documented sideload flag for plugin/agent registration in the Copilot sidecar.
-- `feature.inlinecopilot=true` — documented for the Inline Copilot testing blade.
-- `feature.devui=true` and `feature.canarytraffic=true` — documented for DevUI scenarios.
-- `exp.useRegionalEndpoint=true` — documented RC validation flag for plugin store scenarios.
-
-If the “Test your plugin or agent” status bar is visible but clicking it does nothing, verify both `feature.azurepluginstore=true` and `feature.unifiedcopilotdebug=true` are present. In this session, adding Agent mode and the broader debug flags made the sidecar visible and Agent mode toggle work, but did not fix the inert registration banner; the next fallback is to locate the underlying registration API/client state or test through chat with network capture enabled.
-
-For agent/plugin execution testing, enable Agent mode in the Copilot sidecar before submitting the prompt. In the current Copilot UI the button is at the bottom composer bar, has `aria-label="Agent"`, `data-testid="copilot-toggle-agentmode"`, and changes from `aria-pressed="false"` to `aria-pressed="true"` when enabled. Agent mode is required for agent-backed sideloaded plugin testing, but enabling it does not by itself open the sideload registration UI.
-
-Observed sequence for DevUI/debug visibility:
-
-1. Navigate to the full RC debug URL above.
-2. Open the Copilot sidecar from the top-bar Copilot button.
-3. Enable Agent mode from the bottom composer bar.
-4. Confirm `aria-pressed="true"` on the `data-testid="copilot-toggle-agentmode"` button.
-5. The DevUI link/debug affordance may appear only after Agent mode is enabled.
-
-## SideLoad Blade Workflow
-
-Use the SideLoad blade rather than only the Copilot banner when validating sideloaded agents/plugins. The banner can be inert even when the blade and APIs work.
-
-Open the SideLoad blade from Portal with:
-
-```js
-az.openBlade({ extensionName: "Microsoft_Azure_Copilot", bladeName: "SideLoad.ReactView" })
-```
-
-Expected Portal hash:
-
-```text
-#view/Microsoft_Azure_Copilot/SideLoad.ReactView
-```
-
-Observed iframe roles in RC Portal direct CDP sessions:
-
-- `sandbox-1.reactblade-rc.portal.azure.net` commonly hosts `CopilotFluentAI.ReactView`.
-- `sandbox-2.reactblade-rc.portal.azure.net` commonly hosts `SideLoad.ReactView`.
-- The target IDs change per session, so always inspect `/json/list` and match by page text/title, not by a stored target ID.
-
-SideLoad registration checks:
-
-- Paste complete JSON with both `AiPlugins` and `AiAgents`; do not paste only the plugin manifest.
-- Read Monaco markers after paste. A disabled Register button with Monaco markers means schema validation failed.
-- After a successful Register click, the Register/Test Plugins buttons may become disabled. Treat that as a likely post-submit state, but verify by running a scoped conversation and watching network/DevUI.
-- The editor may show “Made N formatting edits...” after accepted formatting; this is not a failure.
-- Do not assume model names from docs. Use the exact model enum accepted by the current SideLoad validator.
-
-## Scoped Conversations To Force Tool Selection
-
-Use scoped conversations when normal Agent mode chooses the wrong agent/plugin. This is the preferred way to validate a specific sideloaded deployment plugin because it filters Plugin Store tools before orchestration.
-
-Docs: `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/scoped-conversations-copilot.md` and `direct-agent-invocation.md`.
-
-Rules:
-
-- Scoped conversations are available only in Advanced/Agent mode.
-- The competency filter is `<Client>Advanced:<CompetencyId>`.
-- For RC Portal, use `AzurePortalRCAdvanced:<CompetencyId>`.
-- Add that exact string to `allowedClients` on every sideloaded agent/plugin that should participate.
-- Tools without the exact scoped client string are excluded from that scoped conversation.
-- The SideLoad blade includes a `Scoped Conversations` tab for testing with a prompt and competency.
-- The scoped nudge should start a new `mode: "agent"` conversation through `https://copilotweb.canary.production.portalrp.azure.com/api/conversations/start?api-version=2025-08-15` with body like `{"conversationType":"Chat","mode":"agent","competency":{"id":"<CompetencyId>","displayName":""}}`.
-- A successful scoped conversation start only proves the nudge/scope was accepted. It does not prove the HTTP plugin ran; confirm with DevUI and AXEAgents service/network traces.
-
-Example scoped client string for a deployment-only Bicep test:
-
-```text
-AzurePortalRCAdvanced:BicepDeploymentDebug
-```
-
-For direct agent execution experiments, the scoped conversation must return exactly one agent and zero plugins, and the agent reasoning description must be empty. For normal agent-plus-plugin testing, include both the agent and the plugin under the same competency-scoped `allowedClients` value so orchestration can select the intended deployment plugin without unrelated tools.
-
-For agent-plus-plugin SideLoad testing:
-
-- The plugin `allowedClients` should include `Agent:<AgentName>` so the agent can use that plugin.
-- The plugin should also include the exact scoped client string, for example `AzurePortalRCAdvanced:BicepDeploymentDebug`, when it should be visible in scoped advanced mode.
-- The agent `allowedClients` should include the exact scoped client string.
-- Set `isLKG: true` for sideloaded scoped testing unless intentionally validating flight/experiment behavior.
-- Keep function names unique and aligned between `functions[*].name` and `runtimes[*].run_for_functions`.
-- Keep the agent `runtimes[*].run_for_functions` aligned to the agent function name.
-
-Prompting tips for side-effecting deployment plugins:
-
-- Make the prompt deployment-only: provide already-valid files and tell Copilot not to generate or rewrite infrastructure code.
-- Ask for the plugin confirmation flow first if the endpoint requires confirmation.
-- If Copilot responds with only reasoning and `0 actions completed`, the turn may not have selected/executed the plugin yet even though the scoped conversation started correctly.
-- If the user can see the plugin was called in DevUI/service logs, trust the real client evidence over a too-narrow browser network filter.
-
-Sideload schema validator note: the model enum can differ from public model names and older docs. In this session, `gpt-4o` and `gpt4o` were rejected and the editor marker said the valid value was `gpt-5-mini`. Always read Monaco markers after pasting schema and use the exact model value accepted by the current sidecar validator.
-
-Raw CDP check/toggle pattern for the Copilot iframe target:
-
-```js
-(() => {
-  const button = Array.from(document.querySelectorAll("button"))
-    .find((el) => el.getAttribute("aria-label") === "Agent");
-  if (!button) return { found: false };
-  if (button.getAttribute("aria-pressed") !== "true") button.click();
-  return {
-    found: true,
-    enabled: button.getAttribute("aria-pressed") === "true",
-    testId: button.getAttribute("data-testid"),
-  };
-})()
-```
-
-## Debugging Workflow
-
-1. Identify the route and client surface.
-2. Read the local endpoint handler, request/response model, tests, and relevant docs before opening the browser.
-3. Build an expected contract checklist: method, URL, request body shape, auth audience/resource, response shape, status code, headers, and polling behavior.
-4. Start a Playwriter session and attach to the real Copilot/Portal tab.
-5. Observe the page first: print URL and run `snapshot({ page })`.
-6. Add browser-side network capture for the target host or route before reproducing. For Portal Copilot, capture all relevant page, iframe, and worker targets, not only the visible iframe.
-7. Reproduce with one user-visible action at a time.
-8. After each action, observe URL, snapshot, console errors, and captured requests/responses.
-9. Correlate browser request IDs with service logs using `x-ms-correlation-id`, `x-ms-conversation-id`, and deployment/job IDs in response bodies or `Location` headers.
-10. Fix the smallest correct issue in code or configuration, then verify with unit tests and the real client.
-
-## Edge And WSL Direct CDP Setup
-
-When the agent shell runs in WSL/Linux and the user browser is Microsoft Edge on Windows, extension mode may connect but direct CDP auto-discovery may fail. For Azure Portal Copilot, direct CDP is required for reliable automation because the chat surface runs in a cross-origin sandbox iframe.
-
-Use this setup when the normal `playwriter session new --direct` command cannot discover Edge.
-
-### 1. Launch Edge With A Debug Port
-
-Run one of these from Windows PowerShell. `msedge.exe` may not be on `PATH`, so prefer the full path.
-
-```powershell
-& "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
-```
-
-Fallback path:
-
-```powershell
-& "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
-```
-
-Open Azure Portal/Copilot in that Edge window and sign in.
-
-### 2. Verify Edge From Windows
-
-Run this from Windows PowerShell:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:9222/json/version
-```
-
-Expected result includes a `webSocketDebuggerUrl`, usually like:
-
-```text
-ws://127.0.0.1:9222/devtools/browser/<browser-id>
-```
-
-### 3. Expose The Debug Port To WSL
-
-If WSL cannot reach `127.0.0.1:9222` or the Windows host gateway, add a Windows port proxy. Run Windows PowerShell as Administrator:
-
-```powershell
-netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=9223 connectaddress=127.0.0.1 connectport=9222
-New-NetFirewallRule -DisplayName "Edge CDP from WSL" -Direction Inbound -LocalPort 9223 -Protocol TCP -Action Allow
-```
-
-From WSL, the Windows host gateway is usually the nameserver/default gateway:
-
-```bash
-ip route
-cat /etc/resolv.conf
-```
-
-Verify the proxied endpoint from WSL:
-
-```bash
-curl http://$(ip route | awk '/default/ {print $3}'):9223/json/version
-curl http://$(ip route | awk '/default/ {print $3}'):9223/json/list
-```
-
-The returned `webSocketDebuggerUrl` should contain the WSL-reachable host and port, for example:
-
-```text
-ws://172.28.240.1:9223/devtools/browser/<browser-id>
-```
-
-### 4. Start Playwriter Direct Mode
-
-Use the exact `webSocketDebuggerUrl` returned by the WSL `curl` command:
-
-```bash
-playwriter session new --direct ws://172.28.240.1:9223/devtools/browser/<browser-id>
-```
-
-Then list pages:
-
-```bash
-playwriter -s <session> -e 'console.log(JSON.stringify(browser.contexts().map((c, ci) => ({ context: ci, pages: c.pages().map((p, pi) => ({ page: pi, url: p.url() })) })), null, 2))'
-```
-
-### Troubleshooting
-
-- If `msedge.exe` is not recognized, use the full path shown above.
-- If Windows `Invoke-RestMethod http://127.0.0.1:9222/json/version` fails, Edge was not launched with remote debugging or another Edge process reused the profile. Close the debug Edge window and relaunch with a temporary `--user-data-dir`.
-- If Windows can reach `127.0.0.1:9222` but WSL times out, use the `netsh interface portproxy` and firewall rule on port `9223`.
-- If Playwriter direct connects but later reports `ECONNREFUSED 127.0.0.1:9222`, do not use the Windows-local WebSocket URL. Use the WSL-reachable WebSocket URL returned by `curl http://<gateway>:9223/json/version`.
-- `playwriter browser list` is useful for extension-connected browsers, but direct CDP in WSL/Windows scenarios is usually more reliable with an explicit `ws://.../devtools/browser/...` endpoint.
-
-Security note: a remote debugging port can expose browser control. Use a temporary Edge profile, bind only as broadly as necessary, keep it on trusted networks, and close the debug Edge window when finished. Remove the proxy/rule when no longer needed if desired.
-
-## Playwriter Network Capture Pattern
-
-Install listeners before triggering the Copilot action:
-
-```js
-state.requests = [];
-state.responses = [];
-state.page.on("request", (req) => {
-  const url = req.url();
-  if (url.includes("cnxpluginsweb") || url.includes("/plugins/") || url.includes("/preview-plugins/")) {
-    state.requests.push({
-      url,
-      method: req.method(),
-      headers: req.headers(),
-      postData: req.postData(),
-    });
-  }
-});
-state.page.on("response", async (res) => {
-  const url = res.url();
-  if (url.includes("cnxpluginsweb") || url.includes("/plugins/") || url.includes("/preview-plugins/")) {
-    let body = "";
-    try { body = await res.text(); } catch {}
-    state.responses.push({
-      url,
-      status: res.status(),
-      headers: res.headers(),
-      body: body.slice(0, 8000),
-    });
-  }
-});
-```
-
-Summarize after reproduction:
-
-```js
-console.log(JSON.stringify({
-  requests: state.requests.map((r) => ({
-    method: r.method,
-    url: r.url,
-    correlationId: r.headers["x-ms-correlation-id"],
-    conversationId: r.headers["x-ms-conversation-id"],
-    plugin: r.headers["x-ms-plugin"],
-    mode: r.headers["x-ms-mode"],
-    agent: r.headers["x-ms-agent"],
-    hasAuthorization: Boolean(r.headers.authorization),
-    postData: r.postData,
-  })),
-  responses: state.responses.map((r) => ({
-    status: r.status,
-    url: r.url,
-    location: r.headers.location,
-    retryAfter: r.headers["retry-after"],
-    body: r.body,
-  })),
-}, null, 2));
-```
-
-Always clean up listeners when finished:
-
-```js
-state.page.removeAllListeners("request");
-state.page.removeAllListeners("response");
-```
-
-## Direct CDP Network Capture Pattern
-
-For Azure Portal Copilot, important requests often originate from workers under the top-level Portal origin rather than the visible Copilot iframe. A narrow filter on only `cnxpluginsweb` or only the current iframe can miss the successful path.
-
-Checklist:
-
-- Enable `Network.enable` on the top-level Portal page, the Copilot iframe, the SideLoad iframe, and Portal blob workers returned by `http://<gateway>:9223/json/list`.
-- Filter after capture for `copilotweb`, `directline`, `cnxpluginsweb`, `/plugins/`, `/preview-plugins/`, `conversation`, `chat`, `orchestr`, and `plugin`.
-- Include request bodies for `copilotweb.../api/conversations/start` and `directline.../activities`; these show whether scoped nudge and user turn payloads were sent.
-- Include `x-ms-client-request-id`, `x-ms-correlation-request-id`, `x-ms-request-id`, `mise-correlation-id`, DirectLine conversation ID, and any plugin-specific correlation headers.
-- Do not print full bearer tokens in summaries or skill notes. Redact `Authorization` values.
+## Network Capture
+
+For Portal Copilot, capture broad browser-visible traffic. Plugin execution may
+happen server-side and not appear as a browser request to `cnxpluginsweb`.
+
+Track at least:
+
+- `copilotweb`
+- `directline`
+- `cnxpluginsweb`
+- `/plugins/`
+- `/preview-plugins/`
+- `conversation`
+- `activities`
+- `orchestr`
+- `plugin`
 
 Important browser-visible calls:
 
-- Scoped conversation start: `POST https://copilotweb.canary.production.portalrp.azure.com/api/conversations/start?api-version=2025-08-15`.
-- Chat history/status polling: `GET https://copilotweb.canary.production.portalrp.azure.com/api/chats?api-version=2025-08-15`.
-- User turn delivery: `POST https://directline.botframework.com/v3/directline/conversations/<id>/activities`.
-- Plugin execution may not appear as a browser `cnxpluginsweb` request because HTTP plugins are called server-side by orchestrator. Validate with Copilot DevUI and AXEAgents/service logs when browser traffic only shows DirectLine/CopilotWeb.
+- Scoped conversation start:
+  `POST https://copilotweb.canary.production.portalrp.azure.com/api/conversations/start?api-version=2025-08-15`.
+- Chat history/status polling:
+  `GET https://copilotweb.canary.production.portalrp.azure.com/api/chats?api-version=2025-08-15`.
+- User turn delivery:
+  `POST https://directline.botframework.com/v3/directline/conversations/<id>/activities`.
 
-## Copilot HTTP Confirmation Checks
+Summaries must include status code, URL, request body when useful, `Location`,
+`Retry-After`, conversation IDs, and correlation IDs. Redact tokens.
 
-When debugging confirmation flows, verify both the pre-confirmation and post-confirmation calls.
+Do not print raw `copilotweb /api/conversations/start` or DirectLine response
+bodies. They contain DirectLine bearer tokens. Parse them in-memory, print only
+sanitized fields such as conversation ID, mode, competency, chat state, activity
+IDs, activity text, attachment names/content types, and token presence booleans.
 
-- The first call must not perform side effects.
-- The response must use the exact envelope expected by the orchestrator.
-- In this repo's Bicep preview plugin, the envelope is `{"Data":{"Type":"Confirmation","Message":"..."}}`; casing is intentional.
-- The confirmed retry may send `confirmation: true` or the string form `"true"`; tests should cover both if the spec uses a string example.
-- Validate user-input errors before returning a confirmation prompt when the request would fail anyway.
+When summarizing DirectLine activities, never print attachment content for
+`azurecopilot/authorization`, DirectLine tokens, or any string matching
+`Bearer ` or JWT-looking values. For attachments, prefer
+`{ name, contentType, contentKeys }` only.
 
-## Polling And LRO Checks
+Avoid `await page.waitForTimeout(10000)` inside a default Playwriter execute
+call. It can hit the command execution limit. Use shorter polling loops or
+increase the Bash tool timeout if a long wait is necessary.
 
-For async operations, verify the full polling chain.
+Do not use top-page `fetch()` to force `copilotweb` polling from
+`rc.portal.azure.com`; it can fail with `TypeError: Failed to fetch`. Observe
+natural client polling, trigger UI actions, or use captured
+DirectLine/CopilotWeb calls instead.
 
-- Initial accepted response should be `202` with `Location` and `Retry-After`.
-- `Location` should be absolute if the real Copilot client requires absolute URLs.
-- `Location` must point to the same environment as the initial request unless cross-environment routing is intentionally tested.
-- Poll responses should return `202` with `Location` and `Retry-After` while non-terminal.
-- Terminal response should include the Copilot UI payload expected by the client.
-- Preserve a stable deployment/job ID across initial response, polls, service logs, and downstream ARM calls.
+Response-body capture note:
 
-## Common Failure Modes
+- `Network.getResponseBody` can retrieve `copilotweb` and DirectLine bodies from
+  the target that observed the response.
+- Always redact DirectLine `token`, `streamUrl`, bearer tokens, and JWT-looking
+  strings before printing.
+- A typical successful scoped conversation start body includes DirectLine
+  endpoint/token metadata, `id` matching the DirectLine conversation ID,
+  `type: "Chat"`, and `state: "New"`.
 
-- `401`: extension not pre-authorized, wrong `resourceName`, wrong token audience, or `Authorization` header omitted.
-- `403`: token valid but principal lacks ARM/resource permission.
-- Browser CORS/trusted-domain failure: extension config is missing the target host under trusted domains.
-- Confirmation card missing: response envelope casing or structure does not match the Copilot spec.
-- Polling stops early: non-terminal state returned without `202`, `Location`, or `Retry-After`.
-- Polling hits the wrong environment: `Location` host differs from the host being tested.
-- UI shows generic failure: service returned a body shape Copilot cannot render or omitted the expected `data.status`/artifacts shape.
-- Synthetic tests pass but real client fails: missing real headers, token audience mismatch, or client-specific confirmation/polling behavior.
-- Scoped conversation starts but plugin does not run: competency accepted, but tool was not selected, agent/plugin was absent from orchestration, agent did not call the function, or prompt was refused by safety/policy before execution.
-- Browser trace lacks `cnxpluginsweb`: not necessarily failure. HTTP plugin calls can be server-side from orchestrator; use DevUI and service logs for final confirmation.
-- SideLoad prompts file 404 such as `generated/Loc/en/agents/<Competency>_prompts.json`: observed during scoped SideLoad testing and not by itself a blocker.
+Prompting notes from Bicep scoped testing:
 
-## AXEAgents Bicep Route Notes
+- Tool-forcing prompts with raw JSON arguments or embedded Bicep resource
+  declarations can be refused before plugin execution, even when prompt
+  telemetry says `notSafe: false`.
+- A concise natural-language prompt with a real selected subscription ID and
+  simple file content was more likely to select
+  `deploy_bicep_debug_configuration` and show Copilot agent activity.
+- Avoid fake subscription IDs for final real-client validation; they can bias
+  the model/orchestrator toward refusal or error paths before the plugin
+  confirmation card renders.
+- Avoid placeholder-only Bicep comments for confirmation-card validation if you
+  need the endpoint to accept the eventual confirmed retry; they may still be
+  enough for tool selection but can result in a function error instead of a
+  rendered confirmation card.
+- If Copilot activity says `Selected deploy_bicep_debug_configuration` and
+  `1 action completed`, but the final text says the prior function call returned
+  an error and no card rendered, registration and tool selection likely worked;
+  inspect DevUI/service logs for the plugin error details.
+- The best observed prompt for tool selection was concise and natural-language,
+  with a real selected subscription ID:
+  `Deploy my provided Bicep file to subscription <id> in eastus. File main.bicep contains: // confirmation-only placeholder. Show the deployment confirmation first.`
+- A prompt using `metadata purpose = 'confirmation only'` was refused in one
+  run. Avoid unusual or invalid Bicep snippets when the goal is to validate
+  confirmation-card rendering.
+- A prompt using `targetScope = 'subscription'` selected the tool/agent but
+  still did not render the confirmation card in the observed run.
+- Embedding full JSON tool arguments tends to be less reliable than concise
+  natural language for the current real client.
 
-The Bicep preview route is a useful reference implementation for this workspace.
+## Validation Checklist
 
-- Deploy endpoint: `POST /preview-plugins/bicep/deploy`.
-- Status endpoint: `GET /preview-plugins/bicep/subscriptions/{subscription_id}/deployments/{deployment_name}` when mounted through the preview router.
-- The handler validates filenames before confirmation.
-- Without confirmation it returns a Copilot confirmation envelope and skips blob, compile, and ARM side effects.
-- With confirmation it uploads if blob storage is configured, compiles Bicep, creates an ARM deployment, and returns `202` with polling headers.
-- Current code pins polling `Location` to canary for real-client testing; remove or make environment-driven before production rollout.
+- Unit tests for the route and model behavior pass.
+- Portal loaded from the debug URL in direct CDP mode.
+- Agent mode is enabled before testing agent-backed plugins.
+- SideLoad registration succeeds with both agent and plugin present.
+- Scoped conversation starts with the intended competency.
+- Copilot shows the confirmation card for the first Bicep deploy call.
+- Confirmed retry returns `202`, `Location`, and `Retry-After`.
+- Polling continues until terminal UI output renders.
+- DevUI and/or service logs confirm the expected agent/plugin/function ran.
+- Correlation, conversation, and deployment IDs line up across browser traces
+  and service logs.
 
-Useful Bicep SideLoad manifest shape for deployment-only testing:
+## Common Current Failures
 
-- Plugin endpoint: `https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/deploy`.
-- Auth type: `EntraOnBehalfOf`.
-- Auth scope: `1dce83cb-ee48-4e43-bd08-a23fd936428e/.default`.
-- Function parameters should include `bicep_config`, `subscription_id`, `location`, `async_response`, and `messageLocale`.
-- Lua payload script can convert a prompt-provided `bicep_files` array into `bicep_config.parts[0].data.files` before calling the endpoint.
-- The initial expected endpoint response is the confirmation envelope unless `confirmation` is already true.
+- `Recv failure: Connection reset by peer`: WSL proxy exists, but Edge is not
+  listening on Windows `127.0.0.1:9222`.
+- `ECONNREFUSED 127.0.0.1:9222`: Playwriter used the Windows-local WebSocket
+  URL. Use the WSL-reachable `ws://<gateway>:9223/...` URL.
+- Portal lands on `/auth/login/`: user must finish sign-in in the debug Edge
+  window.
+- Disabled SideLoad Register button: read Monaco markers; fix schema/model enum.
+- Scoped conversation starts but plugin does not run: allowedClients mismatch,
+  agent did not select the function, prompt was too broad, or policy/safety
+  blocked side effects.
+- No browser `cnxpluginsweb` request: not necessarily failure; HTTP plugins can
+  be invoked server-side by orchestrator.
+- Bicep source embedded directly in the scoped kickoff prompt can trigger
+  `ContentSafetyClassificationError`. A safer prompt can start the scoped agent
+  conversation, but if it omits file content the agent may ask for the file
+  instead of calling the plugin. Provide required tool arguments in a
+  structured, low-risk form and verify with DirectLine/DevUI whether the
+  function was called.
+- Direct hash navigation to `#view/Microsoft_Azure_Copilot/SideLoad.ReactView`
+  can leave Portal in an `undefined` blade shell. Use Copilot Agent mode plus
+  `Link to DevUI`, then find the SideLoad sandbox iframe by CDP target text.
+- The `Test your plugin or agent` banner can remain inert. Do not block on it if
+  `Link to DevUI` and SideLoad iframe registration work.
+- Scoped conversation start can succeed while DirectLine
+  `azurecopilot/clientcontext` still reports `mode: "chat"` and
+  `competency: null`; trust the `copilotweb /api/conversations/start` body for
+  scoped startup and use activity/DevUI/service evidence for plugin execution.
+- Copilot may select the Bicep deployment function but render a generic final
+  failure instead of a confirmation card. Treat that as a plugin
+  execution/debugging problem, not a SideLoad registration failure, and
+  correlate through DevUI/service logs.
+- Multiple live SideLoad iframes can make the run look correct while it is not:
+  one iframe may contain the registered manifest, another may contain the scoped
+  form, and another may contain stale defaults. Always perform Register and
+  Submit from the same verified SideLoad target.
+- If Monaco content starts with the scoped prompt followed by JSON, the prompt
+  was accidentally written into the manifest editor. Discard that target and
+  start fresh.
+- If `Register` is disabled before a new manifest registration click, the
+  current manifest was not registered in that target. Start fresh or use a new
+  version/name in a fresh SideLoad instance.
+- If Copilot says `Sorry, I can't help with that` with no activity details,
+  likely causes are stale/missing scoped registration, prompt refusal, or wrong
+  scoped competency. Verify the CopilotWeb start body, the SideLoad target's
+  registered manifest, and Copilot activity.
+- If Copilot shows `1 action completed` and activity names the Bicep deployment
+  function/agent but no confirmation card appears, the scoped registration and
+  tool selection path worked. The next investigation is plugin invocation
+  details in DevUI/service logs, especially Lua payload shape and endpoint
+  response/error.
 
-## Minimum Verification
+## Local Docs
 
-- Run focused unit tests for the plugin route and model behavior.
-- Reproduce once through the real Copilot/Portal client with Playwriter network capture enabled.
-- Capture status code, `Location`, `Retry-After`, correlation ID, conversation ID, and the rendered Copilot UI result.
-- If logs are available, verify the same correlation/deployment IDs appear in service traces.
+Use local PortalFx docs only when the current workflow needs source
+confirmation:
+
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/plugin-e2e-setup.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/agents-sideloading.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/scoped-conversations-copilot.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/direct-agent-invocation.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/http-confirmation.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/develop-httpplugin.md`
+- `/home/ariaamini/AzureUX-PortalFx/docs-internal/product/copilot/long-running-operations-contract.md`
+
+## Cleanup
+
+Close the temporary debug Edge window when finished. If desired, remove the WSL
+proxy and firewall rule from an elevated Windows PowerShell:
+
+```powershell
+netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=9223
+Remove-NetFirewallRule -DisplayName "Edge CDP from WSL"
+```
