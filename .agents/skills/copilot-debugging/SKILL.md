@@ -69,8 +69,12 @@ HTTP plugin flights enabled:
 https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&feature.azurepluginstore=true&exp.azurepluginstore=true&feature.inlinecopilot=true&feature.devui=true&feature.canarytraffic=true&exp.useRegionalEndpoint=true&exp.pluginstoredeclarativehttpplugins=true&exp.AzCopilot_ArgQueryGenerator_plugin=15.0&exp.AzCopilot_ArgQueryRunner_plugin=15.0&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&Microsoft_Azure_Copilot_clientoptimizations=false&feature.customportal=false&feature.canmodifyextensions=true#view/Microsoft_Azure_Copilot/SideLoad.ReactView
 ```
 
-If Portal redirects to `/auth/login/`, stop and ask the user to finish sign-in
-in the debug Edge window. Then navigate to the same URL again.
+If Portal redirects to `/auth/login/`, wait 10-20 seconds and retry the Portal
+URL once in the same authenticated page/profile before asking the user to sign
+in. Fresh debug profiles and new tabs can briefly show `/auth/login/` even when
+the user already completed sign-in. If the retry still lands on `/auth/login/`,
+ask the user to finish sign-in in the debug Edge window, then navigate to the
+same URL again.
 
 ## Working E2E Flow
 
@@ -82,7 +86,9 @@ in the debug Edge window. Then navigate to the same URL again.
 5. If `Register` is already disabled before a new manifest registration, reload
    Portal and use a fresh SideLoad iframe.
 6. Paste the full manifest into Monaco, wait for markers, and click `Register`
-   only when markers are empty and `Register` is enabled.
+   only when markers are empty and `Register` is enabled. Preserve the manifest
+   exactly; do not inline it into a single-quoted shell command because the Lua
+   script contains single quotes.
 7. Switch to `Scoped Conversations` in that same iframe.
 8. Fill only the upper API form:
    `Competency = BicepDeploymentDebugV3` and the working prompt below.
@@ -106,7 +112,15 @@ Use the adjacent file:
 bicep-deployment-debug-v3.manifest.json
 ```
 
-Paste that entire JSON object into the SideLoad Monaco editor.
+Paste that entire JSON object into the SideLoad Monaco editor. Prefer reading
+the file from Node or using a quoted heredoc and setting Monaco directly. Do not
+hand-build or shell-embed the JSON in a `playwriter -e '...'` one-liner; shell
+quoting can strip Lua single quotes and produce a registered plugin that routes
+but fails at tool execution.
+
+After pasting, compare Monaco's current value to the file when possible. The Lua
+script must still contain strings such as `'copilot-bicep-debug'`,
+`'subscription'`, and `'eastus'`.
 
 ## Working Prompt
 
@@ -208,6 +222,48 @@ socket.onopen = async () => {
 NODE
 ```
 
+Paste manifest into Monaco via direct CDP without shell-quoting damage:
+
+```bash
+node <<'NODE'
+const fs = require('node:fs')
+const manifest = fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug-v3.manifest.json', 'utf8')
+const ws = 'ws://<gateway>:9223/devtools/page/<sideload-target-id>'
+const socket = new WebSocket(ws)
+let id = 0
+const pending = new Map()
+socket.onmessage = (event) => {
+  const msg = JSON.parse(event.data)
+  if (msg.id && pending.has(msg.id)) {
+    pending.get(msg.id)(msg)
+    pending.delete(msg.id)
+  }
+}
+function send(method, params = {}) {
+  return new Promise((resolve) => {
+    const mid = ++id
+    pending.set(mid, resolve)
+    socket.send(JSON.stringify({ id: mid, method, params }))
+  })
+}
+socket.onopen = async () => {
+  await send('Runtime.enable')
+  await send('Runtime.evaluate', {
+    awaitPromise: true,
+    expression: `(() => {
+      const model = globalThis.monaco?.editor?.getModels?.()[0]
+      if (!model) throw new Error('Monaco model not found')
+      model.setValue(${JSON.stringify(manifest)})
+      const markers = globalThis.monaco.editor.getModelMarkers({ resource: model.uri })
+      return JSON.stringify({ equal: model.getValue() === ${JSON.stringify(manifest)}, markers })
+    })()`,
+    returnByValue: true,
+  }).then((res) => console.log(res.result.result.value))
+  socket.close()
+}
+NODE
+```
+
 ## Network And Evidence
 
 Capture broad browser-visible traffic, but remember HTTP plugin execution can be
@@ -233,6 +289,10 @@ Useful evidence for success:
 - Activity names `Deploy built-in Bicep debug sample and request confirmation`.
 - Confirmation card renders before side effects.
 - Approved retry shows compile, ARM submit, accepted, and terminal success.
+- For smoke validation, it is useful evidence if the sidecar shows the exact
+  prompt, `Agent has been registered`, `Plugin has been registered`, and a Bicep
+  deployment activity/tool handoff. Deployment can still fail later because of
+  RBAC, quota, ARM validation, or a corrupted pasted manifest.
 
 Do not print raw `copilotweb /api/conversations/start` or DirectLine response
 bodies. They can contain DirectLine bearer tokens. Summaries should include
@@ -270,7 +330,12 @@ correlation IDs, `Location`, and `Retry-After` when available.
   Copilot, reload if needed, and submit from the registered SideLoad iframe.
 - No browser `cnxpluginsweb` request: not necessarily failure. Correlate with
   Copilot activity, DevUI/service logs, and final UI output.
-- `/auth/login/`: user must finish sign-in in the debug Edge window.
+- `/auth/login/`: wait briefly and retry the Portal URL in the same page/profile
+  once. Only ask the user to sign in if the retry still lands on login.
+- Bicep agent is hit but tool execution fails or falls back to conversational
+  confirmation: verify the registered Monaco content exactly matches the
+  manifest file. If Lua quotes are missing, the manifest was corrupted during
+  paste; reload SideLoad and paste via direct CDP/file or a quoted heredoc.
 - `ECONNREFUSED 127.0.0.1:9222`: Playwriter used the Windows-local WebSocket
   URL. Use `ws://<wsl-gateway>:9223/...`.
 
