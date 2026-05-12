@@ -147,6 +147,167 @@ After pasting, compare Monaco's current value to the file when possible. The Lua
 script must still contain strings such as `'copilot-bicep-debug'`,
 `'subscription'`, and `'eastus'`.
 
+## Local Bicep API With Cloudflared
+
+Use this when testing local bicep API changes with the real Copilot client.
+Copilot cannot call `localhost`, so expose the local FastAPI app through a
+temporary Cloudflare quick tunnel and register a manifest that points at that
+public URL.
+
+If importing the full app fails because local MISE native initialization is not
+available, create a narrow debug app that mounts only the real bicep router and
+stubs `src.portalsubstrate.auth.entra_auth_middleware.AUTH_CONFIG` before
+importing the router. Keep `ENVIRONMENT=development` so `ArmClient` forwards the
+caller bearer token directly instead of doing OBO locally.
+
+Minimal debug app shape:
+
+```python
+import sys
+import types
+
+from fastapi import FastAPI
+
+auth_module = types.ModuleType("src.portalsubstrate.auth.entra_auth_middleware")
+auth_module.AUTH_CONFIG = {
+    "ARM": {
+        "Audience": "https://management.azure.com/",
+        "AzureFrontdoorUri": "https://management.azure.com/",
+    },
+    "AzureAd": {"clientId": "local-bicep-debug"},
+    "AadAuthorityWithTenantFormat": "https://login.microsoftonline.com/{0}",
+}
+sys.modules["src.portalsubstrate.auth.entra_auth_middleware"] = auth_module
+
+from src.http_plugins.bicep.router import bicep_router
+
+app = FastAPI()
+app.include_router(bicep_router, prefix="/preview-plugins")
+
+@app.get("/healthcheck")
+async def healthcheck():
+    return {"status": "healthy"}
+```
+
+Start the local API with the project venv and make sure the real `bicep` CLI is
+available in that process. On this machine the `bicep` shim is managed by
+`mise`, so use `mise exec` instead of changing global mise config:
+
+```bash
+PORT=2763 ENVIRONMENT=development BICEP_POLLING_RETRY_AFTER=10 \
+PYTHONPATH=/home/ariaamini/axe-agents/pysrc/WorkloadsAssistantCore \
+nohup mise exec http:bicep@0.42.1 -- \
+/home/ariaamini/axe-agents/pysrc/WorkloadsAssistantCore/.venv/bin/python \
+-m uvicorn bicep_debug_app:app --app-dir /tmp --host 127.0.0.1 \
+--port 2763 --proxy-headers > /tmp/bicep-local-uvicorn-2763.log 2>&1 &
+
+curl -sS --max-time 10 http://127.0.0.1:2763/healthcheck
+```
+
+Start a Cloudflare quick tunnel. The `cloudflared` shim is also managed by
+`mise`; use `mise exec` if the shim reports that no version is set:
+
+```bash
+nohup mise exec cloudflared@2026.3.0 -- cloudflared tunnel \
+--url http://127.0.0.1:2763 \
+--logfile /tmp/bicep-cloudflared-2763.log \
+> /tmp/bicep-cloudflared-2763.out 2>&1 &
+
+rg -o 'https://[^ ]+\.trycloudflare\.com' \
+/tmp/bicep-cloudflared-2763.log /tmp/bicep-cloudflared-2763.out
+curl -sS --max-time 10 https://<quick-tunnel>.trycloudflare.com/healthcheck
+```
+
+Create a fresh manifest for each tunnel. Quick-tunnel hostnames rotate, and stale
+SideLoad/Copilot iframes can keep calling an old hostname. Change the plugin,
+agent, and competency names when rerunning in the same Portal session to avoid
+stale registration effects.
+
+```bash
+node <<'NODE'
+const fs = require('node:fs')
+const manifest = JSON.parse(fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug.manifest.json', 'utf8'))
+const suffix = '2763'
+const competency = `BicepDeploymentDebug${suffix}`
+manifest.AiPlugins[0].pluginName = `${competency}_plugin`
+manifest.AiPlugins[0].allowedClients = [`Agent:${competency}Agent`, `AzurePortalRCAdvanced:${competency}`]
+manifest.AiPlugins[0].manifest.runtimes[0].spec[0].url = 'https://<quick-tunnel>.trycloudflare.com/preview-plugins/bicep/deploy'
+manifest.AiAgents[0].agentName = `${competency}Agent`
+manifest.AiAgents[0].allowedClients = [`AzurePortalRCAdvanced:${competency}`]
+manifest.AiAgents[0].manifest.functions[0].name = `${competency}Agent`
+manifest.AiAgents[0].manifest.runtimes[0].run_for_functions = [`${competency}Agent`]
+fs.writeFileSync(`/tmp/bicep-deployment-debug-cloudflared-${suffix}.manifest.json`, JSON.stringify(manifest, null, 2))
+NODE
+```
+
+Before using Copilot, smoke-test the tunnel with a confirmation-only POST. Do not
+print tokens. Store the ARM token in a temp file if needed. The production
+contract may use the plugin OBO scope below, but the narrow local debug app runs
+with `ENVIRONMENT=development` and forwards the incoming bearer token directly to
+ARM; for that local-only setup, register the manifest with
+`https://management.azure.com/.default` so the forwarded token has an ARM
+audience. If you keep `1dce83cb-ee48-4e43-bd08-a23fd936428e/.default` locally,
+ARM rejects the confirmed call with `InvalidAuthenticationTokenAudience`.
+
+```bash
+az account get-access-token --resource https://management.azure.com --query accessToken -o tsv >/tmp/bicep-arm-token.txt
+curl -sS --max-time 30 -X POST 'https://<quick-tunnel>.trycloudflare.com/preview-plugins/bicep/deploy' \
+-H "Authorization: Bearer $(cat /tmp/bicep-arm-token.txt)" \
+-H 'Content-Type: application/json' \
+--data @/tmp/bicep-confirm-request.json
+```
+
+Good local/cloudflared evidence:
+
+- `/healthcheck` succeeds through the quick-tunnel URL.
+- Confirmation-only POST returns a confirmation envelope and does not deploy.
+  In the real 2026-05-12 Portal Copilot client, lowercase
+  `data.Type = Confirmation` rendered the approval card; PascalCase
+  `Data.Type = Confirmation` reached the endpoint but caused Copilot to show
+  `Sorry, I can't help with that. Please try something else.` instead of an
+  approval card.
+- Approved POST returns `202`, `Retry-After: 10`, and a `Location` header whose
+  host is the quick-tunnel host, not `127.0.0.1` or production canary.
+- Polling the `Location` reaches terminal `Succeeded`/`Failed` through the same
+  quick-tunnel host.
+- After the 2026-05-12 local fix, failed terminal responses should include ARM
+  nested detail code/message in both the failed resource thought and the
+  `Deployment Results` datagrid. For the VM debug sample, expect text like
+  `vm-debug-nested - Failed: InvalidParameter - The value
+  Standard_Debug_VMSize_DOES_NOT_EXIST provided for the VM size is not valid...`.
+
+Failure notes:
+
+- If POST returns `BICEP_COMPILATION_FAILED` with `mise ERROR No version is set
+  for shim: bicep`, restart the API under `mise exec http:bicep@0.42.1 -- ...`.
+- If `cloudflared` prints `No version is set for shim: cloudflared`, run it via
+  `mise exec cloudflared@2026.3.0 -- cloudflared ...`.
+- If the API `Location` header points at production canary, ensure the local app
+  is not running with `ROLE_LOCATION=EastUS2EUAP`; canary mode intentionally pins
+  the Location host to production canary.
+- If Copilot renders the confirmation card but the confirmed call returns
+  `InvalidAuthenticationTokenAudience`, the manifest auth scope does not match
+  the local server behavior. For the narrow local debug app, use
+  `https://management.azure.com/.default`. For hosted service validation with
+  real OBO, use the plugin contract scope.
+- Quick tunnels are temporary and unauthenticated. Use only for short debug
+  sessions, do not paste secrets into logs, and stop the tunnel after testing.
+
+2026-05-12 real Portal Copilot validation against a cloudflared tunnel showed:
+
+- The SideLoad scoped form reached the local bicep endpoint through Cloudflare.
+- Lowercase `data.Type = Confirmation` rendered the approval card; PascalCase
+  `Data.Type = Confirmation` did not.
+- With local ARM-token scope, approving the card compiled bicep, submitted to
+  ARM, returned `202`, and Copilot polled to terminal `Failed`.
+- Copilot displayed `Deployment accepted by ARM`, `vm-debug-nested - Failed`,
+  `rg-copilot-bicep-debug - Succeeded`, and `Deployment failed!`.
+- The initial browser run did not include the nested VM root-cause ARM error
+  text. A local server fix now extracts `statusMessage.error.details[0]` from
+  ARM deployment operations and surfaces it in the failed resource thought and
+  `Deployment Results` datagrid. Re-test should verify Copilot shows the nested
+  `InvalidParameter` message directly without requiring Azure CLI.
+
 ## Working Prompt
 
 Use a real selected subscription ID. Do not embed Bicep source, fenced code, raw
@@ -463,10 +624,12 @@ correlation IDs, `Location`, and `Retry-After` when available.
   look correct: the automation changed DOM values without updating React state.
   Refill the upper form using Playwright `locator.fill()` or the raw-CDP native
   value setter helper above, then submit again from a fresh SideLoad blade.
-- VM sample reaches ARM but lacks root-cause error details: the endpoint/client
-  may only return deployment timeline entries. Use the deployment ID, resource
-  group, and failed nested deployment from the artifact/UI to query ARM
-  deployment operations directly. In Azure CLI, use
+- VM sample reaches ARM but lacks root-cause error details: first verify the
+  local/server build includes the 2026-05-12 fix that extracts
+  `statusMessage.error.details[0]` into operation thoughts and artifact rows. If
+  details are still absent, use the deployment ID, resource group, and failed
+  nested deployment from the artifact/UI to query ARM deployment operations
+  directly. In Azure CLI, use
   `az deployment operation sub list` and
   `az deployment operation group list`; the inverse command shape
   `az deployment sub operation list` is not recognized by current CLI.
