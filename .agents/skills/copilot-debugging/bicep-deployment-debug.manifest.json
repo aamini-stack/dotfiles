@@ -49,12 +49,12 @@
         "runtimes": [
           {
             "type": "Http",
-            "auth": {
-              "type": "EntraOnBehalfOf",
-              "scopes": [
-                "1dce83cb-ee48-4e43-bd08-a23fd936428e/.default"
-              ]
-            },
+              "auth": {
+                "type": "EntraOnBehalfOf",
+                "scopes": [
+                "https://management.azure.com/.default"
+                ]
+              },
             "spec": [
               {
                 "dataBoundary": "ROW",
