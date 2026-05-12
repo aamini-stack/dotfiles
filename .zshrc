@@ -54,13 +54,23 @@ vim()
 
 lg()
 {
-    export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
+    local lazygit_new_dir_file="$HOME/.lazygit/newdir"
+    local lazygit_start_root
+
+    lazygit_start_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+    mkdir -p "$(dirname "$lazygit_new_dir_file")"
+    rm -f "$lazygit_new_dir_file"
+    export LAZYGIT_NEW_DIR_FILE="$lazygit_new_dir_file"
 
     lazygit "$@"
 
-    if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
-            cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
-            rm -f $LAZYGIT_NEW_DIR_FILE > /dev/null
+    if [ -f "$lazygit_new_dir_file" ]; then
+            local lazygit_new_dir="$(cat "$lazygit_new_dir_file")"
+            rm -f "$lazygit_new_dir_file" > /dev/null
+
+            if [ -n "$lazygit_new_dir" ] && [ -d "$lazygit_new_dir" ] && [ "$lazygit_new_dir" != "$lazygit_start_root" ]; then
+                    cd "$lazygit_new_dir"
+            fi
     fi
 }
 
@@ -156,4 +166,3 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 # fi
 
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
-
