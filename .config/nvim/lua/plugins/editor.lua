@@ -64,6 +64,20 @@ return {
     },
   },
   {
+    'nvim-pack/nvim-spectre',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    cmd = 'Spectre',
+    keys = {
+      {
+        '<leader>sr',
+        function()
+          require('spectre').open()
+        end,
+        desc = 'Search and Replace',
+      },
+    },
+  },
+  {
     'lukas-reineke/indent-blankline.nvim',
     main = 'ibl',
     opts = {},

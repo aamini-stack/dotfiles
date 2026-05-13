@@ -166,3 +166,7 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 # fi
 
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+
+
+# Vite+ bin (https://viteplus.dev)
+. "$HOME/.vite-plus/env"
