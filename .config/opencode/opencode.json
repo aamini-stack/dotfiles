@@ -1,5 +1,12 @@
 {
 	"$schema": "https://opencode.ai/config.json",
-	"autoupdate": true,
-	"formatter": true
+	"permission": {
+		"*": "allow"
+	},
+	"formatter": {
+		"prettier": {
+			"disabled": true
+		},
+		"oxfmt": {}
+	}
 }
