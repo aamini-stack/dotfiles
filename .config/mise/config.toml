@@ -8,13 +8,24 @@ experimental = true
 node = "22"
 uv = "latest"
 
+# dev
+"nix:zsh" = "latest"
+"oh-my-posh" = "latest"
+"opencode" = "latest"
+"pi" = "latest"
+"github-cli" = "latest"
+"nix:stow" = "latest"
 "pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
 kubectl = "latest"
 helm = "latest"
+"npm:playwriter" = "latest"
 
-# shell
-"nix:zsh" = "latest"
-"oh-my-posh" = "latest"
+# lang
+"npm:oxfmt" = "latest"
+"npm:oxlint" = "latest"
+"pipx:basedpyright" = "latest"
+"pipx:ruff" = "latest"
+"npm:markdownlint-cli" = "latest"
 
 # modern command line tools 
 "bat" = "latest"
@@ -30,26 +41,16 @@ helm = "latest"
 "nix:git-town" = "latest"
 "lazygit" = "latest"
 "nix:erdtree" = "latest"
+"worktrunk" = "latest"
+"nix:gh-dash" = "latest"
+"aqua:joshmedeski/sesh" = "latest"
 
-# dev tools
+# nvim
 "neovim" = "0.12.2"
-"opencode" = "latest"
-"github-cli" = "latest"
-# nvim deps
 "npm:tree-sitter-cli" = "latest"
 "nix:tree-sitter" = "latest"
-"npm:oxfmt" = "latest"
-"pipx:basedpyright" = "latest"
-"pipx:ruff" = "latest"
-# nvim util deps
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"
 "nix:xclip" = "latest"
 make = "latest"
 "nix:gcc" = "latest"
-"pi" = "latest"
-"worktrunk" = "latest"
-"nix:stow" = "latest"
-"aqua:joshmedeski/sesh" = "latest"
-"nix:gh-dash" = "latest"
-"npm:playwriter" = "latest"
