@@ -21,6 +21,8 @@ helm = "latest"
 "npm:playwriter" = "latest"
 
 # lang
+"npm:corepack" = "latest"
+"npm:pnpm" = "latest"
 "npm:oxfmt" = "latest"
 "npm:oxlint" = "latest"
 "pipx:basedpyright" = "latest"
