@@ -2,7 +2,9 @@
 \.gitignore
 \.gitmodules
 
-.tmux
-.config/gh
+\.tmux
+\.config/gh
 README.md
-scripts
+misc
+install.sh
+stow.sh
