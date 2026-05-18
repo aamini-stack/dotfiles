@@ -1,343 +1,80 @@
 ---
 name: copilot-debugging
-description:
-  Debug Azure Copilot HTTP plugins end-to-end in a real Azure Portal/Copilot
-  browser session using Playwriter direct CDP, SideLoad scoped conversations,
-  network traces, and service logs.
+description: Debug the Bicep HTTP plugin in real Azure Portal Copilot with SideLoad and Playwriter direct CDP.
 ---
 
-# Copilot Plugin Debugging
+# Bicep Copilot Debug
 
-Use this skill to validate Azure Copilot HTTP plugins against the real Azure
-Portal Copilot client. Prefer this over curl or synthetic tests when debugging
-plugin routing, scoped conversations, confirmation cards, LRO polling, auth, or
-client/service mismatches.
+Use real Portal Copilot for routing, confirmation cards, auth, and LRO polling.
 
-## Non-Negotiables
+Do first:
 
-- Load the `playwriter` skill and run `playwriter skill` before browser work.
-- Use Playwriter direct CDP for Azure Portal Copilot. Extension mode misses
-  cross-origin sandbox frames used by Copilot and SideLoad.
-- Use a temporary debug Edge profile.
-- Never print bearer tokens, DirectLine tokens, or raw authorization attachment
-  contents.
-- Do not stop at `Sorry, I can't help with that. Please try something else.`
-  Treat it as a prompt/registration/target-selection failure and keep tracing.
-- Do not use the lower `CopilotTopActions` SideLoad component for plugin tests.
-  It can default to `ArgStorage` and launch the query/storage agent.
+```bash
+playwriter skill
+```
 
-## CDP Setup
+For local endpoint testing, run the cloudflared skill first and use the tunnel URL
+in the registered manifest.
 
-Print this block to the user before starting a Portal Copilot session.
+Launch Edge CDP from Windows PowerShell. Admin is not required for Edge:
 
 ```powershell
-# Launch Edge with CDP from Windows PowerShell.
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
+```
 
-# Fallback path if needed.
-& "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir="$env:TEMP\edge-copilot-debug"
+If the agent runs from WSL, paste this in elevated Windows PowerShell:
 
-# Verify Edge is listening on Windows.
-Invoke-RestMethod http://127.0.0.1:9222/json/version
-
-# If the agent runs in WSL/Linux, expose CDP to WSL.
-# Run PowerShell as Administrator.
+```powershell
 netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=9223 connectaddress=127.0.0.1 connectport=9222
 New-NetFirewallRule -DisplayName "Edge CDP from WSL" -Direction Inbound -LocalPort 9223 -Protocol TCP -Action Allow
 ```
 
-Verify from WSL/Linux:
+Connect from WSL:
 
 ```bash
-curl -sS --max-time 5 "http://$(ip route | awk '/default/ {print $3}'):9223/json/version"
-curl -sS --max-time 5 "http://$(ip route | awk '/default/ {print $3}'):9223/json/list"
-```
-
-Start Playwriter with the WSL-reachable browser WebSocket URL, not the
-Windows-local `127.0.0.1:9222` URL:
-
-```bash
+curl -sS "http://$(ip route | awk '/default/ {print $3}'):9223/json/version"
 playwriter session new --direct ws://<wsl-gateway>:9223/devtools/browser/<browser-id>
 ```
 
-## Portal URL
-
-Use RC Portal with Copilot, DevUI, canary traffic, plugin store, and declarative
-HTTP plugin flights enabled:
+Portal URL:
 
 ```text
-https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&feature.azurepluginstore=true&exp.azurepluginstore=true&feature.inlinecopilot=true&feature.devui=true&feature.canarytraffic=true&exp.useRegionalEndpoint=true&exp.pluginstoredeclarativehttpplugins=true&exp.AzCopilot_ArgQueryGenerator_plugin=15.0&exp.AzCopilot_ArgQueryRunner_plugin=15.0&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&Microsoft_Azure_Copilot_clientoptimizations=false&feature.customportal=false&feature.canmodifyextensions=true#view/Microsoft_Azure_Copilot/SideLoad.ReactView
+https://rc.portal.azure.com/?exp.unifiedcopilot=true&feature.unifiedcopilot=true&feature.unifiedcopilotux=true&InternalSamplesExtension=true&feature.unifiedcopilotdebug=true&feature.unifiedcopilottest=true&feature.azurepluginstore=true&exp.azurepluginstore=true&feature.inlinecopilot=true&feature.devui=true&feature.canarytraffic=true&exp.useRegionalEndpoint=true&exp.pluginstoredeclarativehttpplugins=true&exp.copilotagents=true&exp.showUnsafeURLCustomizationWarning=false&feature.customportal=false&feature.canmodifyextensions=true#view/Microsoft_Azure_Copilot/SideLoad.ReactView
 ```
 
-If Portal redirects to `/auth/login/`, wait 10-20 seconds and retry the Portal
-URL once in the same authenticated page/profile before asking the user to sign
-in. Fresh debug profiles and new tabs can briefly show `/auth/login/` even when
-the user already completed sign-in. If the retry still lands on `/auth/login/`,
-ask the user to finish sign-in in the debug Edge window, then navigate to the
-same URL again.
-
-If you need a fresh SideLoad blade instance, add any cache-busting query
-parameter before the `#view/...` fragment, not after it. Appending text after
-the hash changes the blade name, for example `SideLoad.ReactView&fresh=...`, and
-Portal fails with `ErrorLoadingExtensionAndDefinition` and
-`Blade name is invalid identifier`.
-
-## Working E2E Flow
-
-1. Connect to Edge with direct CDP and select the Portal page.
-2. Load the Portal URL above.
-   Use `playwriter -s <session> --timeout 120000 -e ...` for Portal loads,
-   login retries, and long Copilot waits. The Playwriter CLI execution default
-   can time out before an otherwise healthy Portal retry completes.
-3. Inspect `/json/list` and identify the active SideLoad iframe by text:
-   `Plugin & Agent Test`, `Scoped Conversations`, `Register`, and `monaco === true`.
-4. Use one SideLoad iframe for both manifest registration and scoped submit.
-5. If `Register` is already disabled before a new manifest registration, reload
-   Portal and use a fresh SideLoad iframe.
-6. Paste the full manifest into Monaco, wait for markers, and click `Register`
-   only when markers are empty and `Register` is enabled. Preserve the manifest
-   exactly; do not inline it into a single-quoted shell command because the Lua
-   script contains single quotes.
-7. Switch to `Scoped Conversations` in that same iframe.
-8. Fill only the upper API form:
-   `Competency = BicepDeploymentDebug` and the working prompt below.
-   Use Playwright `locator.fill()` when the SideLoad frame is controllable. If
-   you must use raw CDP against the sandbox iframe, use the native
-   `HTMLInputElement`/`HTMLTextAreaElement` value setter and dispatch an
-   `InputEvent`. Do not set `.value` plus plain `Event('input')`; the DOM may
-   show the new values while the React component still submits stale defaults
-   such as `ArgStorage` and `Get a list of all storage accounts in westus`.
-9. Click the upper `Submit` button. Do not click `Open Copilot sidecar`.
-10. Inspect all Portal sandbox iframes and choose the Copilot iframe by live
-   text, not by newest target ID. The newest sandbox iframe can be blank while
-   an older sandbox iframe contains the Copilot sidecar.
-11. Inspect the Copilot iframe. It must show the exact prompt and the activity
-   `Deploy built-in Bicep debug sample and request confirmation`.
-12. Approve the confirmation card.
-13. Wait for LRO output. The current VM debug sample is expected to reach ARM
-    and fail the nested VM deployment. A good run shows `Deployment accepted by
-    ARM`, `vm-debug-nested - Failed`, `rg-copilot-bicep-debug - Succeeded`, and
-    `Deployment failed!`.
-
-## Working Bicep Debug Manifest
-
-This manifest was validated against the real RC Portal Copilot client on
-2026-05-11. It avoids putting Bicep source in the user prompt. The HTTP plugin
-Lua script supplies the built-in sample files, which avoids model refusal before
-tool selection.
-
-The sample intentionally uses a valid multi-file Bicep module layout with
-VM-shaped resources and an invalid VM size. This should compile, submit to ARM,
-and then exercise deployment failure diagnostics instead of stopping at model
-routing or Bicep syntax errors.
-
-Use the adjacent file:
+Register manifest:
 
 ```text
-bicep-deployment-debug.manifest.json
+.agents/copilot-debugging/bicep-deployment-debug.manifest.json
 ```
 
-Paste that entire JSON object into the SideLoad Monaco editor. Prefer reading
-the file from Node or using a quoted heredoc and setting Monaco directly. Do not
-hand-build or shell-embed the JSON in a `playwriter -e '...'` one-liner; shell
-quoting can strip Lua single quotes and produce a registered plugin that routes
-but fails at tool execution.
-
-After pasting, compare Monaco's current value to the file when possible. The Lua
-script must still contain strings such as `'copilot-bicep-debug'`,
-`'subscription'`, and `'eastus'`.
-
-## Local Bicep API With Cloudflared
-
-Use this when testing local bicep API changes with the real Copilot client.
-Copilot cannot call `localhost`, so expose the local FastAPI app through a
-temporary Cloudflare quick tunnel and register a manifest that points at that
-public URL.
-
-If importing the full app fails because local MISE native initialization is not
-available, create a narrow debug app that mounts only the real bicep router and
-stubs `src.portalsubstrate.auth.entra_auth_middleware.AUTH_CONFIG` before
-importing the router. Keep `ENVIRONMENT=development` so `ArmClient` forwards the
-caller bearer token directly instead of doing OBO locally.
-
-Minimal debug app shape:
-
-```python
-import sys
-import types
-
-from fastapi import FastAPI
-
-auth_module = types.ModuleType("src.portalsubstrate.auth.entra_auth_middleware")
-auth_module.AUTH_CONFIG = {
-    "ARM": {
-        "Audience": "https://management.azure.com/",
-        "AzureFrontdoorUri": "https://management.azure.com/",
-    },
-    "AzureAd": {"clientId": "local-bicep-debug"},
-    "AadAuthorityWithTenantFormat": "https://login.microsoftonline.com/{0}",
-}
-sys.modules["src.portalsubstrate.auth.entra_auth_middleware"] = auth_module
-
-from src.http_plugins.bicep.router import bicep_router
-
-app = FastAPI()
-app.include_router(bicep_router, prefix="/preview-plugins")
-
-@app.get("/healthcheck")
-async def healthcheck():
-    return {"status": "healthy"}
-```
-
-Start the local API with the project venv and make sure the real `bicep` CLI is
-available in that process. On this machine the `bicep` shim is managed by
-`mise`, so use `mise exec` instead of changing global mise config:
-
-```bash
-PORT=2763 ENVIRONMENT=development BICEP_POLLING_RETRY_AFTER=10 \
-PYTHONPATH=/home/ariaamini/axe-agents/pysrc/WorkloadsAssistantCore \
-nohup mise exec http:bicep@0.42.1 -- \
-/home/ariaamini/axe-agents/pysrc/WorkloadsAssistantCore/.venv/bin/python \
--m uvicorn bicep_debug_app:app --app-dir /tmp --host 127.0.0.1 \
---port 2763 --proxy-headers > /tmp/bicep-local-uvicorn-2763.log 2>&1 &
-
-curl -sS --max-time 10 http://127.0.0.1:2763/healthcheck
-```
-
-Start a Cloudflare quick tunnel. The `cloudflared` shim is also managed by
-`mise`; use `mise exec` if the shim reports that no version is set:
-
-```bash
-nohup mise exec cloudflared@2026.3.0 -- cloudflared tunnel \
---url http://127.0.0.1:2763 \
---logfile /tmp/bicep-cloudflared-2763.log \
-> /tmp/bicep-cloudflared-2763.out 2>&1 &
-
-rg -o 'https://[^ ]+\.trycloudflare\.com' \
-/tmp/bicep-cloudflared-2763.log /tmp/bicep-cloudflared-2763.out
-curl -sS --max-time 10 https://<quick-tunnel>.trycloudflare.com/healthcheck
-```
-
-Create a fresh manifest for each tunnel. Quick-tunnel hostnames rotate, and stale
-SideLoad/Copilot iframes can keep calling an old hostname. Change the plugin,
-agent, and competency names when rerunning in the same Portal session to avoid
-stale registration effects.
-
-```bash
-node <<'NODE'
-const fs = require('node:fs')
-const manifest = JSON.parse(fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug.manifest.json', 'utf8'))
-const suffix = '2763'
-const competency = `BicepDeploymentDebug${suffix}`
-manifest.AiPlugins[0].pluginName = `${competency}_plugin`
-manifest.AiPlugins[0].allowedClients = [`Agent:${competency}Agent`, `AzurePortalRCAdvanced:${competency}`]
-manifest.AiPlugins[0].manifest.runtimes[0].spec[0].url = 'https://<quick-tunnel>.trycloudflare.com/preview-plugins/bicep/deploy'
-manifest.AiAgents[0].agentName = `${competency}Agent`
-manifest.AiAgents[0].allowedClients = [`AzurePortalRCAdvanced:${competency}`]
-manifest.AiAgents[0].manifest.functions[0].name = `${competency}Agent`
-manifest.AiAgents[0].manifest.runtimes[0].run_for_functions = [`${competency}Agent`]
-fs.writeFileSync(`/tmp/bicep-deployment-debug-cloudflared-${suffix}.manifest.json`, JSON.stringify(manifest, null, 2))
-NODE
-```
-
-Before using Copilot, smoke-test the tunnel with a confirmation-only POST. Do not
-print tokens. Store the ARM token in a temp file if needed. The production
-contract may use the plugin OBO scope below, but the narrow local debug app runs
-with `ENVIRONMENT=development` and forwards the incoming bearer token directly to
-ARM; for that local-only setup, register the manifest with
-`https://management.azure.com/.default` so the forwarded token has an ARM
-audience. If you keep `1dce83cb-ee48-4e43-bd08-a23fd936428e/.default` locally,
-ARM rejects the confirmed call with `InvalidAuthenticationTokenAudience`.
-
-```bash
-az account get-access-token --resource https://management.azure.com --query accessToken -o tsv >/tmp/bicep-arm-token.txt
-curl -sS --max-time 30 -X POST 'https://<quick-tunnel>.trycloudflare.com/preview-plugins/bicep/deploy' \
--H "Authorization: Bearer $(cat /tmp/bicep-arm-token.txt)" \
--H 'Content-Type: application/json' \
---data @/tmp/bicep-confirm-request.json
-```
-
-Good local/cloudflared evidence:
-
-- `/healthcheck` succeeds through the quick-tunnel URL.
-- Confirmation-only POST returns a confirmation envelope and does not deploy.
-  In the real 2026-05-12 Portal Copilot client, lowercase
-  `data.Type = Confirmation` rendered the approval card; PascalCase
-  `Data.Type = Confirmation` reached the endpoint but caused Copilot to show
-  `Sorry, I can't help with that. Please try something else.` instead of an
-  approval card.
-- Approved POST returns `202`, `Retry-After: 10`, and a `Location` header whose
-  host is the quick-tunnel host, not `127.0.0.1` or production canary.
-- Polling the `Location` reaches terminal `Succeeded`/`Failed` through the same
-  quick-tunnel host.
-- After the 2026-05-12 local fix, failed terminal responses should include ARM
-  nested detail code/message in both the failed resource thought and the
-  `Deployment Results` datagrid. For the VM debug sample, expect text like
-  `vm-debug-nested - Failed: InvalidParameter - The value
-  Standard_Debug_VMSize_DOES_NOT_EXIST provided for the VM size is not valid...`.
-
-Failure notes:
-
-- If POST returns `BICEP_COMPILATION_FAILED` with `mise ERROR No version is set
-  for shim: bicep`, restart the API under `mise exec http:bicep@0.42.1 -- ...`.
-- If `cloudflared` prints `No version is set for shim: cloudflared`, run it via
-  `mise exec cloudflared@2026.3.0 -- cloudflared ...`.
-- If the API `Location` header points at production canary, ensure the local app
-  is not running with `ROLE_LOCATION=EastUS2EUAP`; canary mode intentionally pins
-  the Location host to production canary.
-- If Copilot renders the confirmation card but the confirmed call returns
-  `InvalidAuthenticationTokenAudience`, the manifest auth scope does not match
-  the local server behavior. For the narrow local debug app, use
-  `https://management.azure.com/.default`. For hosted service validation with
-  real OBO, use the plugin contract scope.
-- Quick tunnels are temporary and unauthenticated. Use only for short debug
-  sessions, do not paste secrets into logs, and stop the tunnel after testing.
-
-2026-05-12 real Portal Copilot validation against a cloudflared tunnel showed:
-
-- The SideLoad scoped form reached the local bicep endpoint through Cloudflare.
-- Lowercase `data.Type = Confirmation` rendered the approval card; PascalCase
-  `Data.Type = Confirmation` did not.
-- With local ARM-token scope, approving the card compiled bicep, submitted to
-  ARM, returned `202`, and Copilot polled to terminal `Failed`.
-- Copilot displayed `Deployment accepted by ARM`, `vm-debug-nested - Failed`,
-  `rg-copilot-bicep-debug - Succeeded`, and `Deployment failed!`.
-- The initial browser run did not include the nested VM root-cause ARM error
-  text. A local server fix now extracts `statusMessage.error.details[0]` from
-  ARM deployment operations and surfaces it in the failed resource thought and
-  `Deployment Results` datagrid. Re-test should verify Copilot shows the nested
-  `InvalidParameter` message directly without requiring Azure CLI.
-
-## Working Prompt
-
-Use a real selected subscription ID. Do not embed Bicep source, fenced code, raw
-JSON tool arguments, or numbered source lines in the prompt.
-
-If the user does not provide a subscription, use an explicitly selected Portal
-subscription. If you need a fallback and Azure CLI is logged in as the same
-user, `az account show --query id -o tsv` is a reasonable source for the
-default subscription. Do not depend on a browser `fetch` to
-`https://management.azure.com/subscriptions`; the Portal page can return `401`
-for that direct fetch even when Portal itself is authenticated.
+For local tunnel tests, replace the manifest runtime URL with:
 
 ```text
-Deploy the built-in Bicep debug sample to subscription <subscription-id> in eastus. Use deployment label copilot-bicep-debug. Show the deployment confirmation first.
+$TUNNEL_URL/preview-plugins/bicep/deploy
 ```
 
-Expected confirmation card text:
+SideLoad flow:
+
+```text
+If testing local code, start API + cloudflared and patch manifest URL.
+Register tab -> paste manifest -> Register
+Scoped Conversations tab -> upper API form only
+Competency: BicepDeploymentDebug
+Prompt: Deploy the built-in Bicep debug sample to subscription <subscription-id> in eastus. Use deployment label copilot-bicep-debug. Show the deployment confirmation first.
+Submit -> approve confirmation -> wait for LRO output
+```
+
+Expected confirmation:
 
 ```text
 Are you sure you want to deploy this Bicep configuration?
-
 Subscription: <subscription-id>
 Location: eastus
 Files: 2 file(s) - main.bicep, vm.bicep
-
-Approve
-Deny
 ```
 
-Expected approved output for the intentional VM failure sample:
+Expected VM sample terminal output:
 
 ```text
 Compiling bicep templates...
@@ -348,301 +85,29 @@ rg-copilot-bicep-debug - Succeeded
 Deployment failed!
 ```
 
-In the 2026-05-11 browser run, the Copilot endpoint/client did not expose ARM
-operation-level error text for the invalid VM size. The visible response and the
-`Deployment details` artifact identified the failed nested deployment
-(`vm-debug-nested`) and deployment ID, but the model follow-up stated that no
-further ARM failure details were returned. For detailed root cause, retrieve ARM
-deployment operations for the returned deployment ID and resource group.
+Rules:
 
-Azure CLI command shape verified in that run:
-
-```bash
-az deployment operation sub list --name <subscription-deployment-name> -o json
-az deployment operation group list --resource-group <resource-group> --name <nested-deployment-name> -o json
+```text
+Use direct CDP, not extension mode.
+Use the upper SideLoad API form, not CopilotTopActions.
+Register and submit from the same SideLoad iframe.
+Select Copilot iframe by live text, not newest target ID.
+Do not print bearer tokens, DirectLine tokens, or auth attachment bodies.
+Do not paste Bicep source into the prompt.
+If SideLoad is stale, reload Portal and use a fresh iframe.
+Current Retry-After is 10.
 ```
 
-## SideLoad Target Discipline
+Failure hints:
 
-- Match targets by live text and state, never by stored target ID.
-- Portal may keep stale SideLoad and Copilot iframes alive after reloads.
-- Register and submit from the same verified SideLoad iframe.
-- After submitting, inspect iframe contents and choose the Copilot sidecar by
-  evidence: exact prompt text, `Agent has been registered`,
-  `Plugin has been registered`, activity text, confirmation card, or final
-  deployment output.
-- If Monaco content changes but `Register` remains disabled, the target is
-  post-registration locked. Reload Portal and use a fresh SideLoad iframe.
-- If a retry shows old manifest behavior after a fresh registration, suspect a
-  stale Copilot sidecar or stale SideLoad target. Close old Copilot sidecars,
-  reload Portal, use a fresh SideLoad iframe, and verify the confirmation card
-  reflects the current manifest before approving.
-- If the sidecar shows an `ArgStorage` prompt such as `Get a list of all storage
-  accounts in westus`, you clicked the lower `CopilotTopActions` path. Close the
-  Copilot sidecar and use the upper API scoped form only.
-
-## Browser Inspection Helpers
-
-List pages:
-
-```bash
-playwriter -s <session> -e 'console.log(JSON.stringify(browser.contexts().map((c, ci) => ({ context: ci, pages: c.pages().map((p, pi) => ({ page: pi, title: p.title(), url: p.url() })) })), null, 2))'
+```text
+Sorry, I can't help with that -> wrong competency, stale iframe, bad manifest, or source pasted into prompt.
+ArgStorage/storage query runs -> lower form was used or React state was not updated.
+No browser cnxpluginsweb request -> plugin execution can be server-side; inspect Copilot activity and service logs.
+Disabled Register -> inspect Monaco markers; if empty, reload and use a fresh SideLoad blade.
 ```
 
-Observe Portal:
-
-```bash
-playwriter -s <session> -e 'state.page = context.pages().find((p) => p.url().includes("portal.azure.com")) ?? context.pages()[0]; console.log("URL:", state.page.url()); console.log(await snapshot({ page: state.page, showDiffSinceLastCall: false }));'
-```
-
-Inspect CDP targets:
-
-```bash
-curl -sS --max-time 5 "http://$(ip route | awk '/default/ {print $3}'):9223/json/list"
-```
-
-Raw iframe evaluation pattern:
-
-```bash
-node <<'NODE'
-const ws = "ws://<gateway>:9223/devtools/page/<target-id>"
-const socket = new WebSocket(ws)
-let id = 0
-const pending = new Map()
-socket.onmessage = (event) => {
-  const msg = JSON.parse(event.data)
-  if (msg.id && pending.has(msg.id)) {
-    pending.get(msg.id)(msg)
-    pending.delete(msg.id)
-  }
-}
-function send(method, params = {}) {
-  return new Promise((resolve) => {
-    const mid = ++id
-    pending.set(mid, resolve)
-    socket.send(JSON.stringify({ id: mid, method, params }))
-  })
-}
-socket.onopen = async () => {
-  await send("Runtime.enable")
-  const expression = `JSON.stringify({
-    text: document.body.innerText,
-    buttons: [...document.querySelectorAll("button")].map((b, i) => ({ i, text: b.innerText, disabled: b.disabled })),
-    inputs: [...document.querySelectorAll("input,textarea")].map((e, i) => ({ i, tag: e.tagName, value: e.value, placeholder: e.placeholder })),
-    monaco: !!globalThis.monaco,
-  })`
-  const res = await send("Runtime.evaluate", { returnByValue: true, expression })
-  console.log(res.result.result.value)
-  socket.close()
-}
-NODE
-```
-
-Paste manifest into Monaco via direct CDP without shell-quoting damage:
-
-```bash
-node <<'NODE'
-const fs = require('node:fs')
-const manifest = fs.readFileSync('/home/ariaamini/.agents/skills/copilot-debugging/bicep-deployment-debug.manifest.json', 'utf8')
-const ws = 'ws://<gateway>:9223/devtools/page/<sideload-target-id>'
-const socket = new WebSocket(ws)
-let id = 0
-const pending = new Map()
-socket.onmessage = (event) => {
-  const msg = JSON.parse(event.data)
-  if (msg.id && pending.has(msg.id)) {
-    pending.get(msg.id)(msg)
-    pending.delete(msg.id)
-  }
-}
-function send(method, params = {}) {
-  return new Promise((resolve) => {
-    const mid = ++id
-    pending.set(mid, resolve)
-    socket.send(JSON.stringify({ id: mid, method, params }))
-  })
-}
-socket.onopen = async () => {
-  await send('Runtime.enable')
-  await send('Runtime.evaluate', {
-    awaitPromise: true,
-    expression: `(() => {
-      const model = globalThis.monaco?.editor?.getModels?.()[0]
-      if (!model) throw new Error('Monaco model not found')
-      model.setValue(${JSON.stringify(manifest)})
-      const markers = globalThis.monaco.editor.getModelMarkers({ resource: model.uri })
-      return JSON.stringify({ equal: model.getValue() === ${JSON.stringify(manifest)}, markers })
-    })()`,
-    returnByValue: true,
-  }).then((res) => console.log(res.result.result.value))
-  socket.close()
-}
-NODE
-```
-
-Fill and submit the upper Scoped Conversations API form via raw CDP when
-Playwright frame locators cannot attach to the sandbox iframe. This uses the
-native value setter so React state updates before `Submit` is clicked:
-
-```bash
-node <<'NODE'
-const subscription = '<subscription-id>'
-const prompt = `Deploy the built-in Bicep debug sample to subscription ${subscription} in eastus. Use deployment label copilot-bicep-debug. Show the deployment confirmation first.`
-const ws = 'ws://<gateway>:9223/devtools/page/<sideload-target-id>'
-const socket = new WebSocket(ws)
-let id = 0
-const pending = new Map()
-socket.onmessage = (event) => {
-  const msg = JSON.parse(event.data)
-  if (msg.id && pending.has(msg.id)) {
-    pending.get(msg.id)(msg)
-    pending.delete(msg.id)
-  }
-}
-function send(method, params = {}) {
-  return new Promise((resolve) => {
-    const mid = ++id
-    pending.set(mid, resolve)
-    socket.send(JSON.stringify({ id: mid, method, params }))
-  })
-}
-socket.onopen = async () => {
-  await send('Runtime.enable')
-  const expression = `new Promise(async (resolve) => {
-    const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-    const setNativeValue = (el, value) => {
-      const proto = el instanceof HTMLTextAreaElement
-        ? HTMLTextAreaElement.prototype
-        : HTMLInputElement.prototype
-      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value)
-      el.dispatchEvent(new InputEvent('input', {
-        bubbles: true,
-        inputType: 'insertText',
-        data: value,
-      }))
-      el.dispatchEvent(new Event('change', { bubbles: true }))
-    }
-    document.querySelectorAll('button')[1].click()
-    await sleep(1000)
-    setNativeValue(document.querySelectorAll('input')[0], 'BicepDeploymentDebug')
-    setNativeValue(document.querySelectorAll('textarea')[0], ${JSON.stringify(prompt)})
-    await sleep(1000)
-    document.querySelectorAll('button')[4].click()
-    await sleep(5000)
-    resolve(JSON.stringify({
-      text: document.body.innerText.slice(0, 2000),
-      values: [...document.querySelectorAll('input, textarea')]
-        .map((e, i) => ({ i, value: e.value }))
-        .slice(0, 4),
-    }))
-  })`
-  const res = await send('Runtime.evaluate', {
-    awaitPromise: true,
-    returnByValue: true,
-    expression,
-  })
-  console.log(res.result.result.value)
-  socket.close()
-}
-NODE
-```
-
-## Network And Evidence
-
-Capture broad browser-visible traffic, but remember HTTP plugin execution can be
-server-side and may not appear as a browser request to `cnxpluginsweb`.
-
-Track:
-
-- `copilotweb`
-- `directline`
-- `cnxpluginsweb`
-- `/plugins/`
-- `/preview-plugins/`
-- `conversation`
-- `activities`
-- `orchestr`
-- `plugin`
-
-Useful evidence for success:
-
-- Scoped conversation start posts `mode: "agent"` and
-  `competency.id: "BicepDeploymentDebug"`.
-- Copilot sidecar shows the exact working prompt.
-- Activity names `Deploy built-in Bicep debug sample and request confirmation`.
-- Confirmation card renders before side effects.
-- Approved retry shows compile, ARM submit, accepted, and terminal success or
-  the intentional VM failure sequence for this sample.
-- For smoke validation, it is useful evidence if the sidecar shows the exact
-  prompt, `Agent has been registered`, `Plugin has been registered`, and a Bicep
-  deployment activity/tool handoff. Deployment can still fail later because of
-  RBAC, quota, ARM validation, or a corrupted pasted manifest.
-
-Do not print raw `copilotweb /api/conversations/start` or DirectLine response
-bodies. They can contain DirectLine bearer tokens. Summaries should include
-status code, URL, sanitized conversation IDs, mode, competency, activity names,
-correlation IDs, `Location`, and `Retry-After` when available.
-
-## Bicep Plugin Contract
-
-- Deploy endpoint:
-  `POST https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/deploy`.
-- Status endpoint:
-  `GET https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/subscriptions/{subscription_id}/deployments/{deployment_name}`.
-- Auth type: `EntraOnBehalfOf`.
-- Auth scope: `1dce83cb-ee48-4e43-bd08-a23fd936428e/.default`.
-- Required request fields: `bicep_config`, `subscription_id`, `location`,
-  `async_response`, and `messageLocale`.
-- `bicep_config.parts[0].data.files` must contain `file_name` and `content`.
-- Without `confirmation`, the endpoint returns the HTTP confirmation envelope
-  and must not perform side effects.
-- With `confirmation: true`, the endpoint starts deployment and returns `202`
-  with `Location` and `Retry-After`.
-- Current source default for Bicep polling is `Retry-After: 10`.
-
-## Failure Guide
-
-- `Sorry, I can't help with that`: avoid pasted Bicep source, fenced code, raw
-  JSON, fake subscriptions, or the wrong competency. Use the built-in sample
-  manifest and working prompt.
-- Query/storage agent runs: you used lower `CopilotTopActions` or left the
-  default `ArgStorage` form in play. Close Copilot and use only the upper API
-  scoped form.
-- Disabled `Register`: read Monaco markers. If markers are empty but the button
-  was already disabled before the click, reload Portal and use a fresh target.
-- Sidecar shows old prompt: stale Copilot iframe or wrong SideLoad target. Close
-  Copilot, reload if needed, and submit from the registered SideLoad iframe.
-- No browser `cnxpluginsweb` request: not necessarily failure. Correlate with
-  Copilot activity, DevUI/service logs, and final UI output.
-- `/auth/login/`: wait briefly and retry the Portal URL in the same page/profile
-  once. Only ask the user to sign in if the retry still lands on login.
-- Bicep agent is hit but tool execution fails or falls back to conversational
-  confirmation: verify the registered Monaco content exactly matches the
-  manifest file. If Lua quotes are missing, the manifest was corrupted during
-  paste; reload SideLoad and paste via direct CDP/file or a quoted heredoc.
-- Scoped submit still launches `ArgStorage` even though the visible form values
-  look correct: the automation changed DOM values without updating React state.
-  Refill the upper form using Playwright `locator.fill()` or the raw-CDP native
-  value setter helper above, then submit again from a fresh SideLoad blade.
-- VM sample reaches ARM but lacks root-cause error details: first verify the
-  local/server build includes the 2026-05-12 fix that extracts
-  `statusMessage.error.details[0]` into operation thoughts and artifact rows. If
-  details are still absent, use the deployment ID, resource group, and failed
-  nested deployment from the artifact/UI to query ARM deployment operations
-  directly. In Azure CLI, use
-  `az deployment operation sub list` and
-  `az deployment operation group list`; the inverse command shape
-  `az deployment sub operation list` is not recognized by current CLI.
-- `ECONNREFUSED 127.0.0.1:9222`: Playwriter used the Windows-local WebSocket
-  URL. Use `ws://<wsl-gateway>:9223/...`.
-- Playwriter command times out while Portal is still working: rerun the command
-  with the Playwriter CLI timeout flag, for example `--timeout 120000`. This is
-  separate from Playwright action or navigation timeouts inside the script.
-
-## Cleanup
-
-Close the temporary debug Edge window when finished. If desired, remove the WSL
-proxy and firewall rule from elevated Windows PowerShell:
+Cleanup:
 
 ```powershell
 netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=9223
