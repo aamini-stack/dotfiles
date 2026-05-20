@@ -144,6 +144,9 @@ return {
         vim.lsp.config(name, server)
         vim.lsp.enable(name)
       end
+
+      -- Run oxfmt as an LSP server for persistent formatting (no process spawn overhead)
+      vim.lsp.enable 'oxfmt'
     end,
   },
 
@@ -171,29 +174,17 @@ return {
           return nil
         else
           return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
+          timeout_ms = 2000,
+          lsp_format = 'fallback',
           }
         end
       end,
       formatters_by_ft = {
         -- Lua
         lua = { 'stylua' },
-        -- TypeScript / JavaScript
-        javascript = { 'oxfmt' },
-        javascriptreact = { 'oxfmt' },
-        typescript = { 'oxfmt' },
-        typescriptreact = { 'oxfmt' },
         -- Python
         python = { 'ruff_organize_imports', 'ruff_format' },
-        -- Web / data
-        css = { 'oxfmt' },
-        html = { 'oxfmt' },
-        json = { 'oxfmt' },
-        jsonc = { 'oxfmt' },
-        json5 = { 'oxfmt' },
-        yaml = { 'oxfmt' },
-        markdown = { 'oxfmt' },
+        -- Web / data (formatted via oxfmt LSP)
       },
     },
   },
