@@ -28,7 +28,6 @@ export PATH="$PATH:$HOME/.local/bin"
 echo "eval \"\$($HOME/.local/bin/mise activate bash)\"" >> ~/.bashrc
 source .bashrc
 curl https://mise.run | sh
-mise plugin install nix https://github.com/jbadeau/mise-nix.git
 mise i
 
 # zsh

@@ -4,9 +4,14 @@ _.file = { path = "~/.env" }
 [settings]
 experimental = true
 
+[plugins]
+nix = "https://github.com/jbadeau/mise-nix.git"
+vite-plus = "https://github.com/markmals/mise-vite-plus"
+
 [tools]
 node = "22"
 uv = "latest"
+vite-plus = "latest"
 
 # dev
 "nix:zsh" = "latest"
