@@ -16,7 +16,7 @@ vite-plus = "latest"
 # dev
 "nix:zsh" = "latest"
 "oh-my-posh" = "latest"
-"opencode" = "latest"
+opencode = "1.15.6"
 "pi" = "latest"
 "github-cli" = "latest"
 "nix:stow" = "latest"
@@ -54,7 +54,6 @@ helm = "latest"
 
 # nvim
 "neovim" = "0.12.2"
-"npm:tree-sitter-cli" = "latest"
 "nix:tree-sitter" = "latest"
 "nix:gnumake" = "latest"
 "nix:unzip" = "latest"
