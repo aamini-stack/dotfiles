@@ -1,0 +1,73 @@
+{
+  "AiPlugins": [
+    {
+      "pluginName": "BicepDeploymentDebug_plugin",
+      "allowedClients": [
+        "AzurePortalRCAdvanced:BicepDeploymentDebug"
+      ],
+      "isLKG": true,
+      "manifest": {
+        "schema_version": "v1",
+        "version": "1.0",
+        "name_for_human": "Deploy invalid Bicep debug sample",
+        "description_for_human": "Prepares an Azure deployment confirmation card for an intentionally invalid Bicep debug sample.",
+        "functions": [
+          {
+            "name": "deploy_built_in_bicep_debug_sample",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "subscription_id": {
+                  "type": "string",
+                  "description": "Azure subscription ID where the sample deployment should run."
+                },
+                "location": {
+                  "type": "string",
+                  "description": "Azure region for the deployment."
+                },
+                "deployment_label": {
+                  "type": "string",
+                  "description": "Short label for the debug deployment."
+                }
+              },
+              "required": [
+                "subscription_id",
+                "location"
+              ]
+            },
+            "states": {
+              "reasoning": {
+                "description": "Use when the user asks to prepare a Bicep deployment confirmation card for invalid Bicep. Deployment side effects happen only after confirmation.",
+                "examples": [
+                  "Prepare the invalid Bicep debug deployment confirmation card for my subscription in eastus"
+                ]
+              }
+            }
+          }
+        ],
+        "runtimes": [
+          {
+            "type": "Http",
+            "auth": {
+              "type": "EntraOnBehalfOf",
+              "scopes": [
+                "1dce83cb-ee48-4e43-bd08-a23fd936428e/.default"
+              ]
+            },
+            "spec": [
+              {
+                "dataBoundary": "ROW",
+                "url": "https://cnxpluginsweb.canary.production.portalrp.azure.com/preview-plugins/bicep/deploy",
+                "http_method": "POST",
+                "script": "function EvaluateHttpPluginPayLoad(response) local label = response.deployment_label or 'copilot-bicep-invalid' local main = [[targetScope = 'subscription'\n\nparam location string = 'eastus'\n\nresource broken 'Microsoft.Resources/resourceGroups@2024-03-01' = {\n  name: 'rg-copilot-bicep-invalid'\n  location: location\n  properties: {\n    thisPropertyDoesNotExist: definitelyNotAString\n  }\n  // missing closing brace on purpose\n]] return { bicep_config = { artifactId = 'bicep-op_invalid_debug', name = label, parts = { { kind = 'data', data = { files = { { file_name = 'main.bicep', content = main } } } } }, metadata = { type = 'bicep' } }, subscription_id = response.subscription_id, location = response.location or 'eastus', async_response = true, messageLocale = 'en-US' } end"
+              }
+            ],
+            "run_for_functions": [
+              "deploy_built_in_bicep_debug_sample"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
