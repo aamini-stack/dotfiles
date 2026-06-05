@@ -146,6 +146,14 @@ return {
       end
 
       -- Run oxfmt as an LSP server for persistent formatting (no process spawn overhead)
+      vim.lsp.config('oxfmt', {
+        init_options = {
+          settings = {
+            configPath = './vite.config.ts',
+            run = 'onSave',
+          },
+        },
+      })
       vim.lsp.enable 'oxfmt'
     end,
   },
@@ -184,6 +192,7 @@ return {
         lua = { 'stylua' },
         -- Python
         python = { 'ruff_organize_imports', 'ruff_format' },
+        markdown = { 'markdownlint-cli2' },
         -- Web / data (formatted via oxfmt LSP)
       },
     },
