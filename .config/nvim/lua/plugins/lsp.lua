@@ -81,12 +81,21 @@ return {
       -- jsonCapabilities.textDocument.completion.completionItem.snippetSupport = true
 
       --  See `:help lsp-config` for information about keys and how to configure
+      local util = require 'lspconfig.util'
 
       -- ── TypeScript / JavaScript / React ──────────────────────────────
       ---@type table<string, vim.lsp.Config>
       local typescript_servers = {
         tsgo = {},
-        oxlint = {},
+        oxlint = {
+          root_dir = util.root_pattern('vite.config.ts', 'oxlint.config.ts', '.oxlintrc.json', 'package.json', '.git'),
+          settings = {
+            configPath = './vite.config.ts',
+            fixKind = 'safe_fix',
+            typeAware = true,
+            unusedDisableDirectives = 'deny',
+          },
+        },
         tailwindcss = {},
         html = {},
         cssls = {},
@@ -147,6 +156,7 @@ return {
 
       -- Run oxfmt as an LSP server for persistent formatting (no process spawn overhead)
       vim.lsp.config('oxfmt', {
+        root_dir = util.root_pattern('vite.config.ts', '.oxfmtrc.json', '.oxfmtrc.jsonc', 'package.json', '.git'),
         init_options = {
           settings = {
             configPath = './vite.config.ts',
@@ -182,8 +192,8 @@ return {
           return nil
         else
           return {
-          timeout_ms = 2000,
-          lsp_format = 'fallback',
+            timeout_ms = 2000,
+            lsp_format = 'fallback',
           }
         end
       end,
