@@ -3,6 +3,7 @@ _.file = { path = "~/.env" }
 
 [settings]
 experimental = true
+minimum_release_age = "3d"
 
 [plugins]
 nix = "https://github.com/jbadeau/mise-nix.git"
@@ -16,7 +17,7 @@ vite-plus = "latest"
 # dev
 "nix:zsh" = "latest"
 "oh-my-posh" = "latest"
-"opencode" = "latest"
+"opencode" = { version = "latest", minimum_release_age = "1d" }
 "pi" = "latest"
 "github-cli" = "latest"
 "nix:stow" = "latest"
