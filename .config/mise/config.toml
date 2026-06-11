@@ -16,7 +16,7 @@ vite-plus = "latest"
 # dev
 "nix:zsh" = "latest"
 "oh-my-posh" = "latest"
-opencode = "1.15.6"
+"opencode" = "latest"
 "pi" = "latest"
 "github-cli" = "latest"
 "nix:stow" = "latest"
