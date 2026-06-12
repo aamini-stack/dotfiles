@@ -1,0 +1,4 @@
+[[manager.prepend_keymap]]
+on = ["g", "r"]
+run = "plugin cd-git-root"
+desc = "Go to git repo root"

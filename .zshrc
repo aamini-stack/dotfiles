@@ -5,7 +5,11 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export TERM=xterm-256color
 export OPENCODE_EXPERIMENTAL_OXFMT=1
-export OLLAMA_HOST="http://host.lima.internal:11434"
+if [[ "$(uname -s)" == "Linux" ]] && getent hosts host.lima.internal >/dev/null 2>&1; then
+  export OLLAMA_HOST="http://host.lima.internal:11434"
+else
+  export OLLAMA_HOST="http://127.0.0.1:11434"
+fi
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin" # Used by lima vms
