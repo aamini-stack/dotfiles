@@ -5,6 +5,7 @@ mise = "if [ -f mise.toml ] || [ -f .mise.toml ]; then mise trust; fi"
 
 [[post-start]]
 copy = "wt step copy-ignored"
+install = "vp install"
 
 # # User Configuration
 #
