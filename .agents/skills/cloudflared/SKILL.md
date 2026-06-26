@@ -1,3 +1,11 @@
+---
+name: cloudflared
+description:
+  Run the local Bicep HTTP API through a Cloudflare tunnel for Portal Copilot
+  SideLoad and local HTTP e2e testing. Use when a local endpoint must be
+  reachable from Azure Portal Copilot.
+---
+
 # Cloudflared Bicep E2E
 
 Run API:
