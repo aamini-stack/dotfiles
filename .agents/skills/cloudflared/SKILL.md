@@ -18,13 +18,17 @@ ss -ltnp '( sport = :2751 )'
 curl -sS http://127.0.0.1:2750/healthcheck
 ```
 
-Run API + worker:
+Run API and worker in separate long-running shells. The API only submits LRO
+jobs; the worker must also be running or polls will stay `202 InProgress`.
 
 ```bash
 mise trust
 mise install
 mise run install
 mise run dev
+```
+
+```bash
 APP_MODE=worker mise exec -- uv run python -m src.start_server
 ```
 
@@ -60,7 +64,7 @@ Manual poll for a captured deployment id:
 ```bash
 token=$(az account get-access-token --tenant "$AZURE_TENANT_ID" --resource https://management.azure.com/ --query accessToken -o tsv)
 curl -sS -H "Authorization: Bearer $token" \
-  "http://localhost:2750/preview-plugins/bicep/subscriptions/$AZURE_SUBSCRIPTION_ID/deployments/$DEPLOYMENT_ID?locale=en"
+  "$TUNNEL_URL/preview-plugins/bicep/subscriptions/$AZURE_SUBSCRIPTION_ID/deployments/$DEPLOYMENT_ID?locale=en"
 ```
 
 Verify ARM terminal state:
@@ -78,6 +82,7 @@ Useful signals:
 - `POST /bicep/deploy` must return `202` with `Location` pointing at `/bicep/subscriptions/{sub}/deployments/{uuid}`.
 - First GETs may return `202 InProgress`; terminal success returns `200 Succeeded` with deployment artifacts.
 - Progress thoughts prove worker pickup: `Compiling bicep templates...`, `Submitting deployment to ARM...`, `Deployment accepted by ARM.`
+- If POST succeeds but polling never advances, check that the worker process is running and inspect worker logs for `poll_trigger` and `BicepDeploymentCallbackV1 invoked`.
 - `Retry-After` is configurable via `BICEP_POLLING_RETRY_AFTER`; tests should not hard-code `10`.
 
 Focused tests:
