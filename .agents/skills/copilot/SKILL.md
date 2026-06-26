@@ -10,8 +10,8 @@ description:
 Use the real Portal Copilot client to verify SideLoad registration, plugin
 routing, confirmation cards, auth, and LRO polling for the Bicep deploy API.
 
-For local API/worker verification before involving Portal, use the
-`bicep-lro-debug` skill first.
+For local API/worker verification and tunnel setup before involving Portal,
+use the `cloudflared` skill first.
 
 ## Manual Setup
 
