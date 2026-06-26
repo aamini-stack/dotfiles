@@ -144,50 +144,64 @@ JS
 ### 4. Paste Manifest
 
 ```bash
-playwriter -s <session-id> --timeout 120000 -e "$(cat <<'JS'
+MANIFEST_PATH="/home/ariaamini/.agents/skills/copilot/manifests/bicep-valid.manifest.json"
+playwriter -s <session-id> --timeout 120000 -e "$(node - "$MANIFEST_PATH" <<'NODE'
 const fs = require("node:fs");
-const cfg = state.bicepDebug;
-const frame = await state.bicepDebugHelpers.sideLoadFrame("Plugin & Agent Test");
-function buildManifest() {
-  const manifest = JSON.parse(fs.readFileSync(cfg.manifestPath, "utf8"));
-  const runtime = manifest.AiPlugins[0].manifest.runtimes[0];
-  const spec = runtime.spec[0];
-  runtime.auth.scopes = [cfg.serviceScope];
-  spec.url = cfg.deployUrl;
-  spec.script = spec.script
-    .replace(/local label = response\.deployment_label or '[^']*'/, `local label = response.deployment_label or '${cfg.label}'`)
-    .replace(/name: 'rg-[^']*'/, `name: 'rg-${cfg.label}'`)
-    .replace(/location = response\.location or '[^']*'/, `location = response.location or '${cfg.location}'`);
-  return JSON.stringify(manifest, null, 2);
-}
-async function getMonacoText() {
-  return await frame.evaluate(() => globalThis.monaco?.editor?.getModels?.().map((model) => model.getValue()).join("\n---MODEL---\n") || "");
-}
-const manifestText = buildManifest();
-const editor = frame.locator(".monaco-editor").first();
-await editor.waitFor({ state: "visible", timeout: 30000 });
-await editor.click();
-await state.page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: "https://rc.portal.azure.com" });
-await state.page.evaluate(async (text) => navigator.clipboard.writeText(text), manifestText);
-await state.page.keyboard.press("Control+A");
-await state.page.keyboard.press("Control+V");
-const expected = ["BicepDeploymentDebug_plugin", cfg.serviceScope, cfg.deployUrl, cfg.label];
-const started = Date.now();
-let verified = false;
-while (Date.now() - started < 30000) {
-  const modelText = await getMonacoText();
-  if (expected.every((marker) => modelText.includes(marker))) {
-    verified = true;
-    break;
-  }
-  await state.page.waitForTimeout(1000);
-}
-if (verified) {
-  console.log("MANIFEST_PASTE_VERIFIED");
-} else {
-throw new Error(`Manifest paste verification failed. Monaco preview: ${(await getMonacoText()).slice(0, 1200)}`);
-}
-JS
+const manifestSource = JSON.stringify(fs.readFileSync(process.argv[2], "utf8"));
+process.stdout.write([
+  "const cfg = state.bicepDebug;",
+  "const frame = await state.bicepDebugHelpers.sideLoadFrame(\"Plugin & Agent Test\");",
+  "function buildManifest() {",
+  "  // Playwriter's direct-CDP sandbox cannot read arbitrary files. The shell",
+  "  // reads the manifest and injects it here as a JavaScript string literal.",
+  `  const manifest = JSON.parse(${manifestSource});`,
+  "  manifest.AiAgents = manifest.AiAgents || [];",
+  "  const runtime = manifest.AiPlugins[0].manifest.runtimes[0];",
+  "  const spec = runtime.spec[0];",
+  "  runtime.auth.scopes = [cfg.serviceScope];",
+  "  spec.url = cfg.deployUrl;",
+  "  spec.script = spec.script",
+  "    .replace(/local label = response\\.deployment_label or '[^']*'/, \"local label = response.deployment_label or '\" + cfg.label + \"'\")",
+  "    .replace(/name: 'rg-[^']*'/, \"name: 'rg-\" + cfg.label + \"'\")",
+  "    .replace(/location = response\\.location or '[^']*'/, \"location = response.location or '\" + cfg.location + \"'\");",
+  "  return JSON.stringify(manifest, null, 2);",
+  "}",
+  "async function getMonacoText() {",
+  "  return await frame.evaluate(() => globalThis.monaco?.editor?.getModels?.().map((model) => model.getValue()).join(\"\\n---MODEL---\\n\") || \"\");",
+  "}",
+  "const manifestText = buildManifest();",
+  "const editor = frame.locator(\".monaco-editor\").first();",
+  "await editor.waitFor({ state: \"visible\", timeout: 30000 });",
+  "await editor.click();",
+  "await state.page.context().grantPermissions([\"clipboard-read\", \"clipboard-write\"], { origin: \"https://rc.portal.azure.com\" });",
+  "await state.page.evaluate(async (text) => navigator.clipboard.writeText(text), manifestText);",
+  "await state.page.keyboard.press(\"Control+A\");",
+  "await state.page.keyboard.press(\"Control+V\");",
+  "await frame.evaluate((text) => {",
+  "  // Clipboard paste updates Monaco, but the SideLoad page may not enable",
+  "  // Register until Monaco emits its normal model-change path.",
+  "  const model = globalThis.monaco?.editor?.getModels?.()[0];",
+  "  if (!model) throw new Error(\"Monaco model not found\");",
+  "  model.setValue(text);",
+  "}, manifestText);",
+  "const expected = [\"BicepDeploymentDebug_plugin\", cfg.serviceScope, cfg.deployUrl, cfg.label];",
+  "const started = Date.now();",
+  "let verified = false;",
+  "while (Date.now() - started < 30000) {",
+  "  const modelText = await getMonacoText();",
+  "  if (expected.every((marker) => modelText.includes(marker))) {",
+  "    verified = true;",
+  "    break;",
+  "  }",
+  "  await state.page.waitForTimeout(1000);",
+  "}",
+  "if (verified) {",
+  "  console.log(\"MANIFEST_PASTE_VERIFIED\");",
+  "} else {",
+  "  throw new Error(\"Manifest paste verification failed. Monaco preview: \" + (await getMonacoText()).slice(0, 1200));",
+  "}",
+].join("\n"));
+NODE
 )"
 ```
 
