@@ -19,3 +19,10 @@
 	defaultBranch = main
 [credential]
 	helper = store
+[credential "https://dev.azure.com"]
+	helper = !WSLENV=GCM_AZREPOS_CREDENTIALTYPE:GCM_MSAUTH_USEBROKER GCM_AZREPOS_CREDENTIALTYPE=oauth GCM_MSAUTH_USEBROKER=false \"/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe\"
+	azreposCredentialType = oauth
+	guiPrompt = false
+	interactive = true
+	useHttpPath = true
+

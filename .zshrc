@@ -118,9 +118,17 @@ compinit
 
 # ── FZF ───────────────────────────────────────────────────────
 source <(fzf --zsh)
-export FZF_DEFAULT_COMMAND='fd --hidden --ignore'
-export FZF_COMPLETION_DIR_OPTS='--walker dir,follow,hidden'
+export FZF_DEFAULT_COMMAND='fd --hidden'
 export FZF_COMPLETION_OPTS="--preview '~/.config/fzf/fzf-preview.sh {}' --border --info=inline"
+
+_fzf_compgen_path() {
+  fd --hidden --follow --color=never . "$1"
+}
+
+_fzf_compgen_dir() {
+  fd --hidden --follow --type directory --color=never . "$1"
+}
+
 source ~/.config/fzf/fzf-tab/fzf-tab.plugin.zsh
 
 # ── Zoxide ────────────────────────────────────────────────────
