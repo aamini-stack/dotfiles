@@ -2,30 +2,10 @@ return {
   {
     'neovim/nvim-lspconfig',
     dependencies = {
-      -- Automatically install LSPs and related tools to stdpath for Neovim
-      -- Mason must be loaded before its dependents so we need to set it up here.
-      {
-        'mason-org/mason.nvim',
-        ---@module 'mason.settings'
-        ---@type MasonSettings
-        ---@diagnostic disable-next-line: missing-fields
-        opts = {},
-      },
-      -- Maps LSP server names between nvim-lspconfig and Mason package names.
-      'mason-org/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-
       -- Useful status updates for LSP.
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function()
-      -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
-      -- and elegantly composed help section, `:help lsp-vs-treesitter`
-
-      --  This function gets run when an LSP attaches to a particular buffer.
-      --    That is to say, every time a new file is opened that is associated with
-      --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
-      --    function will be executed to configure the current buffer
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
@@ -76,19 +56,14 @@ return {
         end,
       })
 
-      --- --Enable (broadcasting) snippet capability for completion
-      -- local jsonCapabilities = vim.lsp.protocol.make_client_capabilities()
-      -- jsonCapabilities.textDocument.completion.completionItem.snippetSupport = true
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-      --  See `:help lsp-config` for information about keys and how to configure
-      local util = require 'lspconfig.util'
-
-      -- ── TypeScript / JavaScript / React ──────────────────────────────
       ---@type table<string, vim.lsp.Config>
-      local typescript_servers = {
+      local servers = {
+        -- Web / TypeScript
         tsgo = {},
         oxlint = {
-          root_dir = util.root_pattern('vite.config.ts', 'oxlint.config.ts', '.oxlintrc.json', 'package.json', '.git'),
           settings = {
             configPath = './vite.config.ts',
             fixKind = 'safe_fix',
@@ -96,18 +71,19 @@ return {
             unusedDisableDirectives = 'deny',
           },
         },
+        oxfmt = {},
         tailwindcss = {},
         html = {},
         cssls = {},
         jsonls = {
           filetypes = { 'json', 'jsonc', 'json5' },
         },
-      }
 
-      -- ── General / multi-language ────────────────────────────────────
-      ---@type table<string, vim.lsp.Config>
-      local general_servers = {
-        taplo = {},
+        -- Python
+        basedpyright = {},
+        ruff = {},
+
+        -- Lua
         lua_ls = {
           on_init = function(client)
             if client.workspace_folders then
@@ -135,36 +111,17 @@ return {
             Lua = {},
           },
         },
+
+        -- TOML
+        taplo = {},
       }
 
-      -- Python tools are managed by uv because this system Python has no pip.
-      vim.lsp.enable 'basedpyright'
-      vim.lsp.enable 'ruff'
-
-      -- Merge all server groups
-      ---@type table<string, vim.lsp.Config>
-      local servers = vim.tbl_extend('error', typescript_servers, general_servers)
-
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, { 'shellcheck', 'markdownlint-cli2' })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
+      -- Tools are installed by mise; Neovim only configures and enables them.
       for name, server in pairs(servers) do
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
         vim.lsp.config(name, server)
         vim.lsp.enable(name)
       end
-
-      -- Run oxfmt as an LSP server for persistent formatting (no process spawn overhead)
-      vim.lsp.config('oxfmt', {
-        root_dir = util.root_pattern('vite.config.ts', '.oxfmtrc.json', '.oxfmtrc.jsonc', 'package.json', '.git'),
-        init_options = {
-          settings = {
-            configPath = './vite.config.ts',
-            run = 'onSave',
-          },
-        },
-      })
-      vim.lsp.enable 'oxfmt'
     end,
   },
 
@@ -183,27 +140,14 @@ return {
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          return nil
-        else
-          return {
-            timeout_ms = 2000,
-            lsp_format = 'fallback',
-          }
-        end
-      end,
+      format_on_save = {
+        timeout_ms = 2000,
+        lsp_format = 'fallback',
+      },
       formatters_by_ft = {
-        -- Lua
         lua = { 'stylua' },
-        -- Python
         python = { 'ruff_organize_imports', 'ruff_format' },
-        markdown = { 'markdownlint-cli2' },
-        -- Web / data (formatted via oxfmt LSP)
+        markdown = { 'prettier' },
       },
     },
   },
@@ -213,44 +157,13 @@ return {
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
+        dockerfile = { 'hadolint' },
+        json = { 'jsonlint' },
         markdown = { 'markdownlint-cli2' },
         python = { 'ruff' },
+        terraform = { 'tflint', 'terraform_validate' },
       }
 
-      -- To allow other plugins to add linters to require('lint').linters_by_ft,
-      -- instead set linters_by_ft like this:
-      -- lint.linters_by_ft = lint.linters_by_ft or {}
-      -- lint.linters_by_ft['markdown'] = { 'markdownlint' }
-      --
-      -- However, note that this will enable a set of default linters,
-      -- which will cause errors unless these tools are available:
-      -- {
-      --   clojure = { "clj-kondo" },
-      --   dockerfile = { "hadolint" },
-      --   inko = { "inko" },
-      --   janet = { "janet" },
-      --   json = { "jsonlint" },
-      --   markdown = { "vale" },
-      --   rst = { "vale" },
-      --   ruby = { "ruby" },
-      --   terraform = { "tflint" },
-      --   text = { "vale" }
-      -- }
-      --
-      -- You can disable the default linters by setting their filetypes to nil:
-      -- lint.linters_by_ft['clojure'] = nil
-      -- lint.linters_by_ft['dockerfile'] = nil
-      -- lint.linters_by_ft['inko'] = nil
-      -- lint.linters_by_ft['janet'] = nil
-      -- lint.linters_by_ft['json'] = nil
-      -- lint.linters_by_ft['markdown'] = nil
-      -- lint.linters_by_ft['rst'] = nil
-      -- lint.linters_by_ft['ruby'] = nil
-      -- lint.linters_by_ft['terraform'] = nil
-      -- lint.linters_by_ft['text'] = nil
-
-      -- Create autocommand which carries out the actual linting
-      -- on the specified events.
       local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })
       vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
         group = lint_augroup,
