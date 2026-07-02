@@ -3,7 +3,7 @@ _.file = { path = "~/.env" }
 
 [settings]
 experimental = true
-minimum_release_age = "3d"
+minimum_release_age = "1d"
 idiomatic_version_file_enable_tools = ["node"]
 
 [plugins]
@@ -62,3 +62,4 @@ helm = "latest"
 make = "latest"
 "nix:gcc" = "latest"
 dotnet = "10"
+jq = "latest"
