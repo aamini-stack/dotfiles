@@ -11,43 +11,56 @@ nix = "https://github.com/jbadeau/mise-nix.git"
 vite-plus = "https://github.com/markmals/mise-vite-plus"
 
 [tools]
-node = "22"
+#===============================================================================
+# Language Toolchains
+#===============================================================================
+
+# Python
 uv = "latest"
-vite-plus = "latest"
-
-# dev
-"nix:zsh" = "latest"
-"oh-my-posh" = "latest"
-"opencode" = { version = "latest", minimum_release_age = "1d" }
-"pi" = "latest"
-"github-cli" = "latest"
-"nix:stow" = "latest"
-"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
-kubectl = "latest"
-helm = "latest"
-"npm:playwriter" = "latest"
-
-# lang
-"npm:corepack" = "latest"
-"npm:pnpm" = "latest"
-"npm:oxfmt" = "latest"
-"npm:oxlint" = "latest"
-"npm:@typescript/native-preview" = "7.0.0-dev.20260701.1"
-"npm:@tailwindcss/language-server" = "latest"
-"npm:vscode-langservers-extracted" = "latest"
-"npm:prettier" = "latest"
 "pipx:basedpyright" = "latest"
 "pipx:ruff" = "latest"
-"github:LuaLS/lua-language-server" = "3.18.2"
-"npm:markdownlint-cli" = "latest"
-"npm:markdownlint-cli2" = "latest"
+
+# Rust
 rust = "latest"
+
+# Dotnet
+dotnet = "10"
+
+# Node
+vite-plus = "latest"
+node = "22"
+"npm:corepack" = "latest"
+"npm:pnpm" = "latest"
+"npm:@typescript/native-preview" = "7.0.0-dev.20260701.1"
+
+# LSPs
+"npm:@tailwindcss/language-server" = "latest"
+"npm:vscode-langservers-extracted" = "latest"
+"github:LuaLS/lua-language-server" = "3.18.2"
+"npm:markdownlint-cli2" = "latest"
 "cargo:stylua" = "latest"
 "cargo:taplo-cli" = "latest"
+tflint = "0.63.1"
+hadolint = "2.14.0"
+"npm:jsonlint" = "1.6.3"
 shellcheck = "latest"
 
-# modern command line tools 
+#===============================================================================
+# CLIs/Editors
+#===============================================================================
+
+# Shell
+"nix:zsh" = "latest"
+"oh-my-posh" = "latest"
+
+# AI
+"opencode" = "latest"
+"pi" = "latest"
+"npm:playwriter" = "latest"
+
+# CLIs 
 "bat" = "latest"
+jq = "latest"
 "fd" = "latest"
 "eza" = "latest"
 "just" = "latest"
@@ -62,6 +75,11 @@ shellcheck = "latest"
 "worktrunk" = "latest"
 "nix:gh-dash" = "latest"
 "aqua:joshmedeski/sesh" = "latest"
+"github-cli" = "latest"
+"nix:stow" = "latest"
+"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
+kubectl = "latest"
+helm = "latest"
 
 # nvim
 "neovim" = "0.12.2"
@@ -71,8 +89,3 @@ shellcheck = "latest"
 "nix:xclip" = "latest"
 make = "latest"
 "nix:gcc" = "latest"
-dotnet = "10"
-jq = "latest"
-tflint = "0.63.1"
-hadolint = "2.14.0"
-"npm:jsonlint" = "1.6.3"
