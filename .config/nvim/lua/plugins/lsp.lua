@@ -156,6 +156,11 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
+      lint.linters['markdownlint-cli2'].args = {
+        '--config',
+        vim.fn.expand '~/.markdownlint.json',
+        '-',
+      }
       lint.linters_by_ft = {
         dockerfile = { 'hadolint' },
         json = { 'jsonlint' },
