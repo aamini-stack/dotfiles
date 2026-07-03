@@ -59,11 +59,21 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities.textDocument.completion.completionItem.snippetSupport = true
 
+      local function vite_root(bufnr, on_dir)
+        local filename = vim.api.nvim_buf_get_name(bufnr)
+        local root = vim.fs.root(filename, 'vite.config.ts')
+        if root then on_dir(root) end
+      end
+
+      local function vite_plus_bin(root, name) return vim.fs.joinpath(root, 'node_modules', 'vite-plus', 'bin', name) end
+
       ---@type table<string, vim.lsp.Config>
       local servers = {
         -- Web / TypeScript
         tsgo = {},
         oxlint = {
+          cmd = function(dispatchers, config) return vim.lsp.rpc.start({ vite_plus_bin(config.root_dir, 'oxlint'), '--lsp' }, dispatchers) end,
+          root_dir = vite_root,
           settings = {
             configPath = './vite.config.ts',
             fixKind = 'safe_fix',
@@ -71,7 +81,16 @@ return {
             unusedDisableDirectives = 'deny',
           },
         },
-        oxfmt = {},
+        oxfmt = {
+          cmd = function(dispatchers, config) return vim.lsp.rpc.start({ vite_plus_bin(config.root_dir, 'oxfmt'), '--lsp' }, dispatchers) end,
+          root_dir = vite_root,
+          init_options = {
+            settings = {
+              ['fmt.configPath'] = './vite.config.ts',
+              run = 'onSave',
+            },
+          },
+        },
         tailwindcss = {},
         html = {},
         cssls = {},
@@ -147,7 +166,6 @@ return {
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' },
-        markdown = { 'prettier' },
       },
     },
   },
