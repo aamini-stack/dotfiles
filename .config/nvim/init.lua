@@ -214,9 +214,7 @@ vim.api.nvim_create_autocmd('VimLeavePre', {
   group = vim.api.nvim_create_augroup('shell-cwd-on-exit', { clear = true }),
   callback = function()
     local new_dir_file = vim.env.NVIM_NEW_DIR_FILE
-    if not new_dir_file or new_dir_file == '' then
-      return
-    end
+    if not new_dir_file or new_dir_file == '' then return end
 
     vim.fn.mkdir(vim.fn.fnamemodify(new_dir_file, ':h'), 'p')
     vim.fn.writefile({ vim.fn.getcwd() }, new_dir_file)
