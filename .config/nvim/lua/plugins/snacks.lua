@@ -11,9 +11,7 @@ local function lazygit()
           once = true,
           callback = function()
             vim.schedule(function()
-              if vim.fn.filereadable(new_dir_file) ~= 1 then
-                return
-              end
+              if vim.fn.filereadable(new_dir_file) ~= 1 then return end
 
               local new_dir = vim.trim(table.concat(vim.fn.readfile(new_dir_file), '\n'))
               vim.fn.delete(new_dir_file)
