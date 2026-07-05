@@ -65,20 +65,39 @@ return {
     },
     dashboard = {
       enabled = true,
+      preset = {
+        keys = {
+          { icon = ' ', key = 'f', desc = 'Find File', action = function() Snacks.picker.files { cwd = Snacks.git.get_root() } end },
+          { icon = ' ', key = 'F', desc = 'Find File (cwd)', action = function() Snacks.picker.files() end },
+          { icon = ' ', key = 'n', desc = 'New File', action = ':ene | startinsert' },
+          { icon = ' ', key = 'g', desc = 'Find Text', action = function() Snacks.picker.grep { cwd = Snacks.git.get_root() } end },
+          { icon = ' ', key = 'r', desc = 'Recent Files', action = ':lua Snacks.dashboard.pick("oldfiles")' },
+          { icon = ' ', key = 'c', desc = 'Config', action = ':lua Snacks.dashboard.pick("files", {cwd = vim.fn.stdpath("config")})' },
+          { icon = ' ', key = 's', desc = 'Restore Session', section = 'session' },
+          { icon = '󰒲 ', key = 'L', desc = 'Lazy', action = ':Lazy', enabled = package.loaded.lazy ~= nil },
+          { icon = ' ', key = 'q', desc = 'Quit', action = ':qa' },
+        },
+      },
+      sections = {
+        { section = 'header' },
+        { text = { { vim.fn.fnamemodify(vim.fn.getcwd(), ':~'), hl = 'SnacksDashboardDesc' } }, align = 'center', padding = 1 },
+        { section = 'keys', gap = 1, padding = 1 },
+        { section = 'startup' },
+      },
     },
   },
   keys = {
     -- Top Pickers & Explorer
     { '<leader><space>', function() Snacks.picker.smart() end, desc = 'Smart Find Files' },
     { '<leader>,', function() Snacks.picker.buffers() end, desc = 'Buffers' },
-    { '<leader>/', function() Snacks.picker.grep() end, desc = 'Grep' },
+    { '<leader>/', function() Snacks.picker.grep { cwd = Snacks.git.get_root() } end, desc = 'Grep' },
     { '<leader>:', function() Snacks.picker.command_history() end, desc = 'Command History' },
     { '<leader>n', function() Snacks.picker.notifications() end, desc = 'Notification History' },
     -- find
     { '<leader>fb', function() Snacks.picker.buffers() end, desc = 'Buffers' },
     { '<leader>fc', function() Snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, desc = 'Find Config File' },
-    { '<leader>ff', function() Snacks.picker.files() end, desc = 'Find Files' },
-    { '<leader>fg', function() Snacks.picker.git_files() end, desc = 'Find Git Files' },
+    { '<leader>fF', function() Snacks.picker.files() end, desc = 'Find Files (cwd)' },
+    { '<leader>ff', function() Snacks.picker.files { cwd = Snacks.git.get_root() } end, desc = 'Find Files' },
     { '<leader>fp', function() Snacks.picker.projects() end, desc = 'Projects' },
     { '<leader>fr', function() Snacks.picker.recent() end, desc = 'Recent' },
     -- git
