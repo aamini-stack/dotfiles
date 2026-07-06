@@ -70,9 +70,7 @@ return {
     keys = {
       {
         '<leader>sr',
-        function()
-          require('spectre').open()
-        end,
+        function() require('spectre').open() end,
         desc = 'Search and Replace',
       },
     },
@@ -273,6 +271,7 @@ return {
       },
     },
     opts = {
+      floating_window_scaling_factor = 1,
       open_for_directories = true,
       keymaps = {
         show_help = '<f1>',
