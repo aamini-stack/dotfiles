@@ -16,7 +16,7 @@ local function lazygit()
               local new_dir = vim.trim(table.concat(vim.fn.readfile(new_dir_file), '\n'))
               vim.fn.delete(new_dir_file)
 
-              if new_dir ~= '' and vim.fn.isdirectory(new_dir) == 1 then
+              if new_dir ~= '' and vim.fn.isdirectory(new_dir) == 1 and new_dir ~= vim.fn.getcwd() then
                 vim.api.nvim_set_current_dir(new_dir)
                 if vim.env.NVIM_NEW_DIR_FILE and vim.env.NVIM_NEW_DIR_FILE ~= '' then
                   vim.fn.mkdir(vim.fn.fnamemodify(vim.env.NVIM_NEW_DIR_FILE, ':h'), 'p')
