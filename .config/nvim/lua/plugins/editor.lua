@@ -208,6 +208,14 @@ return {
 
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function() return '%2l:%-2v' end
+
+      ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_filename = function()
+        local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ':~')
+        local file = vim.fn.expand('%:t')
+        if file == '' then return cwd end
+        return cwd .. ' / ' .. file
+      end
     end,
   },
   {
@@ -273,8 +281,15 @@ return {
     opts = {
       floating_window_scaling_factor = 1,
       open_for_directories = true,
+      change_neovim_cwd_on_close = true,
       keymaps = {
         show_help = '<f1>',
+      },
+      hooks = {
+        yazi_closed_successfully = function()
+          local ok, dashboard = pcall(require, 'snacks.dashboard')
+          if ok then dashboard.update() end
+        end,
       },
     },
     init = function() vim.g.loaded_netrwPlugin = 1 end,

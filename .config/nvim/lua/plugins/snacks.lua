@@ -80,7 +80,13 @@ return {
       },
       sections = {
         { section = 'header' },
-        { text = { { vim.fn.fnamemodify(vim.fn.getcwd(), ':~'), hl = 'SnacksDashboardDesc' } }, align = 'center', padding = 1 },
+        function()
+          return {
+            text = { { vim.fn.fnamemodify(vim.fn.getcwd(), ':~'), hl = 'SnacksDashboardDesc' } },
+            align = 'center',
+            padding = 1,
+          }
+        end,
         { section = 'keys', gap = 1, padding = 1 },
         { section = 'startup' },
       },
@@ -210,6 +216,14 @@ return {
         Snacks.toggle.inlay_hints():map '<leader>uh'
         Snacks.toggle.indent():map '<leader>ug'
         Snacks.toggle.dim():map '<leader>uD'
+      end,
+    })
+
+    vim.api.nvim_create_autocmd('DirChanged', {
+      desc = 'Refresh snacks dashboard on cwd change',
+      callback = function()
+        local ok, dashboard = pcall(require, 'snacks.dashboard')
+        if ok then dashboard.update() end
       end,
     })
   end,
