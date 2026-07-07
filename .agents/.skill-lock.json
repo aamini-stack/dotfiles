@@ -9,6 +9,15 @@
       "skillFolderHash": "902f70f9538b18f936a015b0a5e937cce1fab52d",
       "installedAt": "2026-06-11T00:32:03.616Z",
       "updatedAt": "2026-06-11T00:32:03.616Z"
+    },
+    "herdr": {
+      "source": "ogulcancelik/herdr",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/ogulcancelik/herdr.git",
+      "skillPath": "SKILL.md",
+      "skillFolderHash": "1d49fa7639e7fc15b6ce270a7c0cee9c97ba7986",
+      "installedAt": "2026-07-07T20:32:01.376Z",
+      "updatedAt": "2026-07-07T20:32:01.376Z"
     }
   },
   "dismissed": {

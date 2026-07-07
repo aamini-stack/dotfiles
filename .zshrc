@@ -22,6 +22,7 @@ alias copilot='copilot --yolo'
 alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
+alias setup="herdr-project-layout"
 
 nvim()
 {
