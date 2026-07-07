@@ -33,8 +33,3 @@ mise i
 # zsh
 zsh_path="$(command -v zsh)"
 sudo usermod -s "$zsh_path" "$USER"
-
-# tpm (tmux plugin manager)
-if "test ! -d ~/.tmux/plugins/tpm" \
-   "run 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm && ~/.tmux/plugins/tpm/bin/install_plugins'"
-

@@ -1,6 +1,5 @@
 .env*.local
 
-.config/tmux/plugins
 .config/gh
 
 .pi
