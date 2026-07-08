@@ -83,6 +83,7 @@ jq = "latest"
 "pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
 kubectl = "latest"
 helm = "latest"
+hunkdiff = "latest"
 
 # nvim
 "neovim" = "0.12.2"
@@ -92,5 +93,6 @@ helm = "latest"
 "nix:xclip" = "latest"
 make = "latest"
 "nix:gcc" = "15.2.0"
+
+# misc
 "nix:postgresql_17" = "latest"
-hunkdiff = "latest"
