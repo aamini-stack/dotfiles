@@ -140,6 +140,28 @@ backend = "cargo:stylua"
 version = "0.10.0"
 backend = "cargo:taplo-cli"
 
+[[tools.claude]]
+version = "2.1.201"
+backend = "aqua:anthropics/claude-code"
+
+[tools.claude."platforms.linux-arm64"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/linux-arm64/claude"
+
+[tools.claude."platforms.linux-arm64-musl"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/linux-arm64-musl/claude"
+
+[tools.claude."platforms.linux-x64"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/linux-x64/claude"
+
+[tools.claude."platforms.linux-x64-musl"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/linux-x64-musl/claude"
+
+[tools.claude."platforms.macos-arm64"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/darwin-arm64/claude"
+
+[tools.claude."platforms.macos-x64"]
+url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.201/darwin-x64/claude"
+
 [[tools.claude-code]]
 version = "2.1.201"
 backend = "aqua:anthropics/claude-code"
@@ -724,7 +746,7 @@ version = "3.1.2"
 backend = "nix:erdtree"
 
 [[tools."nix:gcc"]]
-version = "16.1.0"
+version = "15.2.0"
 backend = "nix:gcc"
 
 [[tools."nix:gh-dash"]]
