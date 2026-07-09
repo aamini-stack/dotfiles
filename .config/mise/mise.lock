@@ -784,7 +784,7 @@ version = "15.2.0"
 backend = "nix:gcc"
 
 [[tools."nix:gh-dash"]]
-version = "4.24.1"
+version = "4.25.0"
 backend = "nix:gh-dash"
 
 [[tools."nix:git-town"]]
@@ -794,6 +794,10 @@ backend = "nix:git-town"
 [[tools."nix:gnumake"]]
 version = "4.4.1"
 backend = "nix:gnumake"
+
+[[tools."nix:postgresql_17"]]
+version = "17.1"
+backend = "nix:postgresql_17"
 
 [[tools."nix:stow"]]
 version = "2.4.1"
