@@ -13,6 +13,12 @@
 [delta]
     navigate = true  # use n and N to move between diff sections
     dark = true
+[diff]
+    tool = delta
+[difftool "delta"]
+    cmd = delta --dark --paging=never --line-numbers --side-by-side --tabs 2 "$LOCAL" "$REMOTE"
+[difftool]
+    prompt = false
 [merge]
     conflictStyle = zdiff3
 [init]
