@@ -3,6 +3,11 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 export PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME/bin:"*) ;;

@@ -19,12 +19,6 @@ export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 eval "$(mise activate zsh)"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
-export PNPM_HOME="$XDG_DATA_HOME/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-
 # ── Aliases ───────────────────────────────────────────────────
 alias ls='eza -1 --icons --group-directories-first'
 alias k='kubectl'
