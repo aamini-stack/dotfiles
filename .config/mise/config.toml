@@ -57,6 +57,7 @@ shellcheck = "latest"
 "opencode" = "latest"
 "pi" = "latest"
 "npm:playwriter" = "latest"
+claude = "latest"
 
 # CLIs 
 "bat" = "latest"
@@ -89,4 +90,3 @@ helm = "latest"
 "nix:xclip" = "latest"
 make = "latest"
 "nix:gcc" = "15.2.0"
-claude-code = "latest"
