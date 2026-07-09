@@ -5,14 +5,10 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export TERM=xterm-256color
 export OPENCODE_EXPERIMENTAL_OXFMT=1
-if [[ "$(uname -s)" == "Linux" ]] && getent hosts host.lima.internal >/dev/null 2>&1; then
-  export OLLAMA_HOST="http://host.lima.internal:11434"
-else
-  export OLLAMA_HOST="http://127.0.0.1:11434"
-fi
+export OLLAMA_HOST="http://127.0.0.1:11434"
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
-export PATH="$PATH:$HOME/.local/bin" # Used by lima vms
+export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 # ── Initialization ────────────────────────────────────────────
@@ -72,12 +68,6 @@ lg()
     fi
 }
 
-# Keep Lima reconnects as plain SSH instead of going through `limactl shell`.
-lima() {
-  local instance="${LIMA_INSTANCE:-default}"
-  ssh -F "$HOME/.lima/$instance/ssh.config" "lima-$instance" "$@"
-}
-
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	command yazi "$@" --cwd-file="$tmp"
@@ -86,25 +76,13 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-# Auto-connect new interactive host shells to a Lima VM.
-# REMOVE THE EXEC COMMAND TO ALLOW GOING BACK TO MAC HOST WHEN RUNNING 'exit'
-auto_lima_ssh() {
-  local instance="${LIMA_AUTO_SSH_INSTANCE:-default}"
-  local ssh_config="$HOME/.lima/$instance/ssh.config"
-  local hostagent_socket="$HOME/.lima/$instance/ha.sock"
-
-  [[ -o interactive ]] || return 0
-  [[ -n "${LIMA_AUTO_SSH_DISABLED:-}" ]] && return 0
-  [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_TTY:-}" ]] && return 0
-  [[ "${SHLVL:-1}" -gt 1 ]] && return 0
-  [[ -t 0 && -t 1 ]] || return 0
-
-  [[ -f "$ssh_config" ]] || return 0
-  [[ -S "$hostagent_socket" ]] || return 0
-  ssh -F "$ssh_config" "lima-$instance"
+# ── Platform modules ───────────────────────────────────────────
+source_if_exists() {
+  [[ -r "$1" ]] && source "$1"
 }
 
-auto_lima_ssh
+source_if_exists "$HOME/scripts/platforms/macos/host.zsh"
+source_if_exists "$HOME/scripts/platforms/macos/lima.zsh"
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
@@ -163,16 +141,12 @@ PATH="$PATH:/usr/sbin:/sbin"
 export PATH
 # Lima END
 
-
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
 
 # start in tmux: https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
 # if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
 #  exec tmux
 # fi
-
-export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
-
 
 # Vite+ bin (https://viteplus.dev)
 . "$HOME/.vite-plus/env"
