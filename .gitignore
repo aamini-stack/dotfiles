@@ -13,3 +13,5 @@
 .config/herdr/sessions/
 .config/herdr/plugin-config/
 .config/herdr/plugin-state/
+
+__pycache__

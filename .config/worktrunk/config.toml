@@ -1,11 +1,16 @@
 worktree-path = "~/.herdr/worktrees/{{ repo }}/{{ branch | sanitize }}"
 
+[step.copy-ignored]
+exclude = [".env", ".env.compose", ".env.development.local"]
+
 [[pre-start]]
-mise = "if [ -f mise.toml ] || [ -f .mise.toml ]; then mise trust; fi"
+mise = "mise trust"
 
 [[post-start]]
-copy = "wt step copy-ignored"
-install = "vp install"
+copy-env = "wt step copy-ignored"
+
+# Project-specific install / compose / server hooks live in the project
+# .config/wt.toml (e.g. the node or uv templates).
 
 # # User Configuration
 #

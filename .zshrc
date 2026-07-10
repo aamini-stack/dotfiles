@@ -9,6 +9,7 @@ export OLLAMA_HOST="http://127.0.0.1:11434"
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.config/worktrunk/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 # ── Initialization ────────────────────────────────────────────
