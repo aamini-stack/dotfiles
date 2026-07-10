@@ -4,4 +4,5 @@ approved-commands = [
     "vp i",
     "vp run compose:up",
     "wt step tether -- vp run dev -- --port {{ branch | hash_port }}",
+    "vp run compose:down",
 ]

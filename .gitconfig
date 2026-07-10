@@ -7,7 +7,7 @@
     lg = log --branches --remotes --tags --graph --oneline --decorate
 
 [core]
-    pager = delta
+	pager = hunk pager
 [interactive]
     diffFilter = delta --color-only
 [delta]
