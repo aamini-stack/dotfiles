@@ -1,6 +1,7 @@
 promptToReturnFromSubprocess: false 
 git:
   pagers:
+    - externalDiffCommand: difft --color=always --display=inline
     - pager: delta --dark --paging=never --line-numbers --side-by-side --tabs 2
-      colorArg: always
+      colorArg: never
 

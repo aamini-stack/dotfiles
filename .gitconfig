@@ -26,12 +26,12 @@
 [interactive]
     diffFilter = delta --color-only
 
-# `git difftool` and lazygit `<ctrl+t>` use Hunk.
+# `git difftool` and lazygit `<ctrl+t>` use Difftastic.
 [diff]
-    tool = hunk
+    tool = difftastic
 
-[difftool "hunk"]
-    cmd = hunk-difftool "$LOCAL" "$REMOTE"
+[difftool "difftastic"]
+    cmd = difft --color=always --display=inline "$LOCAL" "$REMOTE"
 
 [difftool]
     prompt = false
