@@ -60,6 +60,7 @@ herdr = "latest"
 "pi" = "latest"
 "npm:playwriter" = "latest"
 claude = "latest"
+"npm:lavish-axi" = "latest"
 
 # CLIs 
 "bat" = "latest"

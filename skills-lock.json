@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/code-review/SKILL.md",
       "computedHash": "4a17d9d3e0fc87ae48544d371a820fac5a4a78f4c05e7e6b3229094fbf8a7e26"
+    },
+    "lavish": {
+      "source": "kunchenguid/lavish-axi",
+      "sourceType": "github",
+      "skillPath": "skills/lavish/SKILL.md",
+      "computedHash": "bdca0069c8d4aa89ea3a3e3b1c394de36431f91ec96531e277c2f23f6d92d6b7"
     }
   }
 }
