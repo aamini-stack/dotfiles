@@ -10,6 +10,8 @@ fi
 # stow
 sudo apt update -y
 sudo apt install stow zsh -y
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
 if [ -f "$HOME/.zshrc" ]; then
   rm "$HOME/.zshrc"
 fi
