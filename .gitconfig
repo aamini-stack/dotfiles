@@ -1,34 +1,51 @@
-[rebase]
-    updateRefs = true
 [user]
     name = Aria Amini
     email = amini5454@gmail.com
+
 [alias]
     lg = log --branches --remotes --tags --graph --oneline --decorate
 
-[core]
-	pager = hunk pager
-[interactive]
-    diffFilter = delta --color-only
-[delta]
-    navigate = true  # use n and N to move between diff sections
-    dark = true
-[diff]
-    tool = delta
-[difftool "delta"]
-    cmd = delta --dark --paging=never --line-numbers --side-by-side --tabs 2 "$LOCAL" "$REMOTE"
-[difftool]
-    prompt = false
+[init]
+    defaultBranch = main
+
+[rebase]
+    updateRefs = true
+
 [merge]
     conflictStyle = zdiff3
-[init]
-	defaultBranch = main
-[credential]
-	helper = store
-[credential "https://dev.azure.com"]
-	helper = !WSLENV=GCM_AZREPOS_CREDENTIALTYPE:GCM_MSAUTH_USEBROKER GCM_AZREPOS_CREDENTIALTYPE=oauth GCM_MSAUTH_USEBROKER=false \"/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe\"
-	azreposCredentialType = oauth
-	guiPrompt = false
-	interactive = true
-	useHttpPath = true
 
+# ============================================
+# Diff tools
+# ============================================
+
+# CLI `git diff` / `git show` use Hunk as the pager.
+[core]
+    pager = hunk pager
+
+# `git add -p` uses Delta for colorized hunks without breaking interactive selection.
+[interactive]
+    diffFilter = delta --color-only
+
+# `git difftool` and lazygit `<ctrl+t>` use Hunk.
+[diff]
+    tool = hunk
+
+[difftool "hunk"]
+    cmd = hunk-difftool "$LOCAL" "$REMOTE"
+
+[difftool]
+    prompt = false
+
+# ============================================
+# Credentials
+# ============================================
+
+[credential]
+    helper = store
+
+[credential "https://dev.azure.com"]
+    helper = !WSLENV=GCM_AZREPOS_CREDENTIALTYPE:GCM_MSAUTH_USEBROKER GCM_AZREPOS_CREDENTIALTYPE=oauth GCM_MSAUTH_USEBROKER=false "/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe"
+    azreposCredentialType = oauth
+    guiPrompt = false
+    interactive = true
+    useHttpPath = true
