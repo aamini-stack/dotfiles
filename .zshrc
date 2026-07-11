@@ -25,6 +25,10 @@ alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
 alias setup="herdr-project-layout"
 
+gr() {
+  cd "$(git rev-parse --show-toplevel 2>/dev/null)"
+}
+
 nvim()
 {
     local nvim_new_dir_file="${XDG_CACHE_HOME:-$HOME/.cache}/nvim/newdir"
