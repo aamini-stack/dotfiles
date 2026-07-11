@@ -26,6 +26,7 @@ alias tree='erd'
 alias rg="rg --hidden --glob '!.git'"
 alias pr="gh-dash"
 alias setup="herdr-project-layout"
+alias gd='hunk diff --watch'
 
 gr() {
   cd "$(git rev-parse --show-toplevel 2>/dev/null)"
