@@ -26,12 +26,13 @@
 [interactive]
     diffFilter = delta --color-only
 
-# `git difftool` and lazygit `<ctrl+t>` use Difftastic.
+# `git difftool` and lazygit `<ctrl+t>` use Hunk via a wrapper that
+# generates a clean patch from the directory/file pairs Git provides.
 [diff]
-    tool = difftastic
+    tool = hunk
 
-[difftool "difftastic"]
-    cmd = difft --color=always --display=inline "$LOCAL" "$REMOTE"
+[difftool "hunk"]
+    cmd = hunk-difftool "$LOCAL" "$REMOTE"
 
 [difftool]
     prompt = false
