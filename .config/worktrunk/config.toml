@@ -1,7 +1,7 @@
 worktree-path = "~/.herdr/worktrees/{{ repo }}/{{ branch | sanitize }}"
 
 [step.copy-ignored]
-exclude = [".env", ".env.compose", ".env.development.local"]
+exclude = [".env", ".env.compose"]
 
 [[pre-start]]
 mise = "mise trust"
