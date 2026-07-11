@@ -3,7 +3,9 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export EDITOR='nvim'
 export VISUAL='nvim'
-export TERM=xterm-256color
+if [[ -z "$TERM" ]]; then
+  export TERM=xterm-256color
+fi
 export OPENCODE_EXPERIMENTAL_OXFMT=1
 export OLLAMA_HOST="http://127.0.0.1:11434"
 # ── Path ──────────────────────────────────────────────────────
