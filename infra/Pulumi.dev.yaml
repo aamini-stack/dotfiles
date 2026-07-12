@@ -1,0 +1,5 @@
+config:
+  infra:adminUsername: aamini
+  infra:location: eastus
+  infra:vmSize: Standard_D2as_v5
+  infra:adminPublicKey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILNexJMilcG7c+OMJ/XEI3IBwCU2IfE6b7N6pZkQtlih amini5454@gmail.com
