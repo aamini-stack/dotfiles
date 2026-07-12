@@ -1,7 +1,6 @@
 import os
 
 import pulumi
-import pulumi_azure_native as azure
 from pulumi_azure_native import compute, network, resources
 
 config = pulumi.Config()
@@ -11,8 +10,8 @@ location = config.get("location") or "eastus"
 vm_size = config.get("vmSize") or "Standard_B2ms"
 
 resource_group = resources.ResourceGroup(
-    "rg-coding",
-    resource_group_name="rg-coding-vm",
+    "rg-devbox",
+    resource_group_name="rg-devbox",
     location=location,
 )
 
@@ -74,12 +73,13 @@ nic = network.NetworkInterface(
 )
 
 vm = compute.VirtualMachine(
-    "codingvm",
+    "devbox",
+    vm_name="devbox",
     resource_group_name=resource_group.name,
     location=resource_group.location,
     hardware_profile=compute.HardwareProfileArgs(vm_size=vm_size),
     os_profile=compute.OSProfileArgs(
-        computer_name="codingvm",
+        computer_name="devbox",
         admin_username=admin_username,
         linux_configuration=compute.LinuxConfigurationArgs(
             disable_password_authentication=True,
