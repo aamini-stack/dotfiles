@@ -35,3 +35,4 @@ mise i
 # zsh
 zsh_path="$(command -v zsh)"
 sudo usermod -s "$zsh_path" "$USER"
+echo "Log out and back in for zsh to become the default shell."
