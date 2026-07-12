@@ -133,7 +133,7 @@ dev() {
   local target=$(printf '%s\n' "${targets[@]}" | fzf --prompt='devbox target: ')
   case "$target" in
     lima) lima ;;
-    wsl|devbox) ssh "$target" ;;
+    wsl|devbox) herdr --remote "$target" ;;
   esac
 }
 
