@@ -6,3 +6,19 @@ approved-commands = [
     "wt step tether -- vp run dev -- --port {{ branch | hash_port }}",
     "vp run compose:down",
 ]
+
+[projects."msazure.visualstudio.com/DefaultCollection/One/_git/AXEAgents"]
+approved-commands = [
+    "wt step copy-ignored",
+    "wt step tether -- env COMPOSE_PROJECT_NAME={{ repo | sanitize }}-{{ branch | sanitize_hash }} PORT={{ (repo ~ '-api-' ~ branch) | hash_port }} WORKER_PORT={{ (repo ~ '-worker-' ~ branch) | hash_port }} docker compose -f pysrc/WorkloadsAssistantCore/compose.yaml up --build",
+    "WORKTREE_NAME='{{ worktree_name }}' COMPOSE_NAME='{{ worktree_name | sanitize_db }}' APP_PORT='{{ branch | hash_port }}' DATABASE_PORT='{{ ('db-' ~ branch) | hash_port }}' DB_NAME='{{ branch | sanitize_db }}' wt-generate-env",
+    "uv sync",
+    "docker compose -f compose.yaml up -d",
+    "wt step tether -- uv run uvicorn app:main --reload --port {{ branch | hash_port }}",
+    "sh -c 'cd pysrc/WorkloadsAssistantCore && WORKTREE_NAME={{ worktree_name }} COMPOSE_NAME={{ worktree_name | sanitize_db }} APP_PORT={{ branch | hash_port }} DATABASE_PORT={{ ('db-' ~ branch) | hash_port }} DB_NAME={{ branch | sanitize_db }} wt-generate-env'",
+    "sh -c 'cd pysrc/WorkloadsAssistantCore && uv sync'",
+    "sh -c 'cd pysrc/WorkloadsAssistantCore && docker compose up -d'",
+    "wt step tether -- sh -c 'cd pysrc/WorkloadsAssistantCore && uv run uvicorn src.app:app --reload --port {{ branch | hash_port }}'",
+    "sh -c 'cd pysrc/WorkloadsAssistantCore && docker compose down'",
+    "wt step tether -- env COMPOSE_PROJECT_NAME={{ repo | sanitize }}-{{ branch | sanitize_hash }} PORT={{ (repo ~ '-api-' ~ branch) | hash_port }} WORKER_PORT={{ (repo ~ '-worker-' ~ branch) | hash_port }} sh -c 'cd pysrc/WorkloadsAssistantCore && docker compose up --build'",
+]
