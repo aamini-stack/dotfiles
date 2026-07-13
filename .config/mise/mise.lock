@@ -559,38 +559,8 @@ checksum = "sha256:34bf9659f8f04f3841a60131183b8e2acc44e260db4c93b889ff09718cacc
 url = "https://get.helm.sh/helm-v4.2.0-windows-amd64.tar.gz"
 
 [[tools.herdr]]
-version = "0.7.1"
+version = "0.7.3"
 backend = "github:ogulcancelik/herdr"
-
-[tools.herdr."platforms.linux-arm64"]
-checksum = "sha256:3d757ac30c631e79dc45038c3ecc6423fe13a89f9cffa0f415aedd2c27f1576c"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-linux-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674305"
-
-[tools.herdr."platforms.linux-arm64-musl"]
-checksum = "sha256:3d757ac30c631e79dc45038c3ecc6423fe13a89f9cffa0f415aedd2c27f1576c"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-linux-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674305"
-
-[tools.herdr."platforms.linux-x64"]
-checksum = "sha256:b965acaffc2c22f54b6e6c64af7cf8e98a3f4ac2622630a0599c67a4b9d8a654"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-linux-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674304"
-
-[tools.herdr."platforms.linux-x64-musl"]
-checksum = "sha256:b965acaffc2c22f54b6e6c64af7cf8e98a3f4ac2622630a0599c67a4b9d8a654"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-linux-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674304"
-
-[tools.herdr."platforms.macos-arm64"]
-checksum = "sha256:16f4653f0491ea1e7d2b46b5b02542f18e1b82e88daaf9e2900572e5bb634df8"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-macos-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674306"
-
-[tools.herdr."platforms.macos-x64"]
-checksum = "sha256:5780fa07dbb9a78d79e52d20b86a61013f6cba02667f20b6cf89663015090846"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.1/herdr-macos-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/456674307"
 
 [[tools."http:git-credential-manager"]]
 version = "2.8.0"
@@ -649,6 +619,9 @@ url = "https://github.com/modem-dev/hunk/releases/download/v0.17.0/hunkdiff-darw
 [[tools.imagemagick]]
 version = "7.1.2_27"
 backend = "conda:imagemagick"
+
+[tools.imagemagick.options]
+channel = "conda-forge"
 
 [[tools.jq]]
 version = "1.8.2"
@@ -789,6 +762,9 @@ url = "https://github.com/jesseduffield/lazygit/releases/download/v0.62.2/lazygi
 version = "4.4.1"
 backend = "conda:make"
 
+[tools.make.options]
+channel = "conda-forge"
+
 [[tools.neovim]]
 version = "0.12.2"
 backend = "vfox:mise-plugins/vfox-neovim"
@@ -827,7 +803,7 @@ version = "15.2.0"
 backend = "nix:gcc"
 
 [[tools."nix:gh-dash"]]
-version = "4.23.2"
+version = "4.25.0"
 backend = "nix:gh-dash"
 
 [[tools."nix:git-town"]]
@@ -847,7 +823,7 @@ version = "2.4.1"
 backend = "nix:stow"
 
 [[tools."nix:tree-sitter"]]
-version = "0.25.10"
+version = "0.26.8"
 backend = "nix:tree-sitter"
 
 [[tools."nix:unzip"]]
@@ -1140,7 +1116,7 @@ checksum = "sha256:124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d874
 url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip"
 
 [[tools.rust]]
-version = "1.96.1"
+version = "1.97.0"
 backend = "core:rust"
 
 [[tools.shellcheck]]
@@ -1259,7 +1235,7 @@ provenance = "github-attestations"
 
 [[tools.vite-plus]]
 version = "0.1.24"
-backend = "asdf:https://github.com/markmals/mise-vite-plus"
+backend = "vfox:vite-plus"
 
 [tools.vite-plus."platforms.linux-arm64"]
 url = "https://registry.npmjs.org/@voidzero-dev/vite-plus-cli-linux-arm64-gnu/-/vite-plus-cli-linux-arm64-gnu-0.1.24.tgz"
