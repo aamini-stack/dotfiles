@@ -125,7 +125,14 @@ if [[ "$(uname -s)" == "Linux" ]] && getent hosts host.lima.internal >/dev/null 
 
   # Make sure iptables and mount.fuse3 are available.
   export PATH="$PATH:/usr/sbin:/sbin"
+
 fi
+
+# Lima BEGIN
+# Make sure iptables and mount.fuse3 are available
+PATH="$PATH:/usr/sbin:/sbin"
+export PATH
+# Lima END
 
 dev() {
   local -a targets=(wsl devbox none)
@@ -189,3 +196,4 @@ echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
