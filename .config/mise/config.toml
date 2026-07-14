@@ -86,6 +86,7 @@ kubectl = "latest"
 helm = "latest"
 "npm:hunkdiff" = "latest"
 pulumi = "latest"
+railway = "5.23.0"
 
 # nvim
 "neovim" = "0.12.2"
@@ -97,7 +98,7 @@ make = "latest"
 "nix:gcc" = "15.2.0"
 
 # misc
-"nix:postgresql_17" = "latest"
+"nix:postgresql_18" = "latest"
 
 # images
 imagemagick = "latest"

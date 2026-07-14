@@ -295,6 +295,48 @@ provenance = "github-attestations"
 version = "2.5.2"
 backend = "github:JohnnyMorganz/StyLua"
 
+[tools."github:JohnnyMorganz/StyLua"."platforms.linux-arm64"]
+checksum = "sha256:0ef2ebf0b7e5a652b65c4cb96c6d9ffb3981a98547de3c764465bbf54a8d761a"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-aarch64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421900973"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.linux-arm64-musl"]
+checksum = "sha256:b948df6b4bae41af9a70948174372f96a3c14d44e3e017288701539f3db8fb75"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-aarch64-musl.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421900982"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.linux-x64"]
+checksum = "sha256:bcb0d855e91f102f28a370e850f8566b3b44b79e6274d806ea5246837c0fd5ab"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901018"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.linux-x64-musl"]
+checksum = "sha256:ca6f1cf52eaf69e6632b81acef9c197aa24b85eb30d2455a35e7dbe28ae77c72"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64-musl.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901066"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.macos-arm64"]
+checksum = "sha256:92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f32c7"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-macos-aarch64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901102"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.macos-x64"]
+checksum = "sha256:53c50a1605d0a6345d160a1a5a21db40bcf2bf9cd23c17f7c277a63a1bff3a7f"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-macos-x86_64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901085"
+provenance = "github-attestations"
+
+[tools."github:JohnnyMorganz/StyLua"."platforms.windows-x64"]
+checksum = "sha256:e77d0ea1226b8b389b43f702240091249a96eea25857281f90ea24d0eb9eb969"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421902292"
+provenance = "github-attestations"
+
 [[tools."github:LuaLS/lua-language-server"]]
 version = "3.18.2"
 backend = "github:LuaLS/lua-language-server"
@@ -494,6 +536,35 @@ url_api = "https://api.github.com/repos/roblillack/imgap/releases/assets/4053338
 version = "0.10.0"
 backend = "github:tamasfe/taplo"
 
+[tools."github:tamasfe/taplo"."platforms.linux-arm64"]
+checksum = "blake3:7f7a3ddaa5acf0bc243fc1134dc68a94a39b2bef91000f7866dd90e4bd670b5e"
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-aarch64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257322597"
+
+[tools."github:tamasfe/taplo"."platforms.linux-arm64-musl"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-aarch64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257322597"
+
+[tools."github:tamasfe/taplo"."platforms.linux-x64"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257322600"
+
+[tools."github:tamasfe/taplo"."platforms.linux-x64-musl"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257322600"
+
+[tools."github:tamasfe/taplo"."platforms.macos-arm64"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-darwin-aarch64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257323110"
+
+[tools."github:tamasfe/taplo"."platforms.macos-x64"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-darwin-x86_64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257323116"
+
+[tools."github:tamasfe/taplo"."platforms.windows-x64"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257323062"
+
 [[tools.hadolint]]
 version = "2.14.0"
 backend = "aqua:hadolint/hadolint"
@@ -561,6 +632,36 @@ url = "https://get.helm.sh/helm-v4.2.0-windows-amd64.tar.gz"
 [[tools.herdr]]
 version = "0.7.3"
 backend = "github:ogulcancelik/herdr"
+
+[tools.herdr."platforms.linux-arm64"]
+checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+
+[tools.herdr."platforms.linux-arm64-musl"]
+checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+
+[tools.herdr."platforms.linux-x64"]
+checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+
+[tools.herdr."platforms.linux-x64-musl"]
+checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+
+[tools.herdr."platforms.macos-arm64"]
+checksum = "sha256:b31345392d004ec1f1b2c821e1ad601019fa8385fe1e4c6931321eb58a920773"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642056"
+
+[tools.herdr."platforms.macos-x64"]
+checksum = "sha256:9b5f35d283b0877eeda0cf66ba1ef1d95ae40f32e858a04da0041f3a20df027c"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642057"
 
 [[tools."http:git-credential-manager"]]
 version = "2.8.0"
@@ -817,6 +918,10 @@ backend = "nix:gnumake"
 [[tools."nix:postgresql_17"]]
 version = "17.1"
 backend = "nix:postgresql_17"
+
+[[tools."nix:postgresql_18"]]
+version = "18.4"
+backend = "nix:postgresql_18"
 
 [[tools."nix:stow"]]
 version = "2.4.1"
@@ -1086,6 +1191,52 @@ provenance = "cosign"
 checksum = "sha256:49a85ed380ac75e3168a3768196f3781ae13c735d810b65df251414a4487ea12"
 url = "https://github.com/pulumi/pulumi/releases/download/v3.251.0/pulumi-v3.251.0-windows-x64.zip"
 provenance = "cosign"
+
+[[tools.railway]]
+version = "5.23.0"
+backend = "github:railwayapp/cli"
+
+[tools.railway."platforms.linux-arm64"]
+checksum = "sha256:53121d2aca5f7375cce654bac9899174a6144fad01c505959528c372eea1a94c"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214470"
+provenance = "github-attestations"
+
+[tools.railway."platforms.linux-arm64-musl"]
+checksum = "sha256:53121d2aca5f7375cce654bac9899174a6144fad01c505959528c372eea1a94c"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214470"
+provenance = "github-attestations"
+
+[tools.railway."platforms.linux-x64"]
+checksum = "sha256:9793dd1c106e8bc8749057f448cbfabbdf72042367db2cd220cc99707993f5c6"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214118"
+provenance = "github-attestations"
+
+[tools.railway."platforms.linux-x64-musl"]
+checksum = "sha256:80470a72d0a53dc22c8905576474c11c10b0a96a81641e0745db5a5d5379f30b"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214388"
+provenance = "github-attestations"
+
+[tools.railway."platforms.macos-arm64"]
+checksum = "sha256:293215d85b05b126e4a8d83ad61e1e3d4d3b5de4bf1a2e613eb94a510afc43d4"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456213602"
+provenance = "github-attestations"
+
+[tools.railway."platforms.macos-x64"]
+checksum = "sha256:fb9401d1a0a75260e30c7421028154b3025ada837c8e6c4f56d675fc46ad5dbb"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214441"
+provenance = "github-attestations"
+
+[tools.railway."platforms.windows-x64"]
+checksum = "sha256:163f651020ae8175cb210129abb94f6a50526a29b1a923334b94921c35125dc9"
+url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456216056"
+provenance = "github-attestations"
 
 [[tools.ripgrep]]
 version = "15.1.0"
