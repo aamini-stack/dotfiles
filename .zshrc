@@ -19,6 +19,7 @@ eval "$(mise activate zsh)"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
 # ── Aliases ───────────────────────────────────────────────────
+alias lg='jjdag'
 alias ls='eza -1 --icons --group-directories-first'
 alias k='kubectl'
 alias copilot='copilot --yolo'
@@ -54,28 +55,6 @@ nvim()
 vim()
 {
     nvim "$@"
-}
-
-lg()
-{
-    local lazygit_new_dir_file="$HOME/.lazygit/newdir"
-    local lazygit_start_root
-
-    lazygit_start_root="$(git rev-parse --show-toplevel 2>/dev/null)"
-    mkdir -p "$(dirname "$lazygit_new_dir_file")"
-    rm -f "$lazygit_new_dir_file"
-    export LAZYGIT_NEW_DIR_FILE="$lazygit_new_dir_file"
-
-    lazygit "$@"
-
-    if [ -f "$lazygit_new_dir_file" ]; then
-            local lazygit_new_dir="$(cat "$lazygit_new_dir_file")"
-            rm -f "$lazygit_new_dir_file" > /dev/null
-
-            if [ -n "$lazygit_new_dir" ] && [ -d "$lazygit_new_dir" ] && [ "$lazygit_new_dir" != "$lazygit_start_root" ]; then
-                    cd "$lazygit_new_dir"
-            fi
-    fi
 }
 
 function y() {
