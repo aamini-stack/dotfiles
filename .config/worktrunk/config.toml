@@ -1,16 +1,4 @@
 worktree-path = "~/.herdr/worktrees/{{ repo }}/{{ branch | sanitize }}"
-skip-commit-generation-prompt = true
-
-[post-switch]
-# After switching, focus the herdr workspace for this worktree so the UI follows.
-herdr-focus = "$HOME/.config/worktrunk/bin/wt-herdr open '{{ worktree_path }}' '{{ repo_path }}' || true"
-
-[post-start]
-# Apply the 2-tab herdr layout after pre-start setup hooks have finished, so the
-# layout appears after the shell-visible work is done.
-herdr-layout = "$HOME/.config/herdr/plugins/wt-hooks/apply-layout.py --worktree-path '{{ worktree_path }}' --branch '{{ branch }}'"
-
-[projects]
 
 # Project-specific install / compose / server hooks live in the project
 # .config/wt.toml (e.g. the node or uv templates).
