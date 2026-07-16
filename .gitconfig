@@ -36,16 +36,9 @@
 
 [difftool]
     prompt = false
-
-# ============================================
-# Credentials
-# ============================================
-
-[credential]
-	helper = !WSLENV=GCM_AZREPOS_CREDENTIALTYPE:GCM_MSAUTH_USEBROKER GCM_AZREPOS_CREDENTIALTYPE=oauth GCM_MSAUTH_USEBROKER=false \"/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe\"
-    azreposCredentialType = oauth
-    guiPrompt = false
-    interactive = true
-
-[credential "https://dev.azure.com"]
-    useHttpPath = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/home/aamini.linux/.local/share/mise/installs/github-cli/2.93.0/gh_2.93.0_linux_arm64/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/home/aamini.linux/.local/share/mise/installs/github-cli/2.93.0/gh_2.93.0_linux_arm64/bin/gh auth git-credential

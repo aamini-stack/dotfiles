@@ -1,19 +1,38 @@
 # Project-level Worktrunk config for Node/Vite+ projects.
 
 [[pre-start]]
-env = "WORKTREE_NAME='{{ worktree_name }}' COMPOSE_NAME='{{ worktree_name | sanitize_db }}' APP_PORT='{{ branch | hash_port }}' DATABASE_PORT='{{ ('db-' ~ branch) | hash_port }}' DB_NAME='{{ branch | sanitize_db }}' wt-generate-env"
+copy-envs = "wt step copy-ignored --force"
+
+[[pre-start]]
+env = "WORKTREE_NAME='{{ worktree_name }}' COMPOSE_NAME='{{ worktree_name | sanitize_db }}' APP_PORT='{{ branch | hash_port }}' POSTGRES_PORT='{{ ('db-' ~ branch) | hash_port }}' DB_NAME='{{ branch | sanitize_db }}' MINIO_PORT='{{ ('minio-' ~ branch) | hash_port }}' MINIO_CONSOLE_PORT='{{ ('minio-console-' ~ branch) | hash_port }}' wt-generate-env"
 
 [[pre-start]]
 install = "vp i"
 
-[[post-start]]
-compose = "vp run compose:up"
+[[pre-start]]
+compose = "docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.compose up -d --wait --remove-orphans postgres minio"
+
+[[pre-start]]
+minio-bucket = "docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.compose exec -T minio sh -c 'mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb --ignore-existing local/avatars'"
+
+[[pre-start]]
+migrate = "vp run db:migrate"
+
+[[pre-start]]
+init = "vp run db:init"
 
 [[post-start]]
 server = "wt step tether -- vp run dev -- --port {{ branch | hash_port }}"
 
 [pre-remove]
-compose-down = "vp run compose:down"
+compose-down = "docker compose -f docker-compose.yml -f docker-compose.worktree.yml --env-file .env.compose down"
 
 [list]
 url = "http://localhost:{{ branch | hash_port }}"
+
+[step.copy-ignored]
+exclude = [
+	".env.development.local",
+	".env.compose",
+	"docker-compose.worktree.yml",
+]
