@@ -56,11 +56,28 @@ herdr = "0.7.3"
 "oh-my-posh" = "latest"
 
 # AI
-"opencode" = "latest"
+"npm:@opencode-ai/cli" = "next"
 "pi" = "latest"
-"npm:playwriter" = "latest"
 claude = "latest"
+"npm:playwriter" = "latest"
 "npm:lavish-axi" = "latest"
+
+# nvim
+"neovim" = "0.12.2"
+"nix:tree-sitter" = "latest"
+"nix:gnumake" = "latest"
+"nix:unzip" = "latest"
+"nix:xclip" = "latest"
+make = "latest"
+"nix:gcc" = "15.2.0"
+
+# images
+imagemagick = "latest"
+"github:danielgatis/imgcat" = "latest"
+"nix:chafa" = "latest"
+
+# misc
+"nix:postgresql_18" = "latest"
 
 # CLIs 
 "bat" = "latest"
@@ -76,7 +93,7 @@ jq = "latest"
 "ripgrep" = "latest"
 "lazygit" = "latest"
 "nix:erdtree" = "latest"
-"worktrunk" = "latest"
+"github:max-sixty/worktrunk" = "latest"
 "nix:gh-dash" = "latest"
 "aqua:joshmedeski/sesh" = "latest"
 "github-cli" = "latest"
@@ -87,23 +104,7 @@ helm = "latest"
 "npm:hunkdiff" = "latest"
 pulumi = "latest"
 railway = "5.23.0"
-
-# nvim
-"neovim" = "0.12.2"
-"nix:tree-sitter" = "latest"
-"nix:gnumake" = "latest"
-"nix:unzip" = "latest"
-"nix:xclip" = "latest"
-make = "latest"
-"nix:gcc" = "15.2.0"
-
-# misc
-"nix:postgresql_18" = "latest"
-
-# images
-imagemagick = "latest"
-"github:danielgatis/imgcat" = "latest"
-"nix:chafa" = "latest"
+jj = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"
