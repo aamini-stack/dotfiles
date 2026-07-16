@@ -1,6 +1,6 @@
 theme = "github-dark-default"  # any built-in theme id, auto, or custom
 mode = "auto"                  # auto, split, stack
-vcs = "git"                    # git, jj, sl
+vcs = "jj"                     # git, jj, sl
 watch = true
 exclude_untracked = false
 line_numbers = true
