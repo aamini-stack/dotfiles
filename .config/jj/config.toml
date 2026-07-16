@@ -1,2 +1,8 @@
 [ui]
+pager = ["hunk", "pager"]
+diff-formatter = ":git"
 diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+
+[user]
+name = "Aria Amini"
+email = "amini5454@gmail.com"
