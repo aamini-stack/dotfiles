@@ -106,6 +106,7 @@ pulumi = "latest"
 railway = "5.23.0"
 jj = "latest"
 "cargo:alexispurslane/jjdag" = "HEAD"
+"nix:conky" = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"
