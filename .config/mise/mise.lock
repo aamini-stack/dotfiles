@@ -1006,6 +1006,10 @@ backend = "nix:git-town"
 version = "4.4.1"
 backend = "nix:gnumake"
 
+[[tools."nix:lazyjj"]]
+version = "0.6.1"
+backend = "nix:lazyjj"
+
 [[tools."nix:postgresql_17"]]
 version = "17.1"
 backend = "nix:postgresql_17"
