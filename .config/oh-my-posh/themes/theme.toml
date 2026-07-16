@@ -44,16 +44,17 @@ template = '{{ .Path }}'
 style = 'full'
 
 [[blocks.segments]]
-type = 'git'
+type = 'jujutsu'
 style = 'plain'
 foreground = 'p:grey'
 background = 'transparent'
-template = ' git:{{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+template = ' jj:{{ .ChangeID }}{{ if .Working.Changed }}*{{ end }} <cyan>{{ .ClosestBookmarks }}</>'
 
 [blocks.segments.properties]
-branch_icon = ''
-commit_icon = '@'
+change_id_min_len = 8
 fetch_status = true
+ignore_working_copy = false
+fetch_ahead_counter = true
 
 [[blocks]]
 type = 'rprompt'
