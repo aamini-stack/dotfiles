@@ -1,6 +1,7 @@
 \.git
 \.gitignore
 \.gitmodules
+\.jj
 
 \.config/gh
 README.md

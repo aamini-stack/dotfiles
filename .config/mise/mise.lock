@@ -736,6 +736,14 @@ url = "https://github.com/git-ecosystem/git-credential-manager/releases/download
 [tools."http:git-credential-manager"."platforms.windows-x64"]
 url = "https://github.com/git-ecosystem/git-credential-manager/releases/download/v2.8.0/gcm-linux-x64-2.8.0.tar.gz"
 
+[[tools."http:lazyjj"]]
+version = "0acb115dbb66821995ba04bc1b3854aa52d00dde"
+backend = "http:lazyjj"
+
+[tools."http:lazyjj"."platforms.linux-arm64"]
+checksum = "blake3:93c44b0906f9e5a17e2fba824e57ac0268636b65c9d4836190c9bd176369fc34"
+url = "https://github.com/lazyjj-dev/lazyjj/archive/0acb115dbb66821995ba04bc1b3854aa52d00dde.tar.gz"
+
 [[tools.hunkdiff]]
 version = "0.17.0"
 backend = "aqua:modem-dev/hunk"
@@ -973,6 +981,10 @@ url = "https://github.com/neovim/neovim/releases/download/v0.12.2/nvim-win64.zip
 [[tools."nix:chafa"]]
 version = "1.18.2"
 backend = "nix:chafa"
+
+[[tools."nix:conky"]]
+version = "1.22.3"
+backend = "nix:conky"
 
 [[tools."nix:erdtree"]]
 version = "3.1.2"

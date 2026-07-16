@@ -1,8 +1,6 @@
 # Source Nix profile first so nix-installed tools are available
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
-export PATH="$HOME/.local/share/mise/shims:$PATH"
-
 case ":$PATH:" in
   *":$HOME/.local/bin:"*) ;;
   *) export PATH="$HOME/.local/bin:$PATH" ;;

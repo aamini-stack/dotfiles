@@ -120,7 +120,7 @@ dev() {
   local target=$(printf '%s\n' "${targets[@]}" | fzf --prompt='devbox target: ')
   case "$target" in
     lima) lima ;;
-    wsl|devbox) herdr --remote "$target" ;;
+    wsl|devbox) herdr --remote "$target" --remote-keybindings server ;;
   esac
 }
 
@@ -176,4 +176,3 @@ echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
-

@@ -5,7 +5,7 @@ _.file = { path = "~/.env" }
 experimental = true
 minimum_release_age = "1d"
 idiomatic_version_file_enable_tools = ["node"]
-trusted_config_paths = ["~/.herdr/worktrees/"]
+trusted_config_paths = ["~/.herdr/worktrees/", "~/.herdr/workspaces/"]
 
 [plugins]
 nix = "https://github.com/jbadeau/mise-nix.git"

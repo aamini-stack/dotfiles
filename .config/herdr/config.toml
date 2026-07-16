@@ -89,6 +89,24 @@ type = "plugin_action"
 command = "worktrunk.remove"
 description = "Worktree: remove"
 
+[[keys.command]]
+key = "prefix+a"
+type = "plugin_action"
+command = "nathanflurry.jj-workspace.new-tab"
+description = "JJ workspace: create in tab"
+
+[[keys.command]]
+key = "prefix+shift+a"
+type = "plugin_action"
+command = "nathanflurry.jj-workspace.new"
+description = "JJ workspace: create"
+
+[[keys.command]]
+key = "prefix+d"
+type = "plugin_action"
+command = "nathanflurry.jj-workspace.remove"
+description = "JJ workspace: remove"
+
 # previous_workspace = "" # optional, unset by default
 # next_workspace = ""     # optional, unset by default
 # previous_agent = ""     # optional, unset by default
