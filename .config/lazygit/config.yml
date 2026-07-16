@@ -5,6 +5,11 @@ git:
     - pager: delta --dark --paging=never --line-numbers --side-by-side --tabs 2
       colorArg: never
 customCommands:
+  - key: '<ctrl+minus>'
+    context: 'files'
+    command: 'yazi {{.SelectedPath | quote}}'
+    description: 'Open in yazi'
+    output: terminal
   - key: 'I'
     context: 'files'
     command: |
