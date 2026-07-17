@@ -1,4 +1,6 @@
 return {
+  { 'nvim-tree/nvim-web-devicons' },
+  { 'nvim-mini/mini.icons', opts = {} },
   { 'NMAC427/guess-indent.nvim', opts = {} },
   { 'numToStr/Comment.nvim' },
   {
