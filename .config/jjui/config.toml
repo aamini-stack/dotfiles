@@ -1,0 +1,18 @@
+[preview]
+revision_command = [
+  "util",
+  "exec",
+  "--",
+  "hunk-preview",
+  "revision",
+  "$change_id",
+]
+file_command = [
+  "util",
+  "exec",
+  "--",
+  "hunk-preview",
+  "file",
+  "$change_id",
+  "$file",
+]

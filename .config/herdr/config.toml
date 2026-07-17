@@ -219,6 +219,7 @@ description = "JJ workspace: remove"
 # accent = "cyan"
 
 # Background notification popup delivery
+agent_panel_sort = "spaces"
 [ui.toast]
 delivery = "terminal"
 # off = disable pop-up notifications
