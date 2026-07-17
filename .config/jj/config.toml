@@ -6,3 +6,22 @@ diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 [user]
 name = "Aria Amini"
 email = "amini5454@gmail.com"
+
+# Keep jjui's revision graph compact without changing `jj log` in a shell.
+[[--scope]]
+--when.environments = ["JJUI"]
+
+[--scope.template-aliases]
+'format_short_commit_header(commit)' = '''
+separate(" ",
+  format_short_change_id_with_change_offset(commit),
+  commit.bookmarks(),
+  commit.tags(),
+  commit.working_copies(),
+  format_short_commit_id(commit.commit_id()),
+  format_commit_labels(commit),
+  if(config("ui.show-cryptographic-signatures").as_boolean(),
+    format_short_cryptographic_signature(commit.signature())
+  ),
+)
+'''
