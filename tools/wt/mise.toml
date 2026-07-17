@@ -1,0 +1,30 @@
+[tools]
+python = "3.13"
+
+[tasks.sync]
+description = "Install locked dependencies"
+run = "uv sync --locked --python \"$(command -v python)\""
+
+[tasks.lint]
+description = "Lint wt"
+run = "ruff check src tests"
+
+[tasks.format]
+description = "Format wt"
+run = "ruff format src tests"
+
+[tasks."format:check"]
+description = "Check wt formatting"
+run = "ruff format --check src tests"
+
+[tasks.test]
+description = "Test wt"
+run = "uv run --python \"$(command -v python)\" python -m unittest discover -s tests -v"
+
+[tasks.check]
+description = "Run all wt checks"
+depends = [":lint", ":format:check", ":test"]
+
+[tasks.install]
+description = "Install wt as an editable uv tool"
+run = "uv tool install --python \"$(command -v python)\" --editable --reinstall ."

@@ -34,6 +34,22 @@ gr() {
   cd "$(git rev-parse --show-toplevel 2>/dev/null)"
 }
 
+wt() {
+  if [[ "$1" == "switch" ]]; then
+    local argument destination
+    for argument in "$@"; do
+      if [[ "$argument" == "-h" || "$argument" == "--help" ]]; then
+        command wt "$@"
+        return
+      fi
+    done
+    destination="$(command wt "$@")" || return
+    [[ -z "$destination" ]] || builtin cd -- "$destination"
+    return
+  fi
+  command wt "$@"
+}
+
 nvim()
 {
     local nvim_new_dir_file="${XDG_CACHE_HOME:-$HOME/.cache}/nvim/newdir"
@@ -174,5 +190,3 @@ zle-line-init() {
 zle -N zle-line-init
 echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
-
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
