@@ -56,7 +56,7 @@ herdr = "0.7.3"
 "oh-my-posh" = "latest"
 
 # AI
-"npm:@opencode-ai/cli" = "next"
+"opencode" = "latest"
 "pi" = "latest"
 claude = "latest"
 "npm:playwriter" = "latest"
@@ -104,8 +104,6 @@ helm = "latest"
 pulumi = "latest"
 railway = "5.23.0"
 jj = "latest"
-"cargo:alexispurslane/jjdag" = "HEAD"
-"nix:blazingjj" = "latest"
 "nix:jjui" = "latest"
 
 [tasks.diff]

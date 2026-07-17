@@ -3,7 +3,6 @@ return {
     'julienvincent/hunk.nvim',
     cmd = { 'DiffEditor' },
     dependencies = { 'MunifTanjim/nui.nvim' },
-    config = function() require('hunk').setup() end,
     config = function()
       require('hunk').setup {
         hooks = {
@@ -29,7 +28,6 @@ return {
         },
       }
     end,
-  },
   },
   -- If you prefer to call `setup` explicitly, use:
   --    {
