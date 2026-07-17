@@ -964,6 +964,10 @@ url = "https://github.com/neovim/neovim/releases/download/v0.12.2/nvim-macos-x86
 [tools.neovim."platforms.windows-x64"]
 url = "https://github.com/neovim/neovim/releases/download/v0.12.2/nvim-win64.zip"
 
+[[tools."nix:blazingjj"]]
+version = "0.8.0"
+backend = "nix"
+
 [[tools."nix:chafa"]]
 version = "1.18.2"
 backend = "nix:chafa"
@@ -991,10 +995,6 @@ backend = "nix:git-town"
 [[tools."nix:gnumake"]]
 version = "4.4.1"
 backend = "nix:gnumake"
-
-[[tools."nix:lazyjj"]]
-version = "0.6.1"
-backend = "nix:lazyjj"
 
 [[tools."nix:postgresql_17"]]
 version = "17.1"

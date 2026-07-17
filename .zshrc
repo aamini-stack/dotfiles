@@ -19,7 +19,7 @@ eval "$(mise activate zsh)"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
 
 # ── Aliases ───────────────────────────────────────────────────
-alias lg='lazyjj'
+alias lg='blazingjj'
 alias ls='eza -1 --icons --group-directories-first'
 alias k='kubectl'
 alias copilot='copilot --yolo'
