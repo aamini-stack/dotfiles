@@ -119,7 +119,7 @@ dev() {
   [[ "$(uname -s)" == "Darwin" ]] && targets=(lima "${targets[@]}")
   local target=$(printf '%s\n' "${targets[@]}" | fzf --prompt='devbox target: ')
   case "$target" in
-    lima) lima ;;
+    lima) herdr --remote lima-default --remote-keybindings server ;;
     wsl|devbox) herdr --remote "$target" --remote-keybindings server ;;
   esac
 }
