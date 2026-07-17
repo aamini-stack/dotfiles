@@ -4,6 +4,32 @@ return {
     cmd = { 'DiffEditor' },
     dependencies = { 'MunifTanjim/nui.nvim' },
     config = function() require('hunk').setup() end,
+    config = function()
+      require('hunk').setup {
+        hooks = {
+          on_tree_mount = function(context)
+            -- Hunk does not expose its preview action yet (julienvincent/hunk.nvim#36),
+            -- so reuse the private `l` mapping until cursor-follow preview is supported.
+            local preview
+            vim.api.nvim_buf_call(context.buf, function() preview = vim.fn.maparg('l', 'n', false, true).callback end)
+            if type(preview) ~= 'function' then return end
+
+            local last_previewed_file
+            vim.api.nvim_create_autocmd('CursorMoved', {
+              buffer = context.buf,
+              callback = function()
+                local node = context.tree:get_node()
+                if not node or node.type ~= 'file' or node.change.filepath == last_previewed_file then return end
+
+                last_previewed_file = node.change.filepath
+                preview()
+              end,
+            })
+          end,
+        },
+      }
+    end,
+  },
   },
   -- If you prefer to call `setup` explicitly, use:
   --    {
