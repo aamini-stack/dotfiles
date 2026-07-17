@@ -18,6 +18,15 @@
       "skillFolderHash": "1d49fa7639e7fc15b6ce270a7c0cee9c97ba7986",
       "installedAt": "2026-07-07T20:32:01.376Z",
       "updatedAt": "2026-07-07T20:32:01.376Z"
+    },
+    "opentui": {
+      "source": "anomalyco/opentui",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anomalyco/opentui.git",
+      "skillPath": "packages/web/src/content/SKILL.md",
+      "skillFolderHash": "bfe1b37a74e21426db60c755920494b637892da8",
+      "installedAt": "2026-07-17T09:24:21.217Z",
+      "updatedAt": "2026-07-17T09:24:21.217Z"
     }
   },
   "dismissed": {
