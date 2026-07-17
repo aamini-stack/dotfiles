@@ -1,0 +1,26 @@
+[tools]
+python = "3.14"
+
+[tasks.sync]
+description = "Install locked dependencies"
+run = "uv sync --locked --python \"$(command -v python)\""
+
+[tasks.lint]
+description = "Lint the infrastructure project"
+run = "ruff check ."
+
+[tasks.format]
+description = "Format the infrastructure project"
+run = "ruff format ."
+
+[tasks."format:check"]
+description = "Check infrastructure formatting"
+run = "ruff format --check ."
+
+[tasks.test]
+description = "Compile-check the infrastructure program"
+run = "uv run --python \"$(command -v python)\" python -m compileall -q __main__.py"
+
+[tasks.check]
+description = "Run all infrastructure checks"
+depends = [":lint", ":format:check", ":test"]

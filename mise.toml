@@ -1,0 +1,16 @@
+monorepo_root = true
+
+[monorepo]
+config_roots = ["infra", "tools/wt"]
+
+[tools]
+uv = "latest"
+"pipx:ruff" = "latest"
+
+[tasks.check]
+description = "Check every project"
+depends = ["//infra:check", "//tools/wt:check"]
+
+[tasks.install]
+description = "Install personal tools"
+depends = ["//tools/wt:install"]

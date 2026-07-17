@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd $HOME
+cd "$HOME"
 
 # clone: dotfiles
 if [ ! -d "$HOME/dotfiles" ]; then
@@ -17,20 +17,25 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 cd dotfiles
 stow --restow -v --target="$HOME" .
-cd $HOME
+cd "$HOME"
 
 # nix
 if ! command -v nix &> /dev/null; then
   sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
+  # shellcheck source=/dev/null
   . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 fi
 
 # mise
-export PATH="$PATH:$HOME/.local/bin"
-echo "eval \"\$($HOME/.local/bin/mise activate bash)\"" >> ~/.bashrc
-source .bashrc
 curl https://mise.run | sh
+export PATH="$HOME/.local/bin:$PATH"
+mise_activation="eval \"\$($HOME/.local/bin/mise activate bash)\""
+grep -Fqx "$mise_activation" "$HOME/.bashrc" || printf '%s\n' "$mise_activation" >> "$HOME/.bashrc"
+eval "$(mise activate bash)"
 mise i
+mise trust -y "$HOME/dotfiles/mise.toml"
+mise -C "$HOME/dotfiles" install --monorepo
+mise -C "$HOME/dotfiles" //:install
 
 # zsh
 zsh_path="$(command -v zsh)"

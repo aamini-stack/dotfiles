@@ -9,3 +9,4 @@ misc
 install.sh
 stow.sh
 skills-lock.json
+^/mise\.toml$
