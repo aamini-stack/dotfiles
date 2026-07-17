@@ -177,7 +177,7 @@ checksum = "sha256:a5adbf57eb1b923b62d1c3596c4f827df143f5b52cfba48bb9e83f41dea90
 url = "https://github.com/Wilfred/difftastic/releases/download/0.69.0/difft-x86_64-pc-windows-msvc.zip"
 
 [[tools.dotnet]]
-version = "10.0.301"
+version = "10.0.302"
 backend = "core:dotnet"
 
 [[tools.eza]]
@@ -461,6 +461,45 @@ url_api = "https://api.github.com/repos/hpjansson/chafa/releases/assets/40852722
 checksum = "sha256:0b8d9ba9f347e8b6c0c71878217c9b0e478b4a42aa4babea0bf20840567239c2"
 url = "https://github.com/hpjansson/chafa/releases/download/1.18.2/chafa-1.18.2.tar.xz"
 url_api = "https://api.github.com/repos/hpjansson/chafa/releases/assets/408527220"
+
+[[tools."github:idursun/jjui"]]
+version = "0.10.8"
+backend = "github:idursun/jjui"
+
+[tools."github:idursun/jjui"."platforms.linux-arm64"]
+checksum = "sha256:82eb8ba96a100ee648319e569050be05c28270a438c4a25881a63ab9d636fc07"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-linux-arm64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661617"
+
+[tools."github:idursun/jjui"."platforms.linux-arm64-musl"]
+checksum = "sha256:82eb8ba96a100ee648319e569050be05c28270a438c4a25881a63ab9d636fc07"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-linux-arm64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661617"
+
+[tools."github:idursun/jjui"."platforms.linux-x64"]
+checksum = "sha256:75dadce1d46dac386e672663ffaa77a009a5069ef5c889ed6bbadb73baac0bc1"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-linux-amd64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661632"
+
+[tools."github:idursun/jjui"."platforms.linux-x64-musl"]
+checksum = "sha256:75dadce1d46dac386e672663ffaa77a009a5069ef5c889ed6bbadb73baac0bc1"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-linux-amd64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661632"
+
+[tools."github:idursun/jjui"."platforms.macos-arm64"]
+checksum = "sha256:680c594334746a283302fb7418df02a04dd16c52de42142b85dd50fdf9965664"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-darwin-arm64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661623"
+
+[tools."github:idursun/jjui"."platforms.macos-x64"]
+checksum = "sha256:9cefa853bf5bb48524fd104f28385722239cd1d1c26b80f5807e1dfea722fb16"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-darwin-amd64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661619"
+
+[tools."github:idursun/jjui"."platforms.windows-x64"]
+checksum = "sha256:7003d23db7165dcf6a7b05dae14f90d578e3609a755d0d316f85657132d3c48f"
+url = "https://github.com/idursun/jjui/releases/download/v0.10.8/jjui-0.10.8-windows-amd64.zip"
+url_api = "https://api.github.com/repos/idursun/jjui/releases/assets/466661598"
 
 [[tools."github:max-sixty/worktrunk"]]
 version = "0.67.0"
@@ -768,6 +807,9 @@ url = "https://github.com/modem-dev/hunk/releases/download/v0.17.0/hunkdiff-darw
 version = "7.1.2_27"
 backend = "conda:imagemagick"
 
+[tools.imagemagick.options]
+channel = "conda-forge"
+
 [[tools.jj]]
 version = "0.43.0"
 backend = "aqua:jj-vcs/jj"
@@ -939,6 +981,9 @@ url = "https://github.com/jesseduffield/lazygit/releases/download/v0.62.2/lazygi
 version = "4.4.1"
 backend = "conda:make"
 
+[tools.make.options]
+channel = "conda-forge"
+
 [[tools.neovim]]
 version = "0.12.2"
 backend = "vfox:mise-plugins/vfox-neovim"
@@ -985,7 +1030,7 @@ version = "15.2.0"
 backend = "nix:gcc"
 
 [[tools."nix:gh-dash"]]
-version = "4.23.2"
+version = "4.25.0"
 backend = "nix:gh-dash"
 
 [[tools."nix:git-town"]]
@@ -995,6 +1040,10 @@ backend = "nix:git-town"
 [[tools."nix:gnumake"]]
 version = "4.4.1"
 backend = "nix:gnumake"
+
+[[tools."nix:jjui"]]
+version = "0.10.8"
+backend = "nix:jjui"
 
 [[tools."nix:postgresql_17"]]
 version = "17.1"
@@ -1009,7 +1058,7 @@ version = "2.4.1"
 backend = "nix:stow"
 
 [[tools."nix:tree-sitter"]]
-version = "0.25.10"
+version = "0.26.8"
 backend = "nix:tree-sitter"
 
 [[tools."nix:unzip"]]
@@ -1352,7 +1401,7 @@ checksum = "sha256:124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d874
 url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip"
 
 [[tools.rust]]
-version = "1.96.1"
+version = "1.97.0"
 backend = "core:rust"
 
 [[tools.shellcheck]]
@@ -1471,7 +1520,7 @@ provenance = "github-attestations"
 
 [[tools.vite-plus]]
 version = "0.1.24"
-backend = "asdf:https://github.com/markmals/mise-vite-plus"
+backend = "vfox:vite-plus"
 
 [tools.vite-plus."platforms.linux-arm64"]
 url = "https://registry.npmjs.org/@voidzero-dev/vite-plus-cli-linux-arm64-gnu/-/vite-plus-cli-linux-arm64-gnu-0.1.24.tgz"
