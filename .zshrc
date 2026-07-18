@@ -34,7 +34,7 @@ gr() {
 }
 
 wt() {
-  if [[ "$1" == "switch" ]]; then
+  if [[ "$1" == "switch" || "$1" == "remove" ]]; then
     local argument destination
     for argument in "$@"; do
       if [[ "$argument" == "-h" || "$argument" == "--help" ]]; then
@@ -43,7 +43,17 @@ wt() {
       fi
     done
     destination="$(command wt "$@")" || return
-    [[ -z "$destination" ]] || builtin cd -- "$destination"
+    if [[ -n "$destination" ]]; then
+      builtin cd -- "$destination"
+      return
+    fi
+    if [[ ! -d "$PWD" ]]; then
+      local dir="$PWD"
+      while [[ "$dir" != "/" && ! -d "$dir" ]]; do
+        dir="${dir:h}"
+      done
+      builtin cd -- "$dir"
+    fi
     return
   fi
   command wt "$@"
