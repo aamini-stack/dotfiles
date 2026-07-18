@@ -7,6 +7,9 @@ diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 name = "Aria Amini"
 email = "amini5454@gmail.com"
 
+[snapshot]
+auto-update-stale = true
+
 # Keep jjui's revision graph compact without changing `jj log` in a shell.
 [[--scope]]
 --when.environments = ["JJUI"]
@@ -25,3 +28,12 @@ separate(" ",
   ),
 )
 '''
+
+[--scope.colors]
+bookmark = { fg = "bright yellow", bold = true }
+bookmarks = { fg = "bright yellow", bold = true }
+local_bookmarks = { fg = "bright yellow", bold = true }
+remote_bookmarks = { fg = "bright yellow", bold = true }
+commit_id = "bright black"
+"description placeholder" = { fg = "bright black", italic = true }
+"empty description placeholder" = { fg = "bright black", italic = true }
