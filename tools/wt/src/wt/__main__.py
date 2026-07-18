@@ -349,7 +349,7 @@ def current_bookmark() -> str | None:
         sys.stderr.write(result.stderr)
         return None
 
-    bookmarks = result.stdout.splitlines()
+    bookmarks = [name for name in result.stdout.splitlines() if name]
     if len(bookmarks) != 1:
         print(
             "wt: specify a bookmark; @ must have exactly one local bookmark",
