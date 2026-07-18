@@ -18,6 +18,12 @@
       "sourceType": "github",
       "skillPath": "skills/lavish/SKILL.md",
       "computedHash": "bdca0069c8d4aa89ea3a3e3b1c394de36431f91ec96531e277c2f23f6d92d6b7"
+    },
+    "varlock": {
+      "source": "dmno-dev/varlock",
+      "sourceType": "github",
+      "skillPath": "skills/varlock/SKILL.md",
+      "computedHash": "f3d4c2196ff45c3fa8aeb4e0c64297ce7aa5751a6e64e0c3ae9d90e38a42d765"
     }
   }
 }
