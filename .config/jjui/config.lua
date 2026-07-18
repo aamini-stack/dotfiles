@@ -1,4 +1,120 @@
+local WORKSPACE_LIST_TEMPLATE = [[self.name() ++ "\t" ++ self.root() ++ "\n"]]
+
+local function current_workspace_root()
+  local out = jj("root")
+  if not out then return nil end
+  return (out:gsub("%s+$", ""))
+end
+
+local function list_workspaces()
+  local out, err = jj("workspace", "list", "-T", WORKSPACE_LIST_TEMPLATE)
+  if not out then return nil, err end
+  local workspaces = {}
+  for line in out:gmatch("[^\n]+") do
+    local name, root = line:match("^(.-)\t(.+)$")
+    if name and root then
+      table.insert(workspaces, { name = name, root = root })
+    end
+  end
+  return workspaces
+end
+
+local function current_workspace_name()
+  local root = current_workspace_root()
+  local workspaces = list_workspaces()
+  if not root or not workspaces then return nil end
+  for _, ws in ipairs(workspaces) do
+    if ws.root == root then return ws.name end
+  end
+end
+
 function setup(config)
+  config.action("switch workspace", function()
+    local workspaces, err = list_workspaces()
+    if not workspaces then
+      flash({ text = "workspace list failed: " .. tostring(err), error = true })
+      return
+    end
+
+    local current = current_workspace_root()
+    local options = {}
+    for _, ws in ipairs(workspaces) do
+      local marker = ws.root == current and "* " or "  "
+      table.insert(options, marker .. ws.name .. "  (" .. ws.root .. ")")
+    end
+
+    local choice = choose({ options = options, title = "Switch workspace" })
+    if not choice then return end
+
+    for i, option in ipairs(options) do
+      if option == choice then
+        local ws = workspaces[i]
+        local ok, werr = change_workspace(ws.root)
+        if not ok then
+          flash({ text = "switch failed: " .. tostring(werr), error = true })
+          return
+        end
+        revisions.refresh()
+        flash({ text = "workspace: " .. ws.name, sticky = true })
+        return
+      end
+    end
+  end, {
+    desc = "switch workspace",
+    seq = { "w", "w" },
+    scope = "revisions",
+  })
+
+  config.action("create workspace here", function()
+    local change_id = context.change_id()
+    if not change_id or change_id == "" then
+      flash({ text = "No revision selected", error = true })
+      return
+    end
+
+    local name = input({ title = "Create workspace", prompt = "name: " })
+    if not name then return end
+    name = name:gsub("^%s+", ""):gsub("%s+$", "")
+    if name == "" then return end
+
+    local root = current_workspace_root()
+    local home = os.getenv("HOME")
+    if not root or not home then
+      flash({ text = "Could not determine workspace root or HOME", error = true })
+      return
+    end
+
+    local prefix = home .. "/.herdr/workspaces/"
+    local repo = root:match("^" .. prefix:gsub("(%W)", "%%%1") .. "([^/]+)")
+      or root:match("([^/]+)$")
+      or "default"
+    local dest = prefix .. repo .. "/" .. name
+    local out, err = jj("workspace", "add", dest, "--name", name, "-r", change_id)
+    if not out then
+      flash({ text = "workspace add failed: " .. tostring(err), error = true })
+      return
+    end
+
+    flash({ text = "created workspace '" .. name .. "' (ww to switch)" })
+  end, {
+    desc = "create workspace here",
+    seq = { "w", "c" },
+    scope = "revisions",
+  })
+
+  config.action("show current workspace", function()
+    local name = current_workspace_name()
+    if name then
+      flash({ text = "workspace: " .. name, sticky = true })
+    else
+      flash({ text = "Could not determine current workspace", error = true })
+    end
+  end, {
+    desc = "show current workspace",
+    seq = { "w", "i" },
+    scope = "revisions",
+  })
+
   config.action("open revision in Hunk", function()
     local change_id = context.change_id()
     if not change_id or change_id == "" then

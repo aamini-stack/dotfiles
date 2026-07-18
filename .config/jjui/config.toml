@@ -1,9 +1,32 @@
+[ui.colors]
+"selected" = { bg = "#313244" }
+
+[revisions]
+template = '''
+concat(
+  format_short_change_id_with_change_offset(self),
+  " ",
+  if(self.description(), self.description().first_line(), label("description placeholder", "(no description set)")),
+  "\n",
+  separate(" ",
+    self.bookmarks(),
+    self.tags(),
+    self.working_copies(),
+    self.commit_id().shortest(),
+    if(self.conflict(), label("conflict", "(conflict)")),
+    if(self.divergent(), label("divergent", "(divergent)")),
+    if(self.hidden(), label("hidden", "(hidden)")),
+    if(self.empty() && self.description(), label("empty", "(empty)"))
+  )
+)
+'''
+
 [preview]
 revision_command = [
   "util",
   "exec",
   "--",
-  "hunk-preview",
+  "difft-preview",
   "revision",
   "$change_id",
 ]
@@ -11,7 +34,7 @@ file_command = [
   "util",
   "exec",
   "--",
-  "hunk-preview",
+  "difft-preview",
   "file",
   "$change_id",
   "$file",
