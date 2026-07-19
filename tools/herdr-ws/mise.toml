@@ -6,25 +6,25 @@ description = "Install locked dependencies"
 run = "uv sync --locked --python \"$(command -v python)\""
 
 [tasks.lint]
-description = "Lint wt"
+description = "Lint herdr-ws"
 run = "ruff check src tests"
 
 [tasks.format]
-description = "Format wt"
+description = "Format herdr-ws"
 run = "ruff format src tests"
 
 [tasks."format:check"]
-description = "Check wt formatting"
+description = "Check herdr-ws formatting"
 run = "ruff format --check src tests"
 
 [tasks.test]
-description = "Test wt"
+description = "Test herdr-ws"
 run = "uv run --python \"$(command -v python)\" python -m unittest discover -s tests -v"
 
 [tasks.check]
-description = "Run all wt checks"
+description = "Run all herdr-ws checks"
 depends = [":lint", ":format:check", ":test"]
 
 [tasks.install]
-description = "Install wt as an editable uv tool"
+description = "Install herdr-ws as an editable uv tool"
 run = "uv tool install --python \"$(command -v python)\" --editable --reinstall ."

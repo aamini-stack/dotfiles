@@ -107,6 +107,13 @@ type = "plugin_action"
 command = "nathanflurry.jj-workspace.remove"
 description = "JJ workspace: remove"
 
+# prefix+c is the default new_tab binding, so toggle lives on shift+c.
+[[keys.command]]
+key = "prefix+shift+c"
+type = "plugin_action"
+command = "aamini.cd-guard.toggle"
+description = "cd guard: toggle for workspace"
+
 # previous_workspace = "" # optional, unset by default
 # next_workspace = ""     # optional, unset by default
 # previous_agent = ""     # optional, unset by default

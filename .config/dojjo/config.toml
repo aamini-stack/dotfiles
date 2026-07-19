@@ -1,0 +1,13 @@
+# dojjo (djo) — worktrunk-compatible jj workspace manager.
+#
+# workspace-path is intentionally unset here: it comes from the
+# DOJJO_WORKSPACE_PATH environment variable (set in .zshrc) so that $HOME
+# expands, keeping jj workspaces under ~/.herdr/workspaces/<repo>/<name>.
+
+[hooks]
+# `jj workspace add` does not create missing parent directories.
+pre-start = 'mkdir -p "$HOME/.herdr/workspaces/$(basename "$(jj root)")"'
+post-start = "herdr-ws-open '{{ workspace_path }}' --project-path '{{ primary_workspace_path }}'"
+post-switch = "herdr-ws-open '{{ workspace_path }}' --project-path '{{ primary_workspace_path }}'"
+# post-remove's workspace_path is the primary repo root, so pass repo + name.
+post-remove = "herdr-ws-close --repo '{{ repo }}' --name '{{ name }}'"

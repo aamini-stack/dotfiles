@@ -1,0 +1,165 @@
+import json
+import subprocess
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from herdr_ws import open as open_module
+from herdr_ws.herdr import HerdrError
+
+
+def completed(stdout: str = "", returncode: int = 0):
+    return subprocess.CompletedProcess(
+        args=[], returncode=returncode, stdout=stdout, stderr=""
+    )
+
+
+class LabelTests(unittest.TestCase):
+    def test_label_uses_project_and_workspace_dirs(self):
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        self.assertEqual(open_module.herdr_label(path), "ws-dotfiles-plugin")
+
+
+class FindWorkspaceTests(unittest.TestCase):
+    def test_matches_by_label(self):
+        payload = {
+            "workspaces": [
+                {"label": "ui", "workspace_id": "w1"},
+                {"label": "ws-dotfiles-plugin", "workspace_id": "w2"},
+            ]
+        }
+        with patch.object(open_module, "herdr", return_value=payload):
+            found = open_module.find_workspace("ws-dotfiles-plugin")
+        self.assertEqual(found["workspace_id"], "w2")
+
+    def test_returns_none_without_match(self):
+        with patch.object(open_module, "herdr", return_value={"workspaces": []}):
+            self.assertIsNone(open_module.find_workspace("ws-x-y"))
+
+
+class BootstrapDetectionTests(unittest.TestCase):
+    def test_detects_plain_and_monorepo_task_names(self):
+        tasks = json.dumps([{"name": "bootstrap"}, {"name": "//:check"}])
+        with patch.object(subprocess, "run", return_value=completed(tasks)):
+            self.assertTrue(open_module.has_bootstrap_task(Path("/tmp")))
+
+        tasks = json.dumps([{"name": "//tools/x:bootstrap"}])
+        with patch.object(subprocess, "run", return_value=completed(tasks)):
+            self.assertTrue(open_module.has_bootstrap_task(Path("/tmp")))
+
+    def test_absent_or_broken_mise_means_no_task(self):
+        with patch.object(subprocess, "run", return_value=completed("[]")):
+            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
+        with patch.object(subprocess, "run", return_value=completed("", 1)):
+            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
+        with patch.object(subprocess, "run", side_effect=OSError):
+            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
+
+
+class OpenWorkspaceTests(unittest.TestCase):
+    def test_focuses_existing_without_layout(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {"label": "ws-dotfiles-plugin", "workspace_id": "w2"}
+                    ]
+                }
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module.guard, "arm") as arm,
+        ):
+            self.assertEqual(open_module.open_workspace(path), 0)
+
+        self.assertEqual(calls, [("workspace", "list"), ("workspace", "focus", "w2")])
+        arm.assert_called_once_with("w2", path, {"w2"})
+
+    def test_creates_layout_and_runs_agent(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=True),
+            patch.object(open_module.guard, "arm") as arm,
+        ):
+            self.assertEqual(open_module.open_workspace(path), 0)
+
+        self.assertEqual(
+            calls,
+            [
+                ("workspace", "list"),
+                (
+                    "workspace",
+                    "create",
+                    "--cwd",
+                    str(path),
+                    "--label",
+                    "ws-dotfiles-plugin",
+                    "--focus",
+                ),
+                ("pane", "split", "p1", "--direction", "right", "--focus"),
+                ("pane", "run", "p1", "mise run bootstrap"),
+                ("pane", "run", "p2", "opencode"),
+            ],
+        )
+        arm.assert_called_once_with("w9", path, {"w9"})
+
+    def test_skips_bootstrap_when_task_absent(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=False),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path), 0)
+
+        run_calls = [call for call in calls if call[:2] == ("pane", "run")]
+        self.assertEqual(run_calls, [("pane", "run", "p2", "opencode")])
+
+
+class HerdrWrapperTests(unittest.TestCase):
+    def test_raises_on_nonzero_exit(self):
+        from herdr_ws import herdr as herdr_module
+
+        with patch.object(subprocess, "run", return_value=completed("", 2)):
+            with self.assertRaises(HerdrError):
+                herdr_module.herdr("workspace", "list")
+
+
+if __name__ == "__main__":
+    unittest.main()

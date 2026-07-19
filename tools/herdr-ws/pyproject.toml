@@ -1,0 +1,14 @@
+[project]
+name = "herdr-ws"
+version = "0.1.0"
+description = "Herdr workspace helpers for dojjo hooks"
+requires-python = ">=3.11"
+
+[project.scripts]
+herdr-ws-open = "herdr_ws.open:main"
+herdr-ws-close = "herdr_ws.close:main"
+jj-pr = "herdr_ws.pr:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

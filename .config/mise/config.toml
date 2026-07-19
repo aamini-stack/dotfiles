@@ -5,7 +5,9 @@ _.file = { path = "~/.env" }
 experimental = true
 minimum_release_age = "1d"
 idiomatic_version_file_enable_tools = ["node"]
-trusted_config_paths = ["~/.herdr/worktrees/", "~/.herdr/workspaces/"]
+# trusted_config_paths is set via MISE_TRUSTED_CONFIG_PATHS in .zshrc: it is a
+# global-only setting and mise warns when this file is loaded as a project
+# config inside jj workspace copies of the dotfiles repo.
 
 [plugins]
 nix = "https://github.com/jbadeau/mise-nix.git"

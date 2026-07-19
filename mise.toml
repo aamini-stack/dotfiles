@@ -1,16 +1,35 @@
 monorepo_root = true
 
 [monorepo]
-config_roots = ["infra", "tools/wt"]
+config_roots = ["infra", "tools/herdr-ws"]
 
 [tools]
 uv = "latest"
 "pipx:ruff" = "latest"
+dart = "latest"
 
 [tasks.check]
 description = "Check every project"
-depends = ["//infra:check", "//tools/wt:check"]
+depends = ["//infra:check", "//tools/herdr-ws:check"]
+
+[tasks."dojjo:install"]
+description = "Build and install djo (dojjo) from source"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+src="${XDG_CACHE_HOME:-$HOME/.cache}/dojjo-src"
+if [ ! -d "$src" ]; then
+  jj git clone https://github.com/tjarvstrand/dojjo "$src"
+else
+  jj -R "$src" git fetch
+fi
+cd "$src/cli"
+dart pub get
+dart run build_runner build --delete-conflicting-outputs
+dart compile exe bin/djo.dart -o build/djo
+install -Dm755 build/djo "$HOME/.local/bin/djo"
+"""
 
 [tasks.install]
 description = "Install personal tools"
-depends = ["//tools/wt:install"]
+depends = ["//tools/herdr-ws:install", ":dojjo:install"]
