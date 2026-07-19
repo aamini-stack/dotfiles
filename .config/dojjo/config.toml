@@ -7,7 +7,12 @@
 [hooks]
 # `jj workspace add` does not create missing parent directories.
 pre-start = 'mkdir -p "$HOME/.herdr/workspaces/$(basename "$(jj root)")"'
-post-start = "herdr-ws-open '{{ workspace_path }}' --project-path '{{ primary_workspace_path }}'"
+# On create: first seed ignored/untracked files (node_modules, build caches)
+# from the primary checkout, then open the herdr workspace.
+post-start = [
+  { copy-ignored = "djo copy-ignored --from default --to '{{ name }}'" },
+  { open = "herdr-ws-open '{{ workspace_path }}' --project-path '{{ primary_workspace_path }}'" },
+]
 post-switch = "herdr-ws-open '{{ workspace_path }}' --project-path '{{ primary_workspace_path }}'"
 # post-remove's workspace_path is the primary repo root, so pass repo + name.
 post-remove = "herdr-ws-close --repo '{{ repo }}' --name '{{ name }}'"
