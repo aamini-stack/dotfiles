@@ -99,40 +99,6 @@ wt() {
   djo "$@"
 }
 
-# Focus (or create) the herdr workspace for a jj workspace of the current repo.
-# No args: fzf picker of existing workspaces. With a name: focus if it exists,
-# otherwise create it (its hook opens the herdr workspace). This shell's cwd
-# never changes.
-code() {
-  local primary json name sanitized
-  primary=$(_jj_primary_root) || { print -u2 "code: not in a jj repo"; return 1; }
-  [[ -n "$HERDR_ENV" ]] || { print -u2 "code: only works inside herdr"; return 1; }
-  json=$(djo list --json) || return
-
-  if [[ $# -gt 0 ]]; then
-    name=$1
-    if ! print -r -- "$json" | jq -e --arg n "$name" '.[] | select(.name == $n)' >/dev/null; then
-      # Bypass the djo() porcelain wrapper so this shell stays put; the
-      # post-switch hook opens + focuses the new herdr workspace regardless.
-      command djo switch -c "$name"
-      return
-    fi
-  else
-    name=$(print -r -- "$json" | jq -r '.[] | select(.name != "default") | .name' |
-      fzf --prompt='workspace: ') || return
-    [[ -n "$name" ]] || return
-  fi
-
-  if [[ "$name" == "default" ]]; then
-    herdr-ws-open "$primary" --project-path "$primary"
-    return
-  fi
-  # djo list --json has empty paths; resolve via the DOJJO_WORKSPACE_PATH layout.
-  sanitized=${name//\//-}
-  sanitized=${sanitized//\\/-}
-  herdr-ws-open "$HOME/.herdr/workspaces/${primary:t}/$sanitized" --project-path "$primary"
-}
-
 nvim()
 {
     local nvim_new_dir_file="${XDG_CACHE_HOME:-$HOME/.cache}/nvim/newdir"
@@ -356,7 +322,7 @@ if [[ -n "$HERDR_ENV" ]]; then
         ;;
       on)
         if ! _herdr_guard_managed; then
-          print -- "cd guard: only active in code/wt workspaces"
+          print -- "cd guard: only active in wt workspaces"
           return 1
         fi
         unset HERDR_GUARD_DISABLED
@@ -364,7 +330,7 @@ if [[ -n "$HERDR_ENV" ]]; then
         ;;
       status)
         if ! _herdr_guard_managed; then
-          print -- "cd guard: unmanaged (open via code/wt switch to enable)"
+          print -- "cd guard: unmanaged (open via wt switch to enable)"
         elif _herdr_guard_disabled; then
           print -- "cd guard: disabled (root: $(_herdr_guard_root))"
         else

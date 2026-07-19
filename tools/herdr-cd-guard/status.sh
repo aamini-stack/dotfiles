@@ -10,7 +10,7 @@ if [[ -f "$dir/roots" ]]; then
 fi
 
 if [[ -z "$root" ]]; then
-  "$HERDR_BIN_PATH" notification show "cd guard: unmanaged" --body "open via code/wt switch to enable"
+  "$HERDR_BIN_PATH" notification show "cd guard: unmanaged" --body "open via wt switch to enable"
   exit 0
 fi
 
