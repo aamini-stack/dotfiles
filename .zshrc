@@ -92,7 +92,7 @@ wt() {
     done <<< "$output"
     [[ ! -d $PWD ]] && builtin cd -- "$primary"
     [[ -z "$name" || "$name" == "default" ]] && return 0
-    herdr-ws-close --repo "${primary:t}" --name "$name" ||
+    herdr-ws close --repo "${primary:t}" --name "$name" ||
       print -u2 "wt: failed to close herdr workspace for '$name'"
     return 0
   fi

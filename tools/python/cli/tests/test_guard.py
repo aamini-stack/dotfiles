@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from herdr_ws import guard
+from cli import guard
 
 
 class ConfigDirTests(unittest.TestCase):

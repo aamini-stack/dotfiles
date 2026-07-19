@@ -1,8 +1,8 @@
 """Close the herdr workspace for a removed jj workspace.
 
-Invoked by dojjo's post-remove hook with the repo and workspace name. A missing
-herdr workspace is not an error: the hook runs for every removal, including
-workspaces that were never opened in herdr.
+Invoked by the workspace tool's post-remove hook with the repo and workspace
+name. A missing herdr workspace is not an error: the hook runs for every
+removal, including workspaces that were never opened in herdr.
 """
 
 import argparse
@@ -25,27 +25,27 @@ def close_workspace(repo: str, name: str) -> int:
         try:
             guard.disarm(existing["workspace_id"])
         except OSError as error:
-            print(f"herdr-ws-close: cd-guard disarm failed: {error}", file=sys.stderr)
+            print(f"herdr-ws close: cd-guard disarm failed: {error}", file=sys.stderr)
 
     try:
         guard.prune(live_ids)
     except OSError as error:
-        print(f"herdr-ws-close: cd-guard prune failed: {error}", file=sys.stderr)
+        print(f"herdr-ws close: cd-guard prune failed: {error}", file=sys.stderr)
     return 0
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(prog="herdr-ws-close")
+def add_parser(subparsers: argparse._SubParsersAction) -> None:
+    parser = subparsers.add_parser(
+        "close", help="close the herdr workspace for a removed jj workspace"
+    )
     parser.add_argument("--repo", required=True, help="repo directory name")
     parser.add_argument("--name", required=True, help="jj workspace name")
-    args = parser.parse_args()
+    parser.set_defaults(run=run)
 
+
+def run(args: argparse.Namespace) -> int:
     try:
         return close_workspace(args.repo, args.name)
     except HerdrError as error:
-        print(f"herdr-ws-close: {error}", file=sys.stderr)
+        print(f"herdr-ws close: {error}", file=sys.stderr)
         return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

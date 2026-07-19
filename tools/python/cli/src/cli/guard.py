@@ -2,8 +2,8 @@
 
 The `roots` file (<workspace_id>\t<root> per line) in the plugin config dir is
 the registry of managed herdr workspaces: the zsh hook only enforces the cd
-guard in workspaces listed here. herdr-ws-open arms workspaces it opens;
-herdr-ws-close disarms them.
+guard in workspaces listed here. `herdr-ws open` arms workspaces it opens;
+`herdr-ws close` disarms them.
 """
 
 import os

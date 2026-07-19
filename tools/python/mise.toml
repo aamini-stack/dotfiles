@@ -1,0 +1,33 @@
+[tools]
+python = "3.14"
+
+[tasks.sync]
+description = "Install locked workspace dependencies"
+run = 'uv sync --locked --python "$(command -v python)"'
+
+[tasks.lint]
+description = "Lint all Python"
+run = "ruff check ."
+
+[tasks.format]
+description = "Format all Python"
+run = "ruff format ."
+
+[tasks."format:check"]
+description = "Check Python formatting"
+run = "ruff format --check ."
+
+[tasks.test]
+description = "Run all Python tests"
+run = '''
+cd cli && uv run --python "$(command -v python)" python -m unittest discover -s tests -v
+cd ../infra && uv run --python "$(command -v python)" python -m compileall -q __main__.py
+'''
+
+[tasks.check]
+description = "Run all Python checks"
+depends = [":lint", ":format:check", ":test"]
+
+[tasks.install]
+description = "Install the cli package as an editable uv tool"
+run = 'uv tool install --python "$(command -v python)" --editable --reinstall ./cli'

@@ -1,9 +1,10 @@
 """Open a jj workspace as a laid-out herdr workspace.
 
-Invoked by dojjo's post-start and post-switch hooks with the workspace path.
-If a herdr workspace labeled ws-<project>-<name> already exists it is focused;
-otherwise it is created with a vertical split: the left pane runs the
-project's `mise run bootstrap` task (if any) and the right pane runs opencode.
+Invoked by workspace lifecycle hooks (post-start/post-switch) with the
+workspace path. If a herdr workspace labeled ws-<project>-<name> already
+exists it is focused; otherwise it is created with a vertical split: the left
+pane runs the project's `mise run bootstrap` task (if any) and the right pane
+runs opencode.
 """
 
 import argparse
@@ -17,7 +18,7 @@ from .herdr import HerdrError, herdr
 
 
 def sanitize_name(name: str) -> str:
-    """Mirror dojjo's `sanitize` template filter (slashes become dashes)."""
+    """Mirror the workspace tool's sanitize filter (slashes become dashes)."""
     return name.replace("/", "-").replace("\\", "-")
 
 
@@ -87,11 +88,11 @@ def _arm(workspace_id: str, path: Path, workspaces: list) -> None:
     try:
         guard.arm(workspace_id, path, live_ids)
     except OSError as error:
-        print(f"herdr-ws-open: cd-guard arm failed: {error}", file=sys.stderr)
+        print(f"herdr-ws open: cd-guard arm failed: {error}", file=sys.stderr)
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(prog="herdr-ws-open")
+def add_parser(subparsers: argparse._SubParsersAction) -> None:
+    parser = subparsers.add_parser("open", help="open a jj workspace in herdr")
     parser.add_argument(
         "path",
         nargs="?",
@@ -106,16 +107,14 @@ def main() -> int:
         help="primary jj workspace path; its directory name labels the herdr "
         "workspace (defaults to the parent directory of PATH)",
     )
-    args = parser.parse_args()
+    parser.set_defaults(run=run)
 
+
+def run(args: argparse.Namespace) -> int:
     path = args.path.resolve()
     project_path = args.project_path.resolve() if args.project_path else None
     try:
         return open_workspace(path, project_path)
     except HerdrError as error:
-        print(f"herdr-ws-open: {error}", file=sys.stderr)
+        print(f"herdr-ws open: {error}", file=sys.stderr)
         return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

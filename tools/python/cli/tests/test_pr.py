@@ -3,7 +3,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
-from herdr_ws import pr
+from cli import pr
 
 
 def completed(stdout: str = "", returncode: int = 0):

@@ -18,9 +18,7 @@ mise tasks --all
 Common commands:
 
 ```bash
-mise //:check             # Check every project
-mise //:install           # Install personal tools
-mise //tools/wt:test      # Test wt
-mise //tools/wt:install   # Install wt
-mise //infra:check        # Check the infrastructure project
+mise //:check                  # Check every project
+mise //:install                # Install personal tools
+mise //tools/python:check      # Check the Python workspace (tools + infra)
 ```

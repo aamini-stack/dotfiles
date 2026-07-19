@@ -34,6 +34,7 @@ grep -Fqx "$mise_activation" "$HOME/.bashrc" || printf '%s\n' "$mise_activation"
 eval "$(mise activate bash)"
 mise i
 mise trust -y "$HOME/dotfiles/mise.toml"
+mise trust -y "$HOME/dotfiles/tools/python/mise.toml"
 mise -C "$HOME/dotfiles" install --monorepo
 mise -C "$HOME/dotfiles" //:install
 

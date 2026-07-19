@@ -1,0 +1,13 @@
+[project]
+name = "cli"
+version = "0.1.0"
+description = "Personal CLI tools"
+requires-python = ">=3.11"
+
+[project.scripts]
+herdr-ws = "cli.ws:main"
+jj-pr = "cli.pr:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

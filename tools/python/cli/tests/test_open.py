@@ -4,8 +4,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from herdr_ws import open as open_module
-from herdr_ws.herdr import HerdrError
+from cli import open as open_module
+from cli.herdr import HerdrError
 
 
 def completed(stdout: str = "", returncode: int = 0):
@@ -154,7 +154,7 @@ class OpenWorkspaceTests(unittest.TestCase):
 
 class HerdrWrapperTests(unittest.TestCase):
     def test_raises_on_nonzero_exit(self):
-        from herdr_ws import herdr as herdr_module
+        from cli import herdr as herdr_module
 
         with patch.object(subprocess, "run", return_value=completed("", 2)):
             with self.assertRaises(HerdrError):

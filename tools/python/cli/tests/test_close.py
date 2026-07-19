@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch
 
-from herdr_ws import close as close_module
-from herdr_ws import open as open_module
+from cli import close as close_module
+from cli import open as open_module
 
 
 class LabelForTests(unittest.TestCase):
@@ -11,7 +11,7 @@ class LabelForTests(unittest.TestCase):
             open_module.herdr_label_for("dotfiles", "plugin"), "ws-dotfiles-plugin"
         )
 
-    def test_sanitizes_slashes_like_dojjo(self):
+    def test_sanitizes_slashes(self):
         self.assertEqual(
             open_module.herdr_label_for("dotfiles", "feat/login"),
             "ws-dotfiles-feat-login",

@@ -8,3 +8,6 @@
 !.config/herdr/config.toml
 
 __pycache__
+
+.venv
+.ruff_cache
