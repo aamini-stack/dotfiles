@@ -59,7 +59,6 @@ herdr = "0.7.4"
 
 # AI
 "opencode" = "latest"
-"pi" = "latest"
 claude = "latest"
 "npm:playwriter" = "latest"
 "npm:lavish-axi" = "latest"
@@ -106,8 +105,10 @@ helm = "latest"
 pulumi = "latest"
 railway = "5.23.0"
 jj = "latest"
+"github:dmmulroy/jj-ryu" = "latest"
 "nix:jjui" = "latest"
 "github:eersnington/jj-navi" = "latest"
+"nix:jj-starship" = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"
