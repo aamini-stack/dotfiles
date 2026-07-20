@@ -125,7 +125,6 @@ dev() {
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
 compinit
-eval "$(djo shell completion zsh)"
 
 # ── FZF ───────────────────────────────────────────────────────
 source <(fzf --zsh)
