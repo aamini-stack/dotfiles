@@ -14,7 +14,9 @@ from .lifecycle import (
     copy_ignored_to_current,
     create_workspace,
     list_workspaces,
+    pick_workspace,
     remove_workspace,
+    resolve_workspace,
     run_configured_hook,
 )
 
@@ -23,12 +25,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="wt", description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    new = subparsers.add_parser("new", help="create a jj workspace")
-    new.add_argument("name")
-    new.add_argument(
-        "-r", "--revision", help="revision/revset to base it on (default: @)"
+    switch = subparsers.add_parser("switch", help="switch to a jj workspace")
+    switch.add_argument("name", nargs="?", help="omit to pick a workspace with fzf")
+    switch.add_argument(
+        "-c", "--create", action="store_true", help="create the workspace"
     )
-    new.set_defaults(run=_new)
+    switch.add_argument(
+        "-r",
+        "--revision",
+        help="revision/revset to base a created workspace on (default: @)",
+    )
+    switch.set_defaults(run=_switch)
 
     remove = subparsers.add_parser(
         "rm", aliases=["remove"], help="remove a jj workspace"
@@ -60,17 +67,33 @@ def main() -> int:
         return 1
 
 
-def _new(args: argparse.Namespace) -> int:
-    created = create_workspace(Path.cwd(), args.name, args.revision)
+def _switch(args: argparse.Namespace) -> int:
+    cwd = Path.cwd()
+    if args.create:
+        if not args.name:
+            raise WtError("switch --create requires a name")
+        target = create_workspace(cwd, args.name, args.revision)
+    elif args.name:
+        if args.revision:
+            raise WtError("--revision only applies with --create")
+        target = resolve_workspace(cwd, args.name)
+    else:
+        target = pick_workspace(cwd)
+        if target is None:
+            return 0
+    _emit(target.root)
+    return 0
+
+
+def _emit(path: Path) -> None:
     result_file = os.environ.get("WT_RESULT_FILE")
     if result_file:
         try:
-            Path(result_file).write_text(str(created.root))
+            Path(result_file).write_text(str(path))
         except OSError as error:
             raise WtError(f"could not write shell result: {error}") from error
     else:
-        print(created.root)
-    return 0
+        print(path)
 
 
 def _remove(args: argparse.Namespace) -> int:

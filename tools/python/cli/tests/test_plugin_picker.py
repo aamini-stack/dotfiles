@@ -34,7 +34,7 @@ def run_picker(monkeypatch, layout, fzf_result, workspaces=None):
         picker_module, "status_token", lambda cwd, rev="@": f"tok-{rev}"
     )
 
-    def fake_fzf(lines, preview=None, binds=None):
+    def fake_fzf(lines, preview=None, binds=None, expect=()):
         calls["lines"] = lines
         return fzf_result
 

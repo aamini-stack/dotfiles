@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 from typing import Mapping
 
+from ..fzf import fzf_select
 from ..herdr import find_for_jj, focus_workspace, list_workspaces
 from ..jj import JjError, primary_root, status_token, workspaces
 from ..open import open_workspace
-from .fzf import fzf_select
 from .remove import remove_workspace
 from .wizard import resolve_context, wizard
 
@@ -33,7 +33,9 @@ def picker(env: Mapping[str, str] | None = None) -> int:
         marker = existing.get("label", "open") if existing else "—"
         lines.append(f"{item.name}\t{token}\t{marker}")
 
-    key, line = fzf_select(lines, preview="jj log --color=always -r {1}@")
+    key, line = fzf_select(
+        lines, preview="jj log --color=always -r {1}@", expect=("ctrl-d", "ctrl-n")
+    )
     if key == "esc":
         return 0
     if key == "ctrl-n":

@@ -44,7 +44,7 @@ jjui() {
 }
 
 wt() {
-  if [[ "$1" == "new" ]]; then
+  if [[ "$1" == "switch" ]]; then
     local output exit_code destination result_file
     result_file="$(mktemp "${TMPDIR:-/tmp}/wt-result.XXXXXX")" || return
     output="$(WT_RESULT_FILE="$result_file" command wt "$@")"

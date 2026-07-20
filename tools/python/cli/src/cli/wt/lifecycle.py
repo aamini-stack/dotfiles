@@ -14,6 +14,7 @@ from ..jj import (
     workspace,
     workspaces,
 )
+from ..fzf import fzf_select
 from . import config as config_module
 from .copy_ignored import copy_ignored
 from .hooks import run_hooks, run_named_hook
@@ -99,6 +100,23 @@ def remove_workspace(
 def list_workspaces(cwd: Path) -> tuple[Workspace, list[Workspace]]:
     current = current_workspace(cwd)
     return current, workspaces(primary_root(cwd))
+
+
+def resolve_workspace(cwd: Path, name: str) -> Workspace:
+    return workspace(primary_root(cwd), name)
+
+
+def pick_workspace(cwd: Path, select=None) -> Workspace | None:
+    select = fzf_select if select is None else select
+    current, items = list_workspaces(cwd)
+    choices = {
+        f"{'*' if item.name == current.name else ' '} {item.name}\t{item.root}": item
+        for item in items
+    }
+    _, line = select(list(choices))
+    if line is None:
+        return None
+    return choices.get(line)
 
 
 def run_configured_hook(cwd: Path, hook_name: str, env=None) -> None:

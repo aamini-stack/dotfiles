@@ -1,7 +1,7 @@
 import subprocess
 from unittest.mock import patch
 
-from cli.plugin import fzf as fzf_module
+from cli import fzf as fzf_module
 
 
 def completed(stdout: str = "", returncode: int = 0):
@@ -19,14 +19,15 @@ class TestFzfSelect:
         assert key == "enter"
         assert line == "feat\tabc ✓\tws-repo-feat"
         assert run.call_args.kwargs["input"] == "feat\tabc ✓\tws-repo-feat"
+        assert not any(arg.startswith("--expect=") for arg in run.call_args.args[0])
 
     def test_expects_key_binds(self):
         with patch.object(
             subprocess, "run", return_value=completed("ctrl-d\nfeat\n")
         ) as run:
-            key, line = fzf_module.fzf_select(["feat"])
+            key, line = fzf_module.fzf_select(["feat"], expect=("ctrl-d", "ctrl-n"))
         assert (key, line) == ("ctrl-d", "feat")
-        assert any(arg.startswith("--expect=") for arg in run.call_args.args[0])
+        assert any(arg == "--expect=ctrl-d,ctrl-n" for arg in run.call_args.args[0])
 
     def test_cancel_exits_cleanly(self):
         with patch.object(subprocess, "run", return_value=completed("", 130)):

@@ -1,17 +1,18 @@
-"""fzf subprocess wrapper used by the picker popup."""
+"""fzf subprocess wrapper shared by wt and the herdr plugin."""
 
 import subprocess
-
-KEYS = ("ctrl-d", "ctrl-n")
 
 
 def fzf_select(
     lines: list[str],
     preview: str | None = None,
     binds: dict[str, str] | None = None,
+    expect: tuple[str, ...] = (),
 ) -> tuple[str, str | None]:
     """Show lines in fzf; return ("enter"|key|"esc", selected line or None)."""
-    cmd = ["fzf", f"--expect={','.join(KEYS)}", "--delimiter=\t"]
+    cmd = ["fzf", "--delimiter=\t"]
+    if expect:
+        cmd.append(f"--expect={','.join(expect)}")
     if preview:
         cmd += ["--preview", preview]
     for key, action in (binds or {}).items():

@@ -107,7 +107,7 @@ function setup(config)
     if name == "" then return end
 
     local result_path = os.tmpname()
-    exec_shell(string.format("WT_RESULT_FILE=%q command wt new %q -r %q", result_path, name, change_id))
+    exec_shell(string.format("WT_RESULT_FILE=%q command wt switch --create %q -r %q", result_path, name, change_id))
 
     local result = io.open(result_path, "r")
     if not result then return end

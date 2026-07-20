@@ -8,8 +8,10 @@ focus, panes, and status reporting.
 
 | Task | Command | Notes |
 | --- | --- | --- |
-| Create from the current change | `wt new feat` | Bases the workspace on `@` and runs `post-create` hooks |
-| Create from another revision | `wt new feat -r 'trunk()'` | Accepts any jj revset |
+| Switch to a workspace | `wt switch feat` | Prints the path; the zsh wrapper cds into it |
+| Pick a workspace with fzf | `wt switch` | No name opens an interactive picker |
+| Create and switch | `wt switch -c feat` | Bases the workspace on `@` and runs `post-create` hooks |
+| Create from another revision | `wt switch -c feat -r 'trunk()'` | Accepts any jj revset |
 | List workspaces | `wt ls` | Shows names, paths, and the current workspace |
 | Remove by name | `wt rm feat` | Confirms, runs `pre-remove`, forgets, then removes the directory |
 | Remove the current workspace | `wt rm` | The primary workspace is never removable |
@@ -19,17 +21,17 @@ focus, panes, and status reporting.
 
 `wt remove` and `wt list` are aliases for `wt rm` and `wt ls`.
 
-The dotfiles zsh wrapper captures the path printed by `wt new` and changes the
-current shell into the new workspace. The executable prints the path because a
-child process cannot change its parent shell's directory. Start a new zsh or
-run `source ~/.zshrc` after installing the wrapper.
+The dotfiles zsh wrapper captures the path printed by `wt switch` and changes
+the current shell into the target workspace. The executable prints the path
+because a child process cannot change its parent shell's directory. Start a
+new zsh or run `source ~/.zshrc` after installing the wrapper.
 
 ## Worktrunk mapping
 
 | Worktrunk | wt / jj | Notes |
 | --- | --- | --- |
-| `wt switch -c feat` | `wt new feat` | herdr-jj handles opening and focus |
-| `wt switch -c feat --base main` | `wt new feat -r 'trunk()'` | wt accepts a jj revset, not a branch |
+| `wt switch -c feat` | `wt switch -c feat` | herdr-jj handles opening and focus |
+| `wt switch -c feat --base main` | `wt switch -c feat -r 'trunk()'` | wt accepts a jj revset, not a branch |
 | `wt remove` | `wt rm` | jj commits survive workspace removal |
 | `wt step copy-ignored --force` | `wt copy-ignored` | wt overwrites copied ignored files |
 | `[[pre-start]]` | `[[post-create]]` | Sequential and blocking |
