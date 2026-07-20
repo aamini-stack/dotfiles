@@ -20,13 +20,21 @@ separate(" ",
   format_short_change_id_with_change_offset(commit),
   commit.bookmarks(),
   commit.tags(),
-  commit.working_copies(),
+  format_jjui_working_copies(commit),
   format_short_commit_id(commit.commit_id()),
   format_commit_labels(commit),
   if(config("ui.show-cryptographic-signatures").as_boolean(),
     format_short_cryptographic_signature(commit.signature())
   ),
 )
+'''
+'format_jjui_working_copies(commit)' = '''
+commit.working_copies().map(|workspace|
+  if(workspace.target().current_working_copy(),
+    label("workspace current", workspace),
+    label("workspace other", workspace),
+  )
+).join(" ")
 '''
 
 [--scope.colors]
@@ -37,3 +45,5 @@ remote_bookmarks = { fg = "bright yellow", bold = true }
 commit_id = "bright black"
 "description placeholder" = { fg = "bright black", italic = true }
 "empty description placeholder" = { fg = "bright black", italic = true }
+"workspace current" = { fg = "bright cyan", bold = true }
+"workspace other" = { fg = "bright black" }

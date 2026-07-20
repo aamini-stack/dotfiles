@@ -28,6 +28,21 @@ alias tree='erd'
 alias pr="gh-dash"
 alias gd='hunk diff --watch'
 
+jjui() {
+  local result_file destination exit_code
+  result_file="$(mktemp "${TMPDIR:-/tmp}/jjui-workspace.XXXXXX")" || return
+
+  JJUI_WORKSPACE_RESULT_FILE="$result_file" command jjui "$@"
+  exit_code=$?
+  destination="$(<"$result_file")"
+  command rm -f -- "$result_file"
+
+  if [[ -n "$destination" && -d "$destination" ]]; then
+    builtin cd -- "$destination" || return
+  fi
+  return "$exit_code"
+}
+
 wt() {
   if [[ "$1" == "new" ]]; then
     local output exit_code destination result_file

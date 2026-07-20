@@ -19,13 +19,41 @@ local function list_workspaces()
   return workspaces
 end
 
-local function current_workspace_name()
-  local root = current_workspace_root()
-  local workspaces = list_workspaces()
-  if not root or not workspaces then return nil end
+local function find_workspace(workspaces, root, name)
   for _, ws in ipairs(workspaces) do
-    if ws.root == root then return ws.name end
+    if ws.root == root then return ws end
   end
+  for _, ws in ipairs(workspaces) do
+    if ws.name == name then return ws end
+  end
+end
+
+local function record_workspace(root)
+  local result_path = os.getenv("JJUI_WORKSPACE_RESULT_FILE")
+  if not result_path or result_path == "" then return true end
+
+  local file, err = io.open(result_path, "w")
+  if not file then return nil, err end
+  local ok, write_err = file:write(root)
+  local closed, close_err = file:close()
+  if not ok then return nil, write_err end
+  if not closed then return nil, close_err end
+  return true
+end
+
+local function switch_workspace(ws)
+  local ok, err = change_workspace(ws.root)
+  if not ok then
+    flash({ text = "switch failed: " .. tostring(err), error = true })
+    return
+  end
+
+  local recorded, record_err = record_workspace(ws.root)
+  if not recorded then
+    flash({ text = "shell handoff failed: " .. tostring(record_err), error = true })
+  end
+  revisions.refresh()
+  flash("workspace: " .. ws.name)
 end
 
 function setup(config)
@@ -37,25 +65,26 @@ function setup(config)
     end
 
     local current = current_workspace_root()
-    local options = {}
+    local ordered = {}
     for _, ws in ipairs(workspaces) do
-      local marker = ws.root == current and "* " or "  "
+      if ws.root == current then table.insert(ordered, ws) end
+    end
+    for _, ws in ipairs(workspaces) do
+      if ws.root ~= current then table.insert(ordered, ws) end
+    end
+
+    local options = {}
+    for _, ws in ipairs(ordered) do
+      local marker = ws.root == current and "* [current] " or "  "
       table.insert(options, marker .. ws.name .. "  (" .. ws.root .. ")")
     end
 
-    local choice = choose({ options = options, title = "Switch workspace" })
+    local choice = choose({ options = options, title = "Switch workspace", ordered = true })
     if not choice then return end
 
     for i, option in ipairs(options) do
       if option == choice then
-        local ws = workspaces[i]
-        local ok, werr = change_workspace(ws.root)
-        if not ok then
-          flash({ text = "switch failed: " .. tostring(werr), error = true })
-          return
-        end
-        revisions.refresh()
-        flash({ text = "workspace: " .. ws.name, sticky = true })
+        switch_workspace(ordered[i])
         return
       end
     end
@@ -77,23 +106,30 @@ function setup(config)
     name = name:gsub("^%s+", ""):gsub("%s+$", "")
     if name == "" then return end
 
-    exec_shell(string.format("wt new %q -r %q", name, change_id))
+    local result_path = os.tmpname()
+    exec_shell(string.format("WT_RESULT_FILE=%q command wt new %q -r %q", result_path, name, change_id))
+
+    local result = io.open(result_path, "r")
+    if not result then return end
+    local root = result:read("*a"):gsub("%s+$", "")
+    result:close()
+    os.remove(result_path)
+    if root == "" then return end
+
+    local updated, err = list_workspaces()
+    if not updated then
+      flash({ text = "workspace list failed: " .. tostring(err), error = true })
+      return
+    end
+    local ws = find_workspace(updated, root, name)
+    if not ws then
+      flash({ text = "created workspace not found: " .. name, error = true })
+      return
+    end
+    switch_workspace(ws)
   end, {
     desc = "create workspace here",
     seq = { "w", "c" },
-    scope = "revisions",
-  })
-
-  config.action("show current workspace", function()
-    local name = current_workspace_name()
-    if name then
-      flash({ text = "workspace: " .. name, sticky = true })
-    else
-      flash({ text = "Could not determine current workspace", error = true })
-    end
-  end, {
-    desc = "show current workspace",
-    seq = { "w", "i" },
     scope = "revisions",
   })
 
