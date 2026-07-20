@@ -143,4 +143,18 @@ function setup(config)
     key = "enter",
     scope = "revisions.details",
   })
+
+  config.action("open file in nvim", function()
+    local file = context.file()
+    if not file or file == "" then
+      flash({ text = "No file selected", error = true })
+      return
+    end
+
+    exec_shell(string.format("nvim %q", file))
+  end, {
+    desc = "open file in nvim",
+    key = "e",
+    scope = "revisions.details",
+  })
 end
