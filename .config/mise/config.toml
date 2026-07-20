@@ -109,6 +109,7 @@ jj = "latest"
 "nix:jjui" = "latest"
 "github:eersnington/jj-navi" = "latest"
 "nix:jj-starship" = "latest"
+"http:coderabbit" = { version = "0.6.5", url = "https://cli.coderabbit.ai/releases/{{ version }}/coderabbit-linux-arm64.zip", postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/coderabbit" }
 
 [tasks.diff]
 dir = "{{cwd}}"
