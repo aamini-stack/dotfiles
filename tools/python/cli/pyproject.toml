@@ -7,6 +7,15 @@ requires-python = ">=3.11"
 [project.scripts]
 herdr-ws = "cli.ws:main"
 jj-pr = "cli.pr:main"
+herdr-jj = "cli.plugin.main:main"
+wt = "cli.wt.main:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["e2e: end-to-end tests using real jj and fake herdr/fzf binaries"]
 
 [build-system]
 requires = ["hatchling"]

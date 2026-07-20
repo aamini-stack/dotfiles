@@ -1,7 +1,7 @@
 """Open a jj workspace as a laid-out herdr workspace.
 
-Invoked by workspace lifecycle hooks (post-start/post-switch) with the
-workspace path. If a herdr workspace labeled ws-<project>-<name> already
+Invoked by herdr-jj with the workspace path. If a herdr workspace labeled
+ws-<project>-<name> already
 exists it is focused; otherwise it is created with a vertical split: the left
 pane runs the project's `mise run bootstrap` task (if any) and the right pane
 runs opencode.
@@ -14,27 +14,16 @@ import sys
 from pathlib import Path
 
 from . import guard
-from .herdr import HerdrError, herdr
-
-
-def sanitize_name(name: str) -> str:
-    """Mirror the workspace tool's sanitize filter (slashes become dashes)."""
-    return name.replace("/", "-").replace("\\", "-")
+from .herdr import HerdrError, Workspace, focus_or_create, herdr, workspace_label
 
 
 def herdr_label_for(project: str, name: str) -> str:
-    return f"ws-{project}-{sanitize_name(name)}"
+    return workspace_label(project, name)
 
 
 def herdr_label(path: Path, project_path: Path | None = None) -> str:
     project = project_path.name if project_path is not None else path.parent.name
     return herdr_label_for(project, path.name)
-
-
-def find_workspace(label: str, workspaces: list | None = None) -> dict | None:
-    if workspaces is None:
-        workspaces = herdr("workspace", "list").get("workspaces", [])
-    return next((w for w in workspaces if w.get("label") == label), None)
 
 
 def has_bootstrap_task(path: Path) -> bool:
@@ -58,19 +47,19 @@ def has_bootstrap_task(path: Path) -> bool:
     return any(task.get("name", "").split(":")[-1] == "bootstrap" for task in tasks)
 
 
-def open_workspace(path: Path, project_path: Path | None = None) -> int:
-    label = herdr_label(path, project_path)
-
-    workspaces = herdr("workspace", "list").get("workspaces", [])
-    existing = find_workspace(label, workspaces)
-    if existing is not None:
-        herdr("workspace", "focus", existing["workspace_id"])
-        _arm(existing["workspace_id"], path, workspaces)
+def open_workspace(
+    path: Path,
+    project_path: Path | None = None,
+    workspace_name: str | None = None,
+) -> int:
+    project = project_path.name if project_path is not None else path.parent.name
+    name = path.name if workspace_name is None else workspace_name
+    created, is_new, workspaces = focus_or_create(project, name, path)
+    workspace_id = created["workspace"]["workspace_id"]
+    if not is_new:
+        _arm(workspace_id, path, workspaces)
         return 0
 
-    created = herdr(
-        "workspace", "create", "--cwd", str(path), "--label", label, "--focus"
-    )
     left = created["root_pane"]["pane_id"]
     right = herdr("pane", "split", left, "--direction", "right", "--focus")["pane"][
         "pane_id"
@@ -79,11 +68,11 @@ def open_workspace(path: Path, project_path: Path | None = None) -> int:
     if has_bootstrap_task(path):
         herdr("pane", "run", left, "mise run bootstrap")
     herdr("pane", "run", right, "opencode")
-    _arm(created["workspace"]["workspace_id"], path, workspaces)
+    _arm(workspace_id, path, workspaces)
     return 0
 
 
-def _arm(workspace_id: str, path: Path, workspaces: list) -> None:
+def _arm(workspace_id: str, path: Path, workspaces: list[Workspace]) -> None:
     live_ids = {w["workspace_id"] for w in workspaces} | {workspace_id}
     try:
         guard.arm(workspace_id, path, live_ids)

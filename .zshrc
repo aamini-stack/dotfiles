@@ -14,7 +14,6 @@ export MISE_TRUSTED_CONFIG_PATHS="$HOME/.herdr/worktrees/:$HOME/.herdr/workspace
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
-export PATH="$PATH:$HOME/.config/worktrunk/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 # ── Initialization ────────────────────────────────────────────
@@ -28,6 +27,24 @@ alias k='kubectl'
 alias tree='erd'
 alias pr="gh-dash"
 alias gd='hunk diff --watch'
+
+wt() {
+  if [[ "$1" == "new" ]]; then
+    local output exit_code destination result_file
+    result_file="$(mktemp "${TMPDIR:-/tmp}/wt-result.XXXXXX")" || return
+    output="$(WT_RESULT_FILE="$result_file" command wt "$@")"
+    exit_code=$?
+    [[ -n "$output" ]] && print -r -- "$output"
+    destination="$(<"$result_file")"
+    command rm -f -- "$result_file"
+    (( exit_code == 0 )) || return "$exit_code"
+    [[ -n "$destination" ]] || return 0
+    print -r -- "$destination"
+    builtin cd -- "$destination"
+    return
+  fi
+  command wt "$@"
+}
 
 gr() {
   cd "$(git rev-parse --show-toplevel 2>/dev/null)"
@@ -171,4 +188,3 @@ zle-line-init() {
 zle -N zle-line-init
 echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
-

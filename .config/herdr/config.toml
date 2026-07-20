@@ -78,41 +78,22 @@ onboarding = false
 # close_workspace = "prefix+shift+d"
 
 [[keys.command]]
-key = "prefix+shift+g"
+key = "prefix+shift+a"
 type = "plugin_action"
-command = "worktrunk.open"
-description = "Worktree: switch / create"
-
-[[keys.command]]
-key = "prefix+shift+d"
-type = "plugin_action"
-command = "worktrunk.remove"
-description = "Worktree: remove"
+command = "aamini.jj.new"
+description = "JJ workspace: create"
 
 [[keys.command]]
 key = "prefix+a"
 type = "plugin_action"
-command = "nathanflurry.jj-workspace.new-tab"
-description = "JJ workspace: create in tab"
-
-[[keys.command]]
-key = "prefix+shift+a"
-type = "plugin_action"
-command = "nathanflurry.jj-workspace.new"
-description = "JJ workspace: create"
+command = "aamini.jj.pick"
+description = "JJ workspace: switch"
 
 [[keys.command]]
 key = "prefix+d"
 type = "plugin_action"
-command = "nathanflurry.jj-workspace.remove"
+command = "aamini.jj.remove"
 description = "JJ workspace: remove"
-
-# prefix+c is the default new_tab binding, so toggle lives on shift+c.
-[[keys.command]]
-key = "prefix+shift+c"
-type = "plugin_action"
-command = "aamini.cd-guard.toggle"
-description = "cd guard: toggle for workspace"
 
 # previous_workspace = "" # optional, unset by default
 # next_workspace = ""     # optional, unset by default
@@ -224,6 +205,9 @@ description = "cd guard: toggle for workspace"
 # Accent color for highlights, borders, and navigation UI.
 # Accepts: hex (#89b4fa), named colors (cyan, blue, magenta), or rgb(r,g,b)
 # accent = "cyan"
+
+[ui.sidebar.spaces]
+rows = [["state_icon", "workspace"], ["branch", "git_status", "$jj_status"]]
 
 # Background notification popup delivery
 agent_panel_sort = "spaces"

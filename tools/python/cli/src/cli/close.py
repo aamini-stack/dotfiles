@@ -9,18 +9,14 @@ import argparse
 import sys
 
 from . import guard
-from .herdr import HerdrError, herdr
-from .open import find_workspace, herdr_label_for
+from .herdr import HerdrError, close_for_jj
 
 
 def close_workspace(repo: str, name: str) -> int:
-    label = herdr_label_for(repo, name)
-    workspaces = herdr("workspace", "list").get("workspaces", [])
+    existing, workspaces = close_for_jj(repo, name)
     live_ids = {w["workspace_id"] for w in workspaces}
 
-    existing = find_workspace(label, workspaces)
     if existing is not None:
-        herdr("workspace", "close", existing["workspace_id"])
         live_ids.discard(existing["workspace_id"])
         try:
             guard.disarm(existing["workspace_id"])

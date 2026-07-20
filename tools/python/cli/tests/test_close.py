@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from cli import close as close_module
+from cli import herdr as herdr_module
 from cli import open as open_module
 
 
@@ -38,8 +39,7 @@ class CloseWorkspaceTests(unittest.TestCase):
             return {}
 
         with (
-            patch.object(close_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(close_module.guard, "disarm") as disarm,
             patch.object(close_module.guard, "prune") as prune,
         ):
@@ -57,8 +57,7 @@ class CloseWorkspaceTests(unittest.TestCase):
             return {"workspaces": []}
 
         with (
-            patch.object(close_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(close_module.guard, "disarm") as disarm,
             patch.object(close_module.guard, "prune") as prune,
         ):

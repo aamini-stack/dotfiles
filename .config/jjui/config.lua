@@ -77,25 +77,7 @@ function setup(config)
     name = name:gsub("^%s+", ""):gsub("%s+$", "")
     if name == "" then return end
 
-    local root = current_workspace_root()
-    local home = os.getenv("HOME")
-    if not root or not home then
-      flash({ text = "Could not determine workspace root or HOME", error = true })
-      return
-    end
-
-    local prefix = home .. "/.herdr/workspaces/"
-    local repo = root:match("^" .. prefix:gsub("(%W)", "%%%1") .. "([^/]+)")
-      or root:match("([^/]+)$")
-      or "default"
-    local dest = prefix .. repo .. "/" .. name
-    local out, err = jj("workspace", "add", dest, "--name", name, "-r", change_id)
-    if not out then
-      flash({ text = "workspace add failed: " .. tostring(err), error = true })
-      return
-    end
-
-    flash({ text = "created workspace '" .. name .. "' (ww to switch)" })
+    exec_shell(string.format("wt new %q -r %q", name, change_id))
   end, {
     desc = "create workspace here",
     seq = { "w", "c" },

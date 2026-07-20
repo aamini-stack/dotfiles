@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from cli import open as open_module
+from cli import herdr as herdr_module
 from cli.herdr import HerdrError
 
 
@@ -28,13 +29,13 @@ class FindWorkspaceTests(unittest.TestCase):
                 {"label": "ws-dotfiles-plugin", "workspace_id": "w2"},
             ]
         }
-        with patch.object(open_module, "herdr", return_value=payload):
-            found = open_module.find_workspace("ws-dotfiles-plugin")
+        with patch.object(herdr_module, "herdr", return_value=payload):
+            found = herdr_module.find_workspace("ws-dotfiles-plugin")
         self.assertEqual(found["workspace_id"], "w2")
 
     def test_returns_none_without_match(self):
-        with patch.object(open_module, "herdr", return_value={"workspaces": []}):
-            self.assertIsNone(open_module.find_workspace("ws-x-y"))
+        with patch.object(herdr_module, "herdr", return_value={"workspaces": []}):
+            self.assertIsNone(herdr_module.find_workspace("ws-x-y"))
 
 
 class BootstrapDetectionTests(unittest.TestCase):
@@ -57,6 +58,24 @@ class BootstrapDetectionTests(unittest.TestCase):
 
 
 class OpenWorkspaceTests(unittest.TestCase):
+    def test_uses_explicit_workspace_name_for_custom_path(self):
+        path = Path("/workspaces/feat/checkout")
+        with (
+            patch.object(
+                open_module,
+                "focus_or_create",
+                return_value=({"workspace": {"workspace_id": "w2"}}, False, []),
+            ) as focus_or_create,
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(
+                open_module.open_workspace(
+                    path, Path("/src/dotfiles"), workspace_name="feat"
+                ),
+                0,
+            )
+        focus_or_create.assert_called_once_with("dotfiles", "feat", path)
+
     def test_focuses_existing_without_layout(self):
         calls = []
 
@@ -73,6 +92,7 @@ class OpenWorkspaceTests(unittest.TestCase):
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(open_module.guard, "arm") as arm,
         ):
             self.assertEqual(open_module.open_workspace(path), 0)
@@ -99,6 +119,7 @@ class OpenWorkspaceTests(unittest.TestCase):
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(open_module, "has_bootstrap_task", return_value=True),
             patch.object(open_module.guard, "arm") as arm,
         ):
@@ -143,6 +164,7 @@ class OpenWorkspaceTests(unittest.TestCase):
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(open_module, "has_bootstrap_task", return_value=False),
             patch.object(open_module.guard, "arm"),
         ):

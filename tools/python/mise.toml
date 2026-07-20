@@ -21,8 +21,13 @@ run = "ruff format --check ."
 description = "Run all Python tests"
 run = '''
 cd cli && uv run --python "$(command -v python)" python -m unittest discover -s tests -v
+uv run --python "$(command -v python)" python -m pytest -m "not e2e" -q
 cd ../infra && uv run --python "$(command -v python)" python -m compileall -q __main__.py
 '''
+
+[tasks."test:e2e"]
+description = "Run end-to-end plugin tests (real jj, fake herdr)"
+run = 'cd cli && uv run --python "$(command -v python)" python -m pytest -m e2e -q'
 
 [tasks.check]
 description = "Run all Python checks"
