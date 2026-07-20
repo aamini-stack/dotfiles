@@ -51,6 +51,25 @@ def add_workspace(
     if revision is not None:
         args.extend(["--revision", revision])
     jj(*args, cwd=cwd)
+    _absolutize_repo_pointer(dest)
+
+
+def _absolutize_repo_pointer(workspace_root: Path) -> None:
+    """Rewrite a relative `.jj/repo` pointer as an absolute path.
+
+    Recent jj versions write a relative path in the pointer file; tools that
+    read it directly (e.g. ryu) may resolve it against the process cwd
+    instead of the `.jj` dir and fail. The pointer must not have a trailing
+    newline — jj does not trim it.
+    """
+    ptr = workspace_root / ".jj" / "repo"
+    if not ptr.is_file():
+        return
+    target = Path(ptr.read_text().strip())
+    if target.is_absolute():
+        return
+    resolved = (ptr.parent / target).resolve()
+    ptr.write_text(str(resolved))
 
 
 def workspaces(cwd: Path) -> list[Workspace]:

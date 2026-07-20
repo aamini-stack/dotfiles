@@ -80,6 +80,25 @@ class TestAddWorkspace:
             cwd=Path("/repo"),
         )
 
+    def test_rewrites_relative_repo_pointer_as_absolute(self, tmp_path):
+        primary = tmp_path / "repo"
+        (primary / ".jj" / "repo").mkdir(parents=True)
+        dest = tmp_path / "ws" / "feat"
+        (dest / ".jj").mkdir(parents=True)
+        (dest / ".jj" / "repo").write_text("../../../repo/.jj/repo")
+        with patch.object(jj_module, "jj", return_value=""):
+            jj_module.add_workspace(dest, "feat", cwd=primary)
+        assert (dest / ".jj" / "repo").read_text() == str(primary / ".jj" / "repo")
+
+    def test_leaves_absolute_repo_pointer_alone(self, tmp_path):
+        dest = tmp_path / "ws" / "feat"
+        (dest / ".jj").mkdir(parents=True)
+        absolute = str(tmp_path / "repo" / ".jj" / "repo")
+        (dest / ".jj" / "repo").write_text(absolute)
+        with patch.object(jj_module, "jj", return_value=""):
+            jj_module.add_workspace(dest, "feat", cwd=tmp_path)
+        assert (dest / ".jj" / "repo").read_text() == absolute
+
 
 class TestWorkspaces:
     def test_parses_name_and_root(self):
