@@ -4,6 +4,12 @@ version = 2
 final_space = true
 console_title_template = '{{ .Shell }} in {{ .Folder }}'
 
+[options]
+fetch_status = true
+ignore_working_copy = false
+fetch_ahead_counter = true
+ahead_icon = "⇡"
+
 [[blocks]]
 type = 'prompt'
 alignment = 'left'
@@ -48,7 +54,6 @@ type = 'jujutsu'
 style = 'plain'
 foreground = 'p:grey'
 background = 'transparent'
-template = ' jj:{{ .ChangeID }}{{ if .Working.Changed }}*{{ end }} <cyan>{{ .ClosestBookmarks }}</>'
 
 [blocks.segments.properties]
 change_id_min_len = 8
@@ -79,8 +84,8 @@ newline = true
 type = 'text'
 style = 'plain'
 foreground_templates = [
-  "{{if gt .Code 0}}red{{end}}",
-  "{{if eq .Code 0}}magenta{{end}}",
+	"{{if gt .Code 0}}red{{end}}",
+	"{{if eq .Code 0}}magenta{{end}}",
 ]
 background = 'transparent'
 template = '$'
@@ -88,8 +93,8 @@ template = '$'
 [transient_prompt]
 newline = true
 foreground_templates = [
-  "{{if gt .Code 0}}red{{end}}",
-  "{{if eq .Code 0}}magenta{{end}}",
+	"{{if gt .Code 0}}red{{end}}",
+	"{{if eq .Code 0}}magenta{{end}}",
 ]
 background = 'transparent'
 template = '$ '
