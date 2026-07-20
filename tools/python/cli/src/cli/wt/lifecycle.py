@@ -91,9 +91,15 @@ def remove_workspace(
         primary,
         continue_on_error=True,
     )
-    forget_workspace(target.name, cwd=primary)
     if target.root.exists():
-        shutil.rmtree(target.root)
+        try:
+            shutil.rmtree(target.root)
+        except OSError as error:
+            raise WtError(
+                f"could not remove workspace directory {target.root}: {error}; "
+                "the workspace remains registered"
+            ) from error
+    forget_workspace(target.name, cwd=primary)
     return target
 
 

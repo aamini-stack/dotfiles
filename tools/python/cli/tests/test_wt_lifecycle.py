@@ -1,3 +1,5 @@
+import errno
+
 import pytest
 
 from cli.jj import Workspace
@@ -119,6 +121,38 @@ def test_remove_confirms_runs_hooks_forgets_and_deletes(monkeypatch, tmp_path):
     assert calls[0][2]["continue_on_error"] is True
     assert calls[1] == ("forget", "feat", primary)
     assert not target.exists()
+
+
+def test_remove_leaves_workspace_registered_when_deletion_fails(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    target = tmp_path / "workspaces" / "repo" / "feat"
+    target.mkdir(parents=True)
+    calls = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(
+        lifecycle, "workspace", lambda cwd, name: Workspace(name, target)
+    )
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        lifecycle,
+        "forget_workspace",
+        lambda name, cwd: calls.append((name, cwd)),
+    )
+    monkeypatch.setattr(
+        lifecycle.shutil,
+        "rmtree",
+        lambda path: (_ for _ in ()).throw(
+            OSError(errno.ENOTEMPTY, "Directory not empty", path)
+        ),
+    )
+
+    with pytest.raises(WtError, match="workspace remains registered"):
+        lifecycle.remove_workspace(primary, "feat", assume_yes=True)
+
+    assert target.is_dir()
+    assert calls == []
 
 
 def test_remove_refuses_primary_and_decline(monkeypatch, tmp_path):
