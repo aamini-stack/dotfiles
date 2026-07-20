@@ -62,6 +62,7 @@ herdr = "0.7.4"
 claude = "latest"
 "npm:playwriter" = "latest"
 "npm:lavish-axi" = "latest"
+"http:coderabbit" = { version = "0.6.5", url = "https://cli.coderabbit.ai/releases/{{ version }}/coderabbit-linux-arm64.zip", postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/coderabbit" }
 
 # nvim
 "neovim" = "0.12.2"
@@ -72,13 +73,29 @@ claude = "latest"
 make = "latest"
 "nix:gcc" = "15.2.0"
 
+# misc
+"nix:postgresql_18" = "latest"
+"nix:stow" = "latest"
 # images
 imagemagick = "latest"
 "github:danielgatis/imgcat" = "latest"
 "nix:chafa" = "latest"
 
-# misc
-"nix:postgresql_18" = "latest"
+# VCS
+jj = "latest"
+"github:dmmulroy/jj-ryu" = "latest"
+"nix:jjui" = "latest"
+"npm:hunkdiff" = "latest"
+"difftastic" = "latest"
+"github-cli" = "latest"
+"nix:gh-dash" = "latest"
+
+# Devops
+"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
+kubectl = "latest"
+helm = "latest"
+pulumi = "latest"
+railway = "5.23.0"
 
 # CLIs 
 "bat" = "latest"
@@ -90,26 +107,9 @@ jq = "latest"
 "yazi" = "latest"
 "zoxide" = "latest"
 "delta" = "latest"
-"difftastic" = "latest"
 "ripgrep" = "latest"
 "lazygit" = "latest"
 "nix:erdtree" = "latest"
-"nix:gh-dash" = "latest"
-"aqua:joshmedeski/sesh" = "latest"
-"github-cli" = "latest"
-"nix:stow" = "latest"
-"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
-kubectl = "latest"
-helm = "latest"
-"npm:hunkdiff" = "latest"
-pulumi = "latest"
-railway = "5.23.0"
-jj = "latest"
-"github:dmmulroy/jj-ryu" = "latest"
-"nix:jjui" = "latest"
-"github:eersnington/jj-navi" = "latest"
-"nix:jj-starship" = "latest"
-"http:coderabbit" = { version = "0.6.5", url = "https://cli.coderabbit.ai/releases/{{ version }}/coderabbit-linux-arm64.zip", postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/coderabbit" }
 
 [tasks.diff]
 dir = "{{cwd}}"
