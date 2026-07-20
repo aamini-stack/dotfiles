@@ -107,6 +107,7 @@ pulumi = "latest"
 railway = "5.23.0"
 jj = "latest"
 "nix:jjui" = "latest"
+"github:eersnington/jj-navi" = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"

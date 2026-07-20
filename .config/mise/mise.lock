@@ -2831,6 +2831,40 @@ checksum = "sha256:40dc0f7135943d9b787090c32ea4a5d1ed9ba4a41257277e6c19d761bb391
 url = "https://github.com/danielgatis/imgcat/releases/download/v1.0.23/imgcat_1.0.23_windows_amd64.zip"
 url_api = "https://api.github.com/repos/danielgatis/imgcat/releases/assets/451189917"
 
+[[tools."github:eersnington/jj-navi"]]
+version = "0.2.3"
+backend = "github:eersnington/jj-navi"
+
+[tools."github:eersnington/jj-navi"."platforms.linux-arm64"]
+checksum = "sha256:bcfe16a7403e7a792b86952b653a9e2f52d423a11c8f1ad0dceb352e115f77d5"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118962"
+
+[tools."github:eersnington/jj-navi"."platforms.linux-arm64-musl"]
+checksum = "sha256:7f92d624e52f05eda29101f7724485200c1555608ba18e90246ddaf6647e1318"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118966"
+
+[tools."github:eersnington/jj-navi"."platforms.linux-x64"]
+checksum = "sha256:be4b9f7723f125592a0fb8126558137300b7f7a1e9b45e945339adbd8ca05c73"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118992"
+
+[tools."github:eersnington/jj-navi"."platforms.linux-x64-musl"]
+checksum = "sha256:a930eecddcda2e24165206a4e4659e9b221980f7dc664879f172b5ef0e6f9e50"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118965"
+
+[tools."github:eersnington/jj-navi"."platforms.macos-arm64"]
+checksum = "sha256:a538d1db24cd8c47b42c7e0bb904f430151ed5aa8cd6b85bc944695f45860e14"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118968"
+
+[tools."github:eersnington/jj-navi"."platforms.macos-x64"]
+checksum = "sha256:58eeae3f4368dabcb3276ad6e5ff55582220f2dfa04ec50229d91eb7e3ba1681"
+url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118967"
+
 [[tools."github:hpjansson/chafa"]]
 version = "1.18.2"
 backend = "github:hpjansson/chafa"
