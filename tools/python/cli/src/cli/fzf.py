@@ -28,6 +28,8 @@ def fzf_select(
     out = result.stdout.splitlines()
     if not out:
         return ("esc", None)
+    if not expect:
+        return ("enter", out[0])
     key = out[0] or "enter"
     line = out[1] if len(out) > 1 else None
     return (key, line)

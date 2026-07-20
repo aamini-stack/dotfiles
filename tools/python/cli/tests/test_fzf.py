@@ -13,7 +13,7 @@ def completed(stdout: str = "", returncode: int = 0):
 class TestFzfSelect:
     def test_enter_returns_selected_line(self):
         with patch.object(
-            subprocess, "run", return_value=completed("\nfeat\tabc ✓\tws-repo-feat\n")
+            subprocess, "run", return_value=completed("feat\tabc ✓\tws-repo-feat\n")
         ) as run:
             key, line = fzf_module.fzf_select(["feat\tabc ✓\tws-repo-feat"])
         assert key == "enter"
@@ -35,7 +35,7 @@ class TestFzfSelect:
         assert (key, line) == ("esc", None)
 
     def test_preview_passed_through(self):
-        with patch.object(subprocess, "run", return_value=completed("\nx\n")) as run:
+        with patch.object(subprocess, "run", return_value=completed("x\n")) as run:
             fzf_module.fzf_select(["x"], preview="jj log")
         cmd = run.call_args.args[0]
         assert "--preview" in cmd
