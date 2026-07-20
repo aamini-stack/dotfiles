@@ -1,7 +1,7 @@
 promptToReturnFromSubprocess: false
 git:
   pagers:
-    - externalDiffCommand: difft --color=always --display=inline
+    - externalDiffCommand: difft --graph-limit=500000 --byte-limit=500000 --color=always --display=inline
     - pager: delta --dark --paging=never --line-numbers --side-by-side --tabs 2
       colorArg: never
 customCommands:
