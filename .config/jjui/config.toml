@@ -3,25 +3,21 @@
 
 [preview]
 revision_command = [
-  "util",
-  "exec",
-  "--",
-  "env",
-  "DFT_GRAPH_LIMIT=500000",
-  "DFT_BYTE_LIMIT=500000",
-  "difft-preview",
-  "revision",
+  "show",
+  "--color",
+  "always",
+  "--config",
+  'ui.diff-formatter=["difft","--color=always","--graph-limit=500000","--byte-limit=500000","--width=$width","$left","$right"]',
+  "-r",
   "$change_id",
 ]
 file_command = [
-  "util",
-  "exec",
-  "--",
-  "env",
-  "DFT_GRAPH_LIMIT=500000",
-  "DFT_BYTE_LIMIT=500000",
-  "difft-preview",
-  "file",
+  "diff",
+  "--color",
+  "always",
+  "--config",
+  'ui.diff-formatter=["difft","--color=always","--graph-limit=500000","--byte-limit=500000","--width=$width","$left","$right"]',
+  "-r",
   "$change_id",
   "$file",
 ]
