@@ -36,11 +36,18 @@
 
 [difftool]
     prompt = false
+
 [credential "https://github.com"]
 	helper = 
-	helper = !gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !gh auth git-credential
+	helper = !gh auth git-credential:w
+
+[credential]
+  helper = !WSLENV=GCM_AZREPOS_CREDENTIALTYPE:GCM_MSAUTH_USEBROKER GCM_AZREPOS_CREDENTIALTYPE=oauth GCM_MSAUTH_USEBROKER=false \"/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe\"
+    azreposCredentialType = oauth
+    guiPrompt = false
+    interactive = true
+[credential "https://dev.azure.com"]
+	useHttpPath = true
 [coderabbit]
 	machineId = cli/3b6783e4de2f405aba3006a22ff8817a
+
