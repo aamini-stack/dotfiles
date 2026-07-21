@@ -4,7 +4,7 @@
 
 .pi
 
-.config/herdr
+.config/herdr/*
 !.config/herdr/config.toml
 
 __pycache__
