@@ -8,5 +8,15 @@
 			"disabled": true
 		},
 		"oxfmt": {}
+	},
+	"lsp": {
+		// TODO: tsgo is the only source of the TS7 language server until TS 7.1
+		// (~Oct 2026) ships it in the stable `typescript` package — then point
+		// this at the stable binary and remove @typescript/native-preview from
+		// mise (see TODO in ~/.config/mise/config.toml).
+		"typescript": {
+			"command": ["tsgo", "--lsp", "--stdio"],
+			"extensions": [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]
+		}
 	}
 }

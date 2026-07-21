@@ -35,9 +35,13 @@ node = "22"
 bun = "latest"
 "npm:corepack" = "latest"
 "npm:pnpm" = "latest"
-"npm:@typescript/native-preview" = "7.0.0-dev.20260701.1"
+"npm:typescript" = "latest"
 
 # LSPs
+# TODO: only needed for `tsgo --lsp` (TS7 language server). Stable typescript@7
+# ships tsc but no LSP binary yet — drop this once TS 7.1 (~Oct 2026) folds the
+# language server into the main `typescript` package. Referenced by opencode.json.
+"npm:@typescript/native-preview" = "7.0.0-dev.20260701.1"
 "npm:@tailwindcss/language-server" = "latest"
 "npm:vscode-langservers-extracted" = "latest"
 "github:LuaLS/lua-language-server" = "3.18.2"
