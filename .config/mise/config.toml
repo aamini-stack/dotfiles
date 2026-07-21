@@ -32,6 +32,7 @@ dotnet = "10"
 # Node
 vite-plus = "latest"
 node = "22"
+bun = "latest"
 "npm:corepack" = "latest"
 "npm:pnpm" = "latest"
 "npm:@typescript/native-preview" = "7.0.0-dev.20260701.1"
