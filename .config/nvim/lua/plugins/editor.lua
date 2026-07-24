@@ -20,12 +20,43 @@ return {
   {
     'chrisgrieser/nvim-origami',
     event = 'VeryLazy',
-    opts = {}, -- required even when using default config
+    opts = {
+      -- built-in autoFold disabled: it calls vim.lsp.foldclose before the LSP
+      -- fold state exists, so it silently no-ops (see LspNotify autocmd below)
+      autoFold = { enabled = false },
+    },
 
     -- recommended: disable vim's auto-folding
     init = function()
       vim.opt.foldlevel = 99
       vim.opt.foldlevelstart = 99
+
+      vim.api.nvim_create_autocmd('LspNotify', {
+        desc = 'Autofold imports on file open',
+        group = vim.api.nvim_create_augroup('autofold-imports', { clear = true }),
+        callback = function(ctx)
+          if ctx.data.method ~= 'textDocument/didOpen' then return end
+          if vim.bo[ctx.buf].buftype ~= '' then return end
+          vim.schedule(function()
+            local client = vim.lsp.get_clients({ bufnr = ctx.buf, id = ctx.data.client_id })[1]
+            if not client or not client:supports_method 'textDocument/foldingRange' then return end
+            local winid = vim.fn.bufwinid(ctx.buf)
+            if winid == -1 then return end
+            local tries = 0
+            local function try()
+              if not vim.api.nvim_win_is_valid(winid) or vim.api.nvim_win_get_buf(winid) ~= ctx.buf then return end
+              tries = tries + 1
+              local closed = vim.api.nvim_win_call(winid, function()
+                vim.fn.foldlevel(1)
+                pcall(vim.lsp.foldclose, 'imports', winid)
+                return vim.fn.foldclosed(1)
+              end)
+              if closed == -1 and tries < 10 then vim.defer_fn(try, 200) end
+            end
+            try()
+          end)
+        end,
+      })
     end,
   },
   {
@@ -214,7 +245,7 @@ return {
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_filename = function()
         local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ':~')
-        local file = vim.fn.expand('%:t')
+        local file = vim.fn.expand '%:t'
         if file == '' then return cwd end
         return cwd .. ' / ' .. file
       end

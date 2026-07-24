@@ -115,6 +115,7 @@ jq = "latest"
 "ripgrep" = "latest"
 "lazygit" = "latest"
 "nix:erdtree" = "latest"
+pi = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"

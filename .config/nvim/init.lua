@@ -227,6 +227,14 @@ vim.api.nvim_create_autocmd('VimLeavePre', {
   end,
 })
 
+-- Check for external file changes so 'autoread' can reload stale buffers
+-- See `:help :checktime`
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
+  desc = 'Reload buffers changed outside of Neovim',
+  group = vim.api.nvim_create_augroup('auto-checktime', { clear = true }),
+  command = 'checktime',
+})
+
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more
 --    info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'

@@ -3,21 +3,26 @@
 
 [preview]
 revision_command = [
-  "show",
-  "--color",
-  "always",
-  "--config",
-  'ui.diff-formatter=["difft","--color=always","--graph-limit=500000","--byte-limit=500000","--width=$width","$left","$right"]',
-  "-r",
-  "$change_id",
+  "util",
+  "exec",
+  "--",
+  "bash",
+  "-c",
+  "jj show --color always --git -r $change_id | delta --dark --paging=never --line-numbers --side-by-side --tabs 2",
+]
+oplog_command = [
+  "util",
+  "exec",
+  "--",
+  "bash",
+  "-c",
+  "jj op show $operation_id --git --color always | delta --dark --paging=never --line-numbers --side-by-side --tabs 2",
 ]
 file_command = [
-  "diff",
-  "--color",
-  "always",
-  "--config",
-  'ui.diff-formatter=["difft","--color=always","--graph-limit=500000","--byte-limit=500000","--width=$width","$left","$right"]',
-  "-r",
-  "$change_id",
-  "$file",
+  "util",
+  "exec",
+  "--",
+  "bash",
+  "-c",
+  "jj diff --color always --git -r $change_id $file | delta --dark --paging=never --line-numbers --side-by-side --tabs 2",
 ]
