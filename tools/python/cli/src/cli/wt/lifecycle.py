@@ -2,6 +2,8 @@
 
 import os
 import shutil
+import sys
+import uuid
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
@@ -92,13 +94,19 @@ def remove_workspace(
         continue_on_error=True,
     )
     if target.root.exists():
+        trash = target.root.with_name(
+            f".{target.root.name}.trash-{uuid.uuid4().hex[:8]}"
+        )
         try:
-            shutil.rmtree(target.root)
+            target.root.rename(trash)
         except OSError as error:
             raise WtError(
-                f"could not remove workspace directory {target.root}: {error}; "
+                f"could not move workspace directory {target.root} aside: {error}; "
                 "the workspace remains registered"
             ) from error
+        shutil.rmtree(trash, ignore_errors=True)
+        if trash.exists():
+            print(f"wt: leftover files moved aside to {trash}", file=sys.stderr)
     forget_workspace(target.name, cwd=primary)
     return target
 

@@ -123,7 +123,9 @@ def test_remove_confirms_runs_hooks_forgets_and_deletes(monkeypatch, tmp_path):
     assert not target.exists()
 
 
-def test_remove_leaves_workspace_registered_when_deletion_fails(monkeypatch, tmp_path):
+def test_remove_leaves_workspace_registered_when_move_aside_fails(
+    monkeypatch, tmp_path
+):
     primary = tmp_path / "repo"
     primary.mkdir()
     target = tmp_path / "workspaces" / "repo" / "feat"
@@ -140,19 +142,51 @@ def test_remove_leaves_workspace_registered_when_deletion_fails(monkeypatch, tmp
         "forget_workspace",
         lambda name, cwd: calls.append((name, cwd)),
     )
-    monkeypatch.setattr(
-        lifecycle.shutil,
-        "rmtree",
-        lambda path: (_ for _ in ()).throw(
-            OSError(errno.ENOTEMPTY, "Directory not empty", path)
-        ),
-    )
+
+    def failing_rename(self, other):
+        raise OSError(errno.EACCES, "Permission denied", str(self))
+
+    monkeypatch.setattr(lifecycle.Path, "rename", failing_rename)
 
     with pytest.raises(WtError, match="workspace remains registered"):
         lifecycle.remove_workspace(primary, "feat", assume_yes=True)
 
     assert target.is_dir()
     assert calls == []
+
+
+def test_remove_moves_aside_and_forgets_even_when_files_remain(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    target = tmp_path / "workspaces" / "repo" / "feat"
+    target.mkdir(parents=True)
+    (target / ".vite").mkdir()
+    calls = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(
+        lifecycle, "workspace", lambda cwd, name: Workspace(name, target)
+    )
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        lifecycle,
+        "forget_workspace",
+        lambda name, cwd: calls.append((name, cwd)),
+    )
+
+    def failing_rmtree(path, ignore_errors=False):
+        assert ignore_errors
+
+    monkeypatch.setattr(lifecycle.shutil, "rmtree", failing_rmtree)
+
+    removed = lifecycle.remove_workspace(primary, "feat", assume_yes=True)
+
+    assert removed == Workspace("feat", target)
+    assert calls == [("feat", primary)]
+    assert not target.exists()
+    leftovers = list(target.parent.glob(".feat.trash-*"))
+    assert len(leftovers) == 1
+    assert (leftovers[0] / ".vite").is_dir()
 
 
 def test_remove_refuses_primary_and_decline(monkeypatch, tmp_path):
