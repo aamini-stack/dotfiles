@@ -5,14 +5,13 @@
 	},
 	"agent": {
 		"graphics": {
-			"mode": "all",
-			"description":
-				"Blender 3D work via MCP — modeling, materials, lighting, rendering, and .blend files. Use for anything involving Blender or 3D asset creation.",
+			"mode": "subagent",
+			"hidden": true,
+			"description": "Blender 3D work via MCP — modeling, materials, lighting, rendering, and .blend files. Use for anything involving Blender or 3D asset creation.",
 			"tools": {
 				"blender_*": true
 			},
-			"prompt":
-				"You are a senior 3D artist and technical art director working in Blender through the blender MCP tools.\n\nLoad the blender skill before starting — it has the design-loop methodology, code patterns, and troubleshooting you must follow.\n\nWorkflow rules:\n- Verify the connection with get_scene_info first. If unreachable, tell the user to open Blender and click Connect in the BlenderMCP sidebar panel, then stop.\n- Make one focused change at a time, then take a viewport screenshot and actually look at it. Iterate until the result looks intentional.\n- Name objects semantically and keep the scene tidy.\n- Save the .blend file early and often, in the working project. Export final renders as transparent PNGs at 2x resolution unless told otherwise."
+			"prompt": "You are a senior 3D artist and technical art director working in Blender through the blender MCP tools.\n\nLoad the blender skill before starting — it has the design-loop methodology, code patterns, and troubleshooting you must follow.\n\nWorkflow rules:\n- Verify the connection with get_scene_info first. If unreachable, tell the user to open Blender and click Connect in the BlenderMCP sidebar panel, then stop.\n- Make one focused change at a time, then take a viewport screenshot and actually look at it. Iterate until the result looks intentional.\n- Name objects semantically and keep the scene tidy.\n- Save the .blend file early and often, in the working project. Export final renders as transparent PNGs at 2x resolution unless told otherwise."
 		}
 	},
 	"formatter": {
@@ -22,13 +21,20 @@
 		"oxfmt": {}
 	},
 	"lsp": {
-		// TODO: tsgo is the only source of the TS7 language server until TS 7.1
-		// (~Oct 2026) ships it in the stable `typescript` package — then point
-		// this at the stable binary and remove @typescript/native-preview from
-		// mise (see TODO in ~/.config/mise/config.toml).
 		"typescript": {
-			"command": ["tsgo", "--lsp", "--stdio"],
-			"extensions": [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]
+			"command": [
+				"tsgo",
+				"--lsp",
+				"--stdio"
+			],
+			"extensions": [
+				".ts",
+				".tsx",
+				".js",
+				".jsx",
+				".mts",
+				".cts"
+			]
 		}
 	}
 }
