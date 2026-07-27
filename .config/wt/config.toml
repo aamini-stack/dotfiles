@@ -1,1 +1,7 @@
 workspace-path = "~/.herdr/workspaces/{{ repo }}/{{ name | sanitize }}"
+
+[[post-create]]
+copy-envs = "wt copy-ignored"
+
+[copy-ignored]
+exclude = [".env.compose"]
