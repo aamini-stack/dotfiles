@@ -62,7 +62,9 @@ wt() {
 }
 
 gr() {
-  cd "$(git rev-parse --show-toplevel 2>/dev/null)"
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$(jj root 2>/dev/null) || return 1
+  cd "$root"
 }
 
 nvim()
