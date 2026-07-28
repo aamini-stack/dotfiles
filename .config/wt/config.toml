@@ -3,5 +3,8 @@ workspace-path = "~/.herdr/workspaces/{{ repo }}/{{ name | sanitize }}"
 [[post-create]]
 copy-envs = "wt copy-ignored"
 
+[[post-remove]]
+close-herdr = "herdr-ws close --repo '{{ repo }}' --name '{{ name }}'"
+
 [copy-ignored]
-exclude = [".env.compose"]
+exclude = [".env.compose", "*node_modules/*"]

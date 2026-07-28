@@ -88,7 +88,7 @@ imagemagick = "latest"
 "nix:chafa" = "latest"
 
 # VCS
-jj = "latest"
+"github:sjawhar/jj" = "v0.43.0-sami.20260722-194522"
 "github:dmmulroy/jj-ryu" = "latest"
 "nix:jjui" = "latest"
 "npm:hunkdiff" = "latest"
@@ -117,6 +117,7 @@ jq = "latest"
 "lazygit" = "latest"
 "nix:erdtree" = "latest"
 pi = "latest"
+"npm:varlock" = "1.11.0"
 
 [tasks.diff]
 dir = "{{cwd}}"
