@@ -165,6 +165,7 @@ return {
       },
       formatters_by_ft = {
         lua = { 'stylua' },
+        markdown = { 'oxfmt' },
         python = { 'ruff_organize_imports', 'ruff_format' },
       },
     },
