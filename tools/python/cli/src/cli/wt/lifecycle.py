@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import subprocess
 import sys
 import uuid
 from collections.abc import Callable, Mapping
@@ -10,6 +11,7 @@ from pathlib import Path
 from ..jj import (
     Workspace,
     add_workspace,
+    commit_id,
     current_workspace,
     forget_workspace,
     primary_root,
@@ -19,12 +21,18 @@ from ..jj import (
 from ..fzf import fzf_select
 from . import config as config_module
 from .copy_ignored import copy_ignored
-from .hooks import run_hooks, run_named_hook
+from .hooks import HookError, run_hooks, run_named_hook
 from .template import TemplateError, render, sanitize
 
 
 class WtError(RuntimeError):
     pass
+
+
+class CreateHookError(HookError):
+    def __init__(self, workspace: Workspace, message: str):
+        super().__init__(message)
+        self.workspace = workspace
 
 
 def workspace_destination(
@@ -58,8 +66,12 @@ def create_workspace(
     destination = workspace_destination(primary, name, config, env)
     destination.parent.mkdir(parents=True, exist_ok=True)
     add_workspace(destination, name, cwd=cwd, revision=revision or "@")
-    run_hooks(config, "post-create", name, destination, primary)
-    return Workspace(name=name, root=destination)
+    created = Workspace(name=name, root=destination)
+    try:
+        run_hooks(config, "post-create", name, destination, primary)
+    except HookError as error:
+        raise CreateHookError(created, str(error)) from error
+    return created
 
 
 def remove_workspace(
@@ -108,7 +120,72 @@ def remove_workspace(
         if trash.exists():
             print(f"wt: leftover files moved aside to {trash}", file=sys.stderr)
     forget_workspace(target.name, cwd=primary)
+    run_hooks(
+        config,
+        "post-remove",
+        target.name,
+        target.root,
+        primary,
+        continue_on_error=True,
+        cwd=primary,
+    )
     return target
+
+
+def colocate_workspaces(cwd: Path, name: str | None = None) -> list[Workspace]:
+    primary = primary_root(cwd)
+    if not (primary / ".git").exists():
+        raise WtError("primary workspace is not colocated with git")
+    targets = [w for w in workspaces(primary) if w.root.resolve() != primary.resolve()]
+    if name is not None:
+        targets = [w for w in targets if w.name == name]
+        if not targets:
+            raise WtError(f"'{name}' is not a jj workspace")
+    converted = []
+    for target in targets:
+        if (target.root / ".git").exists() or not target.root.is_dir():
+            continue
+        _register_git_worktree(primary, target)
+        converted.append(target)
+    return converted
+
+
+def _register_git_worktree(primary: Path, target: Workspace) -> None:
+    # jj cannot register a workspace in an existing directory, so pre-fork
+    # workspaces get git worktree metadata hand-built here: an admin entry
+    # under .git/worktrees plus the gitfile in the workspace. HEAD starts at
+    # the workspace's @-, matching what the jj fork maintains from then on.
+    admin = primary / ".git" / "worktrees" / sanitize(target.name)
+    if admin.exists():
+        raise WtError(f"git worktree admin entry already exists for '{target.name}'")
+    commit = commit_id(f"{target.name}@-", cwd=primary)
+    result = subprocess.run(
+        ["git", "-C", str(primary), "cat-file", "-e", f"{commit}^{{commit}}"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise WtError(
+            f"parent commit of '{target.name}' is not in the git object store yet; "
+            "run a jj command in that workspace first"
+        )
+    admin.mkdir(parents=True)
+    (admin / "gitdir").write_text(f"{target.root / '.git'}\n")
+    (admin / "commondir").write_text("../..\n")
+    (admin / "HEAD").write_text(f"{commit}\n")
+    (target.root / ".git").write_text(f"gitdir: {admin}\n")
+    subprocess.run(
+        ["git", "-C", str(primary), "worktree", "repair", str(target.root)],
+        capture_output=True,
+        check=False,
+    )
+    # The hand-built admin entry has no index; without one, git status
+    # reports every tracked file as deleted.
+    subprocess.run(
+        ["git", "-C", str(target.root), "read-tree", "HEAD"],
+        capture_output=True,
+        check=False,
+    )
 
 
 def list_workspaces(cwd: Path) -> tuple[Workspace, list[Workspace]]:

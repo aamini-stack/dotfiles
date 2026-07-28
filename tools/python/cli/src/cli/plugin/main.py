@@ -2,13 +2,14 @@
 
 import argparse
 
-from . import actions, picker, remove, reporter, wizard
+from . import actions, adopt, picker, remove, reporter, wizard
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="herdr-jj", description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     actions.add_parser(subparsers)
+    adopt.add_parser(subparsers)
     wizard.add_parser(subparsers)
     remove.add_parser(subparsers)
     picker.add_parser(subparsers)

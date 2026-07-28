@@ -10,7 +10,9 @@ from .config import ConfigError
 from .copy_ignored import CopyIgnoredError
 from .hooks import HookError
 from .lifecycle import (
+    CreateHookError,
     WtError,
+    colocate_workspaces,
     copy_ignored_to_current,
     create_workspace,
     list_workspaces,
@@ -55,6 +57,15 @@ def build_parser() -> argparse.ArgumentParser:
         "copy-ignored", help="copy ignored files from the primary workspace"
     )
     copy.set_defaults(run=_copy_ignored)
+
+    colocate = subparsers.add_parser(
+        "colocate",
+        help="register git worktrees for workspaces created before colocation",
+    )
+    colocate.add_argument(
+        "name", nargs="?", help="defaults to all workspaces missing a .git"
+    )
+    colocate.set_defaults(run=_colocate)
     return parser
 
 
@@ -72,7 +83,16 @@ def _switch(args: argparse.Namespace) -> int:
     if args.create:
         if not args.name:
             raise WtError("switch --create requires a name")
-        target = create_workspace(cwd, args.name, args.revision)
+        try:
+            target = create_workspace(cwd, args.name, args.revision)
+        except CreateHookError as error:
+            _emit(error.workspace.root)
+            print(f"wt: {error}", file=sys.stderr)
+            print(
+                f"wt: workspace created; re-run hooks with 'wt hook <name>' in {error.workspace.root}",
+                file=sys.stderr,
+            )
+            return 1
     elif args.name:
         if args.revision:
             raise WtError("--revision only applies with --create")
@@ -118,6 +138,16 @@ def _hook(args: argparse.Namespace) -> int:
 def _copy_ignored(args: argparse.Namespace) -> int:
     count = copy_ignored_to_current(Path.cwd())
     print(f"copied {count} ignored file{'s' if count != 1 else ''}")
+    return 0
+
+
+def _colocate(args: argparse.Namespace) -> int:
+    converted = colocate_workspaces(Path.cwd(), args.name)
+    if not converted:
+        print("nothing to colocate")
+        return 0
+    for item in converted:
+        print(f"colocated {item.name}\t{item.root}")
     return 0
 
 

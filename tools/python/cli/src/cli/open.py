@@ -54,7 +54,9 @@ def open_workspace(
 ) -> int:
     project = project_path.name if project_path is not None else path.parent.name
     name = path.name if workspace_name is None else workspace_name
-    created, is_new, workspaces = focus_or_create(project, name, path)
+    created, is_new, workspaces = focus_or_create(
+        project, name, path, project_path=project_path
+    )
     workspace_id = created["workspace"]["workspace_id"]
     if not is_new:
         _arm(workspace_id, path, workspaces)

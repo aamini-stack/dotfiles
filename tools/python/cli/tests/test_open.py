@@ -74,7 +74,9 @@ class OpenWorkspaceTests(unittest.TestCase):
                 ),
                 0,
             )
-        focus_or_create.assert_called_once_with("dotfiles", "feat", path)
+        focus_or_create.assert_called_once_with(
+            "dotfiles", "feat", path, project_path=Path("/src/dotfiles")
+        )
 
     def test_focuses_existing_without_layout(self):
         calls = []
@@ -172,6 +174,84 @@ class OpenWorkspaceTests(unittest.TestCase):
 
         run_calls = [call for call in calls if call[:2] == ("pane", "run")]
         self.assertEqual(run_calls, [("pane", "run", "p2", "opencode")])
+
+    def test_opens_via_worktree_open_when_project_path_given(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("worktree", "open"):
+                return {
+                    "already_open": False,
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        primary = Path("/home/u/dotfiles")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=False),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path, primary), 0)
+
+        self.assertEqual(
+            calls[:2],
+            [
+                ("workspace", "list"),
+                (
+                    "worktree",
+                    "open",
+                    "--cwd",
+                    str(primary),
+                    "--path",
+                    str(path),
+                    "--label",
+                    "ws-dotfiles-plugin",
+                    "--focus",
+                ),
+            ],
+        )
+        self.assertNotIn(("workspace", "create"), [call[:2] for call in calls])
+
+    def test_falls_back_to_create_when_worktree_open_fails(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("worktree", "open"):
+                raise herdr_module.HerdrError("not a worktree")
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        primary = Path("/home/u/dotfiles")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=False),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path, primary), 0)
+
+        kinds = [call[:2] for call in calls]
+        self.assertIn(("worktree", "open"), kinds)
+        self.assertIn(("workspace", "create"), kinds)
 
 
 class HerdrWrapperTests(unittest.TestCase):

@@ -58,14 +58,20 @@ class TestPrimaryRoot:
 
 class TestAddWorkspace:
     def test_passes_dest_and_name(self):
-        with patch.object(jj_module, "jj", return_value="") as mock_jj:
+        with (
+            patch.object(jj_module, "jj", return_value="") as mock_jj,
+            patch.object(jj_module, "_colocate_add_supported", return_value=False),
+        ):
             jj_module.add_workspace(Path("/ws/feat"), "feat", cwd=Path("/repo"))
         mock_jj.assert_called_once_with(
             "workspace", "add", "/ws/feat", "--name", "feat", cwd=Path("/repo")
         )
 
     def test_passes_revision(self):
-        with patch.object(jj_module, "jj", return_value="") as mock_jj:
+        with (
+            patch.object(jj_module, "jj", return_value="") as mock_jj,
+            patch.object(jj_module, "_colocate_add_supported", return_value=False),
+        ):
             jj_module.add_workspace(
                 Path("/ws/feat"), "feat", cwd=Path("/repo"), revision="trunk()"
             )
@@ -79,6 +85,58 @@ class TestAddWorkspace:
             "trunk()",
             cwd=Path("/repo"),
         )
+
+    def _make_colocated_primary(self, tmp_path):
+        primary = tmp_path / "repo"
+        (primary / ".jj" / "repo").mkdir(parents=True)
+        (primary / ".git").mkdir()
+        return primary
+
+    def test_forces_colocate_on_fork_in_colocated_repo(self, tmp_path):
+        primary = self._make_colocated_primary(tmp_path)
+        dest = tmp_path / "ws" / "feat"
+
+        def fake_jj(*args, cwd=None):
+            if args == ("root",):
+                return f"{primary}\n"
+            if args[:2] == ("workspace", "add") and "--help" in args:
+                return "Usage... --colocate ..."
+            return ""
+
+        with patch.object(jj_module, "jj", side_effect=fake_jj) as mock_jj:
+            jj_module.add_workspace(dest, "feat", cwd=primary)
+        add_call = mock_jj.call_args_list[-1]
+        assert add_call.args[:2] == ("workspace", "add")
+        assert "--colocate" in add_call.args
+
+    def test_omits_colocate_on_stock_jj(self, tmp_path):
+        primary = self._make_colocated_primary(tmp_path)
+        dest = tmp_path / "ws" / "feat"
+
+        def fake_jj(*args, cwd=None):
+            if args == ("root",):
+                return f"{primary}\n"
+            return ""
+
+        with patch.object(jj_module, "jj", side_effect=fake_jj) as mock_jj:
+            jj_module.add_workspace(dest, "feat", cwd=primary)
+        add_call = mock_jj.call_args_list[-1]
+        assert "--colocate" not in add_call.args
+
+    def test_omits_colocate_when_primary_not_colocated(self, tmp_path):
+        primary = tmp_path / "repo"
+        (primary / ".jj" / "repo").mkdir(parents=True)
+        dest = tmp_path / "ws" / "feat"
+
+        def fake_jj(*args, cwd=None):
+            if args == ("root",):
+                return f"{primary}\n"
+            return ""
+
+        with patch.object(jj_module, "jj", side_effect=fake_jj) as mock_jj:
+            jj_module.add_workspace(dest, "feat", cwd=primary)
+        add_call = mock_jj.call_args_list[-1]
+        assert "--colocate" not in add_call.args
 
     def test_rewrites_relative_repo_pointer_as_absolute(self, tmp_path):
         primary = tmp_path / "repo"
@@ -134,6 +192,27 @@ class TestForgetWorkspace:
         mock_jj.assert_called_once_with(
             "workspace", "forget", "feat", cwd=Path("/repo")
         )
+
+    def test_prunes_git_worktrees_in_colocated_repo(self, tmp_path):
+        (tmp_path / ".git").mkdir()
+        with (
+            patch.object(jj_module, "jj", return_value=""),
+            patch.object(jj_module.subprocess, "run") as mock_run,
+        ):
+            jj_module.forget_workspace("feat", cwd=tmp_path)
+        mock_run.assert_called_once_with(
+            ["git", "-C", str(tmp_path), "worktree", "prune"],
+            capture_output=True,
+            check=False,
+        )
+
+    def test_skips_prune_without_git_dir(self, tmp_path):
+        with (
+            patch.object(jj_module, "jj", return_value=""),
+            patch.object(jj_module.subprocess, "run") as mock_run,
+        ):
+            jj_module.forget_workspace("feat", cwd=tmp_path)
+        mock_run.assert_not_called()
 
 
 class TestStatusToken:

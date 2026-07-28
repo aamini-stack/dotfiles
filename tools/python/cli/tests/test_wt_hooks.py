@@ -23,3 +23,23 @@ def test_pre_remove_os_error_warns_and_continues(monkeypatch, tmp_path, capsys):
 
     assert succeeded is False
     assert "warning" in capsys.readouterr().err
+
+
+def test_run_hooks_cwd_overrides_workspace_path(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    gone = tmp_path / "workspaces" / "repo" / "feat"
+    seen = {}
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: (
+            seen.update(kwargs) or subprocess.CompletedProcess(args, 0)
+        ),
+    )
+    config = Config(post_remove=(Hook("post-remove", "close", "true"),))
+
+    succeeded = run_hooks(config, "post-remove", "feat", gone, primary, cwd=primary)
+
+    assert succeeded is True
+    assert seen["cwd"] == primary

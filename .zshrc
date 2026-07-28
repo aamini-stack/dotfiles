@@ -52,11 +52,11 @@ wt() {
     [[ -n "$output" ]] && print -r -- "$output"
     destination="$(<"$result_file")"
     command rm -f -- "$result_file"
-    (( exit_code == 0 )) || return "$exit_code"
-    [[ -n "$destination" ]] || return 0
-    print -r -- "$destination"
-    builtin cd -- "$destination"
-    return
+    if [[ -n "$destination" ]]; then
+      print -r -- "$destination"
+      builtin cd -- "$destination"
+    fi
+    return "$exit_code"
   fi
   command wt "$@"
 }

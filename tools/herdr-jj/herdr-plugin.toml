@@ -36,6 +36,14 @@ placement = "popup"
 command = ["./bin/herdr-jj", "wizard"]
 
 [[events]]
+on = "worktree.created"
+command = ["./bin/herdr-jj", "adopt"]
+
+[[events]]
+on = "worktree.removed"
+command = ["./bin/herdr-jj", "adopt-forget"]
+
+[[events]]
 on = "workspace.created"
 command = ["./bin/herdr-jj", "reporter", "ensure"]
 

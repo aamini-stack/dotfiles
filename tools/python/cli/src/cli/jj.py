@@ -50,8 +50,24 @@ def add_workspace(
     args = ["workspace", "add", str(dest), "--name", name]
     if revision is not None:
         args.extend(["--revision", revision])
+    if _colocate_add_supported(cwd):
+        args.append("--colocate")
     jj(*args, cwd=cwd)
     _absolutize_repo_pointer(dest)
+
+
+def _colocate_add_supported(cwd: Path) -> bool:
+    # The fork's auto-register only fires when the invoking workspace is
+    # colocated, but wt usually runs from secondary workspaces (which aren't),
+    # so force --colocate whenever the repo's primary is colocated. Stock jj
+    # rejects the flag, so gate on help output.
+    try:
+        primary = primary_root(cwd)
+    except (JjError, OSError):
+        return False
+    if not (primary / ".git").exists():
+        return False
+    return "--colocate" in jj("workspace", "add", "--help", cwd=cwd)
 
 
 def _absolutize_repo_pointer(workspace_root: Path) -> None:
@@ -112,6 +128,25 @@ def workspace_names(cwd: Path) -> list[str]:
 
 def forget_workspace(name: str, cwd: Path) -> None:
     jj("workspace", "forget", name, cwd=cwd)
+    _prune_git_worktrees(cwd)
+
+
+def _prune_git_worktrees(primary: Path) -> None:
+    # wt trashes the workspace directory before forgetting, so the fork's
+    # `workspace forget --cleanup` (which runs `git worktree remove`) cannot
+    # find it and the registration goes stale. No-op for non-colocated repos
+    # and on stock jj, which never registers worktrees.
+    if not (primary / ".git").exists():
+        return
+    subprocess.run(
+        ["git", "-C", str(primary), "worktree", "prune"],
+        capture_output=True,
+        check=False,
+    )
+
+
+def commit_id(revset: str, cwd: Path) -> str:
+    return jj("log", "--no-graph", "-r", revset, "-T", "commit_id", cwd=cwd).strip()
 
 
 def status_token(cwd: Path, rev: str = "@") -> str:

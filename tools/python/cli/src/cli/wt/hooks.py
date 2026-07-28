@@ -29,11 +29,12 @@ def run_hooks(
     primary_path: Path,
     *,
     continue_on_error: bool = False,
+    cwd: Path | None = None,
 ) -> bool:
     succeeded = True
     for hook in config.hooks(phase):
         try:
-            run_hook(hook, name, workspace_path, primary_path)
+            run_hook(hook, name, workspace_path, primary_path, cwd=cwd)
         except HookError as error:
             succeeded = False
             if not continue_on_error:
@@ -51,7 +52,7 @@ def run_named_hook(
 ) -> None:
     matching = [
         hook
-        for phase in ("post-create", "pre-remove")
+        for phase in ("post-create", "pre-remove", "post-remove")
         for hook in config.hooks(phase)
         if hook.name == hook_name
     ]
@@ -61,7 +62,14 @@ def run_named_hook(
         run_hook(hook, name, workspace_path, primary_path)
 
 
-def run_hook(hook: Hook, name: str, workspace_path: Path, primary_path: Path) -> None:
+def run_hook(
+    hook: Hook,
+    name: str,
+    workspace_path: Path,
+    primary_path: Path,
+    *,
+    cwd: Path | None = None,
+) -> None:
     try:
         command = render(
             hook.command,
@@ -73,7 +81,9 @@ def run_hook(hook: Hook, name: str, workspace_path: Path, primary_path: Path) ->
 
     print(f"wt: {hook.phase}.{hook.name}: {command}", file=sys.stderr)
     try:
-        result = subprocess.run(command, cwd=workspace_path, shell=True, check=False)
+        result = subprocess.run(
+            command, cwd=cwd or workspace_path, shell=True, check=False
+        )
     except OSError as error:
         raise HookError(f"{hook.phase}.{hook.name} could not run: {error}") from error
     if result.returncode:

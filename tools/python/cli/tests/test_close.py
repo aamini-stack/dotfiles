@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from cli import close as close_module
@@ -48,6 +49,34 @@ class CloseWorkspaceTests(unittest.TestCase):
         self.assertEqual(calls, [("workspace", "list"), ("workspace", "close", "w2")])
         disarm.assert_called_once_with("w2")
         prune.assert_called_once_with({"w1"})
+
+    def test_closes_by_worktree_path_when_label_differs(self):
+        calls = []
+        path = Path("/home/u/.herdr/workspaces/dotfiles/feat")
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "feat",
+                            "workspace_id": "w3",
+                            "worktree": {"checkout_path": str(path)},
+                        },
+                    ]
+                }
+            return {}
+
+        with (
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(close_module.guard, "disarm") as disarm,
+            patch.object(close_module.guard, "prune"),
+        ):
+            self.assertEqual(close_module.close_workspace("dotfiles", "feat", path), 0)
+
+        self.assertEqual(calls, [("workspace", "list"), ("workspace", "close", "w3")])
+        disarm.assert_called_once_with("w3")
 
     def test_noop_when_workspace_absent(self):
         calls = []

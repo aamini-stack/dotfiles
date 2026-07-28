@@ -26,6 +26,7 @@ class Config:
     workspace_path: str = DEFAULT_WORKSPACE_PATH
     post_create: tuple[Hook, ...] = ()
     pre_remove: tuple[Hook, ...] = ()
+    post_remove: tuple[Hook, ...] = ()
     copy_ignored_exclude: tuple[str, ...] = ()
 
     def hooks(self, phase: str) -> tuple[Hook, ...]:
@@ -33,6 +34,8 @@ class Config:
             return self.post_create
         if phase == "pre-remove":
             return self.pre_remove
+        if phase == "post-remove":
+            return self.post_remove
         raise ConfigError(f"unknown hook phase '{phase}'")
 
 
@@ -56,6 +59,7 @@ def load(primary: Path, env: Mapping[str, str] | None = None) -> Config:
         workspace_path=workspace_path,
         post_create=tuple(_hooks(user, "post-create") + _hooks(project, "post-create")),
         pre_remove=tuple(_hooks(user, "pre-remove") + _hooks(project, "pre-remove")),
+        post_remove=tuple(_hooks(user, "post-remove") + _hooks(project, "post-remove")),
         copy_ignored_exclude=tuple(dict.fromkeys(_excludes(user) + _excludes(project))),
     )
 

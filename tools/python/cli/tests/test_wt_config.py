@@ -14,6 +14,9 @@ workspace-path = "/ws/{{ repo }}/{{ name | sanitize }}"
 [[post-create]]
 global = "echo global"
 
+[[post-remove]]
+close-herdr = "herdr-ws close --repo '{{ repo }}' --name '{{ name }}'"
+
 [copy-ignored]
 exclude = [".cache/"]
 """
@@ -29,6 +32,9 @@ project = "echo project"
 [pre-remove]
 compose = "docker compose down"
 
+[[post-remove]]
+project-cleanup = "echo cleaned"
+
 [step.copy-ignored]
 exclude = [".env.local", ".cache/"]
 """
@@ -39,6 +45,10 @@ exclude = [".env.local", ".cache/"]
     assert config.workspace_path == "/ws/{{ repo }}/{{ name | sanitize }}"
     assert [hook.name for hook in config.post_create] == ["global", "project"]
     assert [hook.name for hook in config.pre_remove] == ["compose"]
+    assert [hook.name for hook in config.post_remove] == [
+        "close-herdr",
+        "project-cleanup",
+    ]
     assert config.copy_ignored_exclude == (".cache/", ".env.local")
 
 

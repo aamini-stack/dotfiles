@@ -1,4 +1,3 @@
-
 from cli.jj import Workspace
 from cli.wt import lifecycle, main
 
@@ -111,3 +110,26 @@ def test_switch_writes_result_file_when_set(monkeypatch, tmp_path, capsys):
     )
     assert result_file.read_text() == str(target.root)
     assert capsys.readouterr().out == ""
+
+
+def test_switch_create_emits_destination_even_when_hooks_fail(
+    monkeypatch, tmp_path, capsys
+):
+    target = Workspace("feat", tmp_path / "ws" / "feat")
+    result_file = tmp_path / "result"
+
+    def failing_create(cwd, name, revision):
+        raise lifecycle.CreateHookError(target, "post-create.bootstrap failed")
+
+    monkeypatch.setattr(main, "create_workspace", failing_create)
+
+    assert (
+        run_wt(
+            monkeypatch,
+            ["switch", "-c", "feat"],
+            env={"WT_RESULT_FILE": str(result_file)},
+        )
+        == 1
+    )
+    assert result_file.read_text() == str(target.root)
+    assert "post-create.bootstrap failed" in capsys.readouterr().err

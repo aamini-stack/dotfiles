@@ -13,10 +13,10 @@ focus, panes, and status reporting.
 | Create and switch | `wt switch -c feat` | Bases the workspace on `@` and runs `post-create` hooks |
 | Create from another revision | `wt switch -c feat -r 'trunk()'` | Accepts any jj revset |
 | List workspaces | `wt ls` | Shows names, paths, and the current workspace |
-| Remove by name | `wt rm feat` | Confirms, runs `pre-remove`, forgets, then removes the directory |
+| Remove by name | `wt rm feat` | Confirms, runs `pre-remove`, forgets, removes the directory, then runs `post-remove` |
 | Remove the current workspace | `wt rm` | The primary workspace is never removable |
 | Remove without a prompt | `wt rm feat --yes` | Intended for trusted integrations such as herdr-jj |
-| Run a named hook | `wt hook copy-envs` | Searches `post-create` and `pre-remove` hooks |
+| Run a named hook | `wt hook copy-envs` | Searches `post-create`, `pre-remove`, and `post-remove` hooks |
 | Copy ignored files | `wt copy-ignored` | Copies from the primary into the current workspace |
 
 `wt remove` and `wt list` are aliases for `wt rm` and `wt ls`.
@@ -77,8 +77,13 @@ exclude = [".env.development.local", ".env.compose"]
 ```
 
 Each hook table contains one named shell command. `post-create` stops at the
-first failure and leaves the new workspace in place for diagnosis.
+first failure and leaves the new workspace in place for diagnosis; `wt switch`
+still emits the destination, so the zsh wrapper lands you in the workspace to
+inspect the failure and re-run hooks with `wt hook <name>`.
 `pre-remove` runs every hook, prints failures, and continues removal.
+`post-remove` runs after the directory is gone and the workspace is forgotten;
+it also continues past failures and executes from the primary root, since the
+workspace directory no longer exists.
 
 For migration, `[step.copy-ignored] exclude` is also accepted.
 

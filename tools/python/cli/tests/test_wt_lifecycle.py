@@ -61,12 +61,13 @@ def test_create_leaves_workspace_when_hook_fails(monkeypatch, tmp_path):
         lambda *args, **kwargs: (_ for _ in ()).throw(HookError("install failed")),
     )
 
-    with pytest.raises(HookError, match="install failed"):
+    with pytest.raises(lifecycle.CreateHookError, match="install failed") as caught:
         lifecycle.create_workspace(
             primary,
             "feat",
             env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
         )
+    assert caught.value.workspace == Workspace("feat", destination)
     assert destination.is_dir()
 
 
@@ -120,6 +121,9 @@ def test_remove_confirms_runs_hooks_forgets_and_deletes(monkeypatch, tmp_path):
     assert calls[0][0:2] == ("hooks", "pre-remove")
     assert calls[0][2]["continue_on_error"] is True
     assert calls[1] == ("forget", "feat", primary)
+    assert calls[2][0:2] == ("hooks", "post-remove")
+    assert calls[2][2]["continue_on_error"] is True
+    assert calls[2][2]["cwd"] == primary
     assert not target.exists()
 
 
