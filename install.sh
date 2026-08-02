@@ -7,8 +7,12 @@ if [ ! -d "$HOME/dotfiles" ]; then
   git clone "https://github.com/aamini-stack/dotfiles.git" "$HOME/dotfiles"
 fi
 
-# stow
+# git (latest stable from ppa, jj requires >= 2.41)
+sudo add-apt-repository -y ppa:git-core/ppa
 sudo apt update -y
+sudo apt install git -y
+
+# stow
 sudo apt install stow zsh -y
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
