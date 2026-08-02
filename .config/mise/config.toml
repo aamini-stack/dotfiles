@@ -1,5 +1,8 @@
 [env]
 _.file = { path = "~/.env" }
+# mise-nix replays each nix package's build env (postgresql injects
+# CFLAGS=-flto, breaking all Rust builds); PATH entries are all we need
+MISE_NIX_ENV_MODE = "path-only"
 
 [settings]
 experimental = true
@@ -89,7 +92,7 @@ imagemagick = "latest"
 
 # VCS
 "github:sjawhar/jj" = "v0.43.0-sami.20260722-194522"
-"github:dmmulroy/jj-ryu" = "latest"
+"github:aria-amini/jj-ryu" = "0.2.0"
 "nix:jjui" = "latest"
 "npm:hunkdiff" = "latest"
 "difftastic" = "latest"
