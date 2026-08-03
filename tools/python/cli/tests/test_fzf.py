@@ -13,12 +13,12 @@ def completed(stdout: str = "", returncode: int = 0):
 class TestFzfSelect:
     def test_enter_returns_selected_line(self):
         with patch.object(
-            subprocess, "run", return_value=completed("feat\tabc ✓\tws-repo-feat\n")
+            subprocess, "run", return_value=completed("feat\tabc ✓\tfeat\n")
         ) as run:
-            key, line = fzf_module.fzf_select(["feat\tabc ✓\tws-repo-feat"])
+            key, line = fzf_module.fzf_select(["feat\tabc ✓\tfeat"])
         assert key == "enter"
-        assert line == "feat\tabc ✓\tws-repo-feat"
-        assert run.call_args.kwargs["input"] == "feat\tabc ✓\tws-repo-feat"
+        assert line == "feat\tabc ✓\tfeat"
+        assert run.call_args.kwargs["input"] == "feat\tabc ✓\tfeat"
         assert not any(arg.startswith("--expect=") for arg in run.call_args.args[0])
 
     def test_expects_key_binds(self):

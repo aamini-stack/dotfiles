@@ -35,6 +35,17 @@ class CreateHookError(HookError):
         self.workspace = workspace
 
 
+def _move_aside(path: Path) -> None:
+    trash = path.with_name(f".{path.name}.trash-{uuid.uuid4().hex[:8]}")
+    try:
+        path.rename(trash)
+    except OSError as error:
+        raise WtError(f"could not move {path} aside: {error}") from error
+    shutil.rmtree(trash, ignore_errors=True)
+    if trash.exists():
+        print(f"wt: leftover files moved aside to {trash}", file=sys.stderr)
+
+
 def workspace_destination(
     primary: Path,
     name: str,
@@ -58,6 +69,8 @@ def create_workspace(
     name: str,
     revision: str | None = None,
     env: Mapping[str, str] | None = None,
+    *,
+    force: bool = False,
 ) -> Workspace:
     if not name.strip():
         raise WtError("workspace name cannot be empty")
@@ -65,6 +78,13 @@ def create_workspace(
     config = config_module.load(primary, env)
     destination = workspace_destination(primary, name, config, env)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() and any(destination.iterdir()):
+        if not force:
+            raise WtError(
+                f"destination {destination} already exists and is not empty; "
+                "re-run with --force to move it aside"
+            )
+        _move_aside(destination)
     add_workspace(destination, name, cwd=cwd, revision=revision or "@")
     created = Workspace(name=name, root=destination)
     try:
@@ -106,19 +126,10 @@ def remove_workspace(
         continue_on_error=True,
     )
     if target.root.exists():
-        trash = target.root.with_name(
-            f".{target.root.name}.trash-{uuid.uuid4().hex[:8]}"
-        )
         try:
-            target.root.rename(trash)
-        except OSError as error:
-            raise WtError(
-                f"could not move workspace directory {target.root} aside: {error}; "
-                "the workspace remains registered"
-            ) from error
-        shutil.rmtree(trash, ignore_errors=True)
-        if trash.exists():
-            print(f"wt: leftover files moved aside to {trash}", file=sys.stderr)
+            _move_aside(target.root)
+        except WtError as error:
+            raise WtError(f"{error}; the workspace remains registered") from error
     forget_workspace(target.name, cwd=primary)
     run_hooks(
         config,

@@ -16,9 +16,9 @@ def completed(stdout: str = "", returncode: int = 0):
 
 
 class LabelTests(unittest.TestCase):
-    def test_label_uses_project_and_workspace_dirs(self):
+    def test_label_uses_workspace_dir(self):
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
-        self.assertEqual(open_module.herdr_label(path), "ws-dotfiles-plugin")
+        self.assertEqual(open_module.herdr_label(path), "plugin")
 
 
 class FindWorkspaceTests(unittest.TestCase):
@@ -26,16 +26,16 @@ class FindWorkspaceTests(unittest.TestCase):
         payload = {
             "workspaces": [
                 {"label": "ui", "workspace_id": "w1"},
-                {"label": "ws-dotfiles-plugin", "workspace_id": "w2"},
+                {"label": "plugin", "workspace_id": "w2"},
             ]
         }
         with patch.object(herdr_module, "herdr", return_value=payload):
-            found = herdr_module.find_workspace("ws-dotfiles-plugin")
+            found = herdr_module.find_workspace("plugin")
         self.assertEqual(found["workspace_id"], "w2")
 
     def test_returns_none_without_match(self):
         with patch.object(herdr_module, "herdr", return_value={"workspaces": []}):
-            self.assertIsNone(herdr_module.find_workspace("ws-x-y"))
+            self.assertIsNone(herdr_module.find_workspace("nope"))
 
 
 class BootstrapDetectionTests(unittest.TestCase):
@@ -63,9 +63,10 @@ class OpenWorkspaceTests(unittest.TestCase):
         with (
             patch.object(
                 open_module,
-                "focus_or_create",
+                "ensure_open",
                 return_value=({"workspace": {"workspace_id": "w2"}}, False, []),
-            ) as focus_or_create,
+            ) as ensure_open,
+            patch.object(open_module, "focus_workspace"),
             patch.object(open_module.guard, "arm"),
         ):
             self.assertEqual(
@@ -74,8 +75,8 @@ class OpenWorkspaceTests(unittest.TestCase):
                 ),
                 0,
             )
-        focus_or_create.assert_called_once_with(
-            "dotfiles", "feat", path, project_path=Path("/src/dotfiles")
+        ensure_open.assert_called_once_with(
+            "feat", path, project_path=Path("/src/dotfiles")
         )
 
     def test_focuses_existing_without_layout(self):
@@ -84,11 +85,7 @@ class OpenWorkspaceTests(unittest.TestCase):
         def fake_herdr(*args):
             calls.append(args)
             if args[:2] == ("workspace", "list"):
-                return {
-                    "workspaces": [
-                        {"label": "ws-dotfiles-plugin", "workspace_id": "w2"}
-                    ]
-                }
+                return {"workspaces": [{"label": "plugin", "workspace_id": "w2"}]}
             return {}
 
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
@@ -137,12 +134,13 @@ class OpenWorkspaceTests(unittest.TestCase):
                     "--cwd",
                     str(path),
                     "--label",
-                    "ws-dotfiles-plugin",
-                    "--focus",
+                    "plugin",
+                    "--no-focus",
                 ),
-                ("pane", "split", "p1", "--direction", "right", "--focus"),
+                ("pane", "split", "p1", "--direction", "right", "--no-focus"),
                 ("pane", "run", "p1", "mise run bootstrap"),
                 ("pane", "run", "p2", "opencode"),
+                ("workspace", "focus", "w9"),
             ],
         )
         arm.assert_called_once_with("w9", path, {"w9"})
@@ -214,12 +212,13 @@ class OpenWorkspaceTests(unittest.TestCase):
                     "--path",
                     str(path),
                     "--label",
-                    "ws-dotfiles-plugin",
-                    "--focus",
+                    "plugin",
+                    "--no-focus",
                 ),
             ],
         )
         self.assertNotIn(("workspace", "create"), [call[:2] for call in calls])
+        self.assertEqual(calls[-1], ("workspace", "focus", "w9"))
 
     def test_falls_back_to_create_when_worktree_open_fails(self):
         calls = []

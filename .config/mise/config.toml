@@ -92,7 +92,7 @@ imagemagick = "latest"
 
 # VCS
 "github:sjawhar/jj" = "v0.43.0-sami.20260722-194522"
-"github:aria-amini/jj-ryu" = "0.2.0"
+"github:aria-amini/jj-ryu" = "0.2.3"
 "nix:jjui" = "latest"
 "npm:hunkdiff" = "latest"
 "difftastic" = "latest"
@@ -173,5 +173,5 @@ else
 fi
 echo "Format: $fmt"
 echo
-chafa -f kitty --fit-width "$final" 2>/dev/null || imgcat "$final" || chafa --fit-width "$final"
+imgview "$final" || imgcat "$final" || chafa --fit-width "$final"
 '''

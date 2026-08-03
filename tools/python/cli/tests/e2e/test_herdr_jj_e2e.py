@@ -66,11 +66,13 @@ class TestCreateFlow:
             "--cwd",
             str(dest),
             "--label",
-            "ws-repo-feat",
-            "--focus",
+            "feat",
+            "--no-focus",
         ] in log
-        assert ["pane", "split", "p-e2e", "--direction", "right", "--focus"] in log
+        assert ["pane", "split", "p-e2e", "--direction", "right", "--no-focus"] in log
         assert ["pane", "run", "p2", "opencode"] in log
+        focus_idx = log.index(["workspace", "focus", "w-e2e"])
+        assert focus_idx > log.index(["pane", "run", "p2", "opencode"])
 
 
 class TestRemoveFlow:
@@ -81,7 +83,7 @@ class TestRemoveFlow:
             tmp_path,
             {
                 "workspace list": {
-                    "workspaces": [{"label": "ws-repo-feat", "workspace_id": "w1"}]
+                    "workspaces": [{"label": "feat", "workspace_id": "w1"}]
                 }
             },
         )
@@ -118,7 +120,7 @@ class TestPickerFlow:
             tmp_path,
             {
                 "workspace list": {
-                    "workspaces": [{"label": "ws-repo-feat", "workspace_id": "w2"}]
+                    "workspaces": [{"label": "feat", "workspace_id": "w2"}]
                 }
             },
         )
@@ -155,6 +157,28 @@ class TestPickerFlow:
         ]
         assert creates
         assert str(dest) in creates[0]
+
+    def test_picker_ctrl_d_removes_highlighted(self, tmp_path, jj_repo, plugin_env):
+        ws_root = tmp_path / "workspaces"
+        dest = add_workspace(jj_repo, ws_root, "feat")
+        write_scenario(
+            tmp_path,
+            {
+                "workspace list": {
+                    "workspaces": [{"label": "feat", "workspace_id": "w2"}]
+                }
+            },
+        )
+        env = context_env(
+            plugin_env(FZF_FAKE_KEY="ctrl-d", FZF_FAKE_NAME="feat"), jj_repo
+        )
+
+        result = run_plugin(env, "picker", stdin="y\n")
+
+        assert result.returncode == 0, result.stderr
+        assert not dest.exists()
+        assert "feat" not in jj(jj_repo, "workspace", "list")
+        assert ["workspace", "close", "w2"] in read_log(tmp_path)
 
 
 class TestReporterEnsure:

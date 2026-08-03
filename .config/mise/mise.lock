@@ -5542,63 +5542,63 @@ url = "https://github.com/LuaLS/lua-language-server/releases/download/3.18.2/lua
 url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/396269455"
 
 [[tools."github:aria-amini/jj-ryu"]]
-version = "0.2.0"
+version = "0.2.3"
 backend = "github:aria-amini/jj-ryu"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-arm64"]
-checksum = "sha256:ce4f85de334e562fd9ffdb44c7d78301f5edaf5f6064c66984ca793ffae4fced"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527829"
+checksum = "sha256:292231492cdf87b73d1c37880beac16da2e18f4e952d772b17ce8ebb9b2eedca"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865799"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-arm64-musl"]
-checksum = "sha256:7af7981b6508bce3c0fd24df9565304b00df8e025da49bf74284c74852586f20"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-arm64-musl.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527828"
+checksum = "sha256:2edbbe9160bd9d7106eb72e58257f76c872b108cdcdf95276c6bc1125fbed8d5"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865801"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-x64"]
-checksum = "sha256:c5278ff9ac32c0a9153287b6f1ff154f7f4c28432ecdb66a0acb24b92bb4c4f9"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527824"
+checksum = "sha256:3a52d5975d6b9abbeeade2916471c78ca2f7e4e11847523fe7ebe1254f83e875"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865800"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-x64-baseline"]
-checksum = "sha256:c5278ff9ac32c0a9153287b6f1ff154f7f4c28432ecdb66a0acb24b92bb4c4f9"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527824"
+checksum = "sha256:3a52d5975d6b9abbeeade2916471c78ca2f7e4e11847523fe7ebe1254f83e875"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865800"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-x64-musl"]
-checksum = "sha256:68381d5bd3ad79be6bc0f308d420fe538789016ee821df0cedde9d5d393482ca"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527826"
+checksum = "sha256:6a9f6f685fe93785b910628fc62676538b3fc294dc9946f20a02b5e2e2c1529c"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865802"
 
 [tools."github:aria-amini/jj-ryu"."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:68381d5bd3ad79be6bc0f308d420fe538789016ee821df0cedde9d5d393482ca"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-linux-x64-musl.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527826"
+checksum = "sha256:6a9f6f685fe93785b910628fc62676538b3fc294dc9946f20a02b5e2e2c1529c"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865802"
 
 [tools."github:aria-amini/jj-ryu"."platforms.macos-arm64"]
-checksum = "sha256:83cdb3bdcaadf01e9e91c07d5aab247aba25258ffbd98533c50cc2f41610aedd"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527825"
+checksum = "sha256:e30c73df29b2cb2ef4b5d1d72365d3d114a28b4c93069b2e3ed5353e79611249"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865797"
 
 [tools."github:aria-amini/jj-ryu"."platforms.macos-x64"]
-checksum = "sha256:c955e0e537e4d8d3deb9c7b704cbc25eaab5f7524e4149f4d12d4381c4dbf331"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527827"
+checksum = "sha256:fccd11a73939949bf85a5fc3a08b1f6a442e9a59b97167e62312e8009df09971"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865803"
 
 [tools."github:aria-amini/jj-ryu"."platforms.macos-x64-baseline"]
-checksum = "sha256:c955e0e537e4d8d3deb9c7b704cbc25eaab5f7524e4149f4d12d4381c4dbf331"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527827"
+checksum = "sha256:fccd11a73939949bf85a5fc3a08b1f6a442e9a59b97167e62312e8009df09971"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865803"
 
 [tools."github:aria-amini/jj-ryu"."platforms.windows-x64"]
-checksum = "sha256:3ed904d484c17a15e262cd6683ae37e8338bd48224788ccad9c185a1887ff028"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-win32-x64.zip"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527822"
+checksum = "sha256:6d254f6ab1ec3179a3e50b3fe790f35bfb15c164a4e1da4031eabddb85f8a704"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-win32-x64.zip"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865798"
 
 [tools."github:aria-amini/jj-ryu"."platforms.windows-x64-baseline"]
-checksum = "sha256:3ed904d484c17a15e262cd6683ae37e8338bd48224788ccad9c185a1887ff028"
-url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.0/ryu-win32-x64.zip"
-url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499527822"
+checksum = "sha256:6d254f6ab1ec3179a3e50b3fe790f35bfb15c164a4e1da4031eabddb85f8a704"
+url = "https://github.com/aria-amini/jj-ryu/releases/download/v0.2.3/ryu-win32-x64.zip"
+url_api = "https://api.github.com/repos/aria-amini/jj-ryu/releases/assets/499865798"
 
 [[tools."github:danielgatis/imgcat"]]
 version = "1.0.23"

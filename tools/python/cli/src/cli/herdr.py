@@ -36,9 +36,8 @@ def herdr(*args: str) -> dict:
     return envelope.get("result", {})
 
 
-def workspace_label(repo: str, name: str) -> str:
-    safe_name = name.replace("/", "-").replace("\\", "-")
-    return f"ws-{repo}-{safe_name}"
+def workspace_label(name: str) -> str:
+    return name.replace("/", "-").replace("\\", "-")
 
 
 def list_workspaces() -> list[Workspace]:
@@ -52,10 +51,15 @@ def find_workspace(
     return next((item for item in items if item.get("label") == label), None)
 
 
+def focused_workspace(workspaces: list[Workspace] | None = None) -> Workspace | None:
+    items = list_workspaces() if workspaces is None else workspaces
+    return next((item for item in items if item.get("focused")), None)
+
+
 def find_for_jj(
-    repo: str, name: str, workspaces: list[Workspace] | None = None
+    name: str, workspaces: list[Workspace] | None = None
 ) -> Workspace | None:
-    return find_workspace(workspace_label(repo, name), workspaces)
+    return find_workspace(workspace_label(name), workspaces)
 
 
 def find_by_worktree_path(
@@ -77,26 +81,25 @@ def focus_workspace(workspace_id: str) -> None:
     herdr("workspace", "focus", workspace_id)
 
 
-def focus_or_create(
-    repo: str,
+def ensure_open(
     name: str,
     cwd: Path,
     workspaces: list[Workspace] | None = None,
     project_path: Path | None = None,
 ) -> tuple[dict, bool, list[Workspace]]:
+    # Never focuses: callers lay out panes first and focus last, because
+    # switching focus closes the modal popup the plugin runs inside.
     items = list_workspaces() if workspaces is None else workspaces
-    existing = find_for_jj(repo, name, items)
+    existing = find_for_jj(name, items)
     if existing is not None:
         if project_path is not None and "worktree" not in existing:
             # Opened before worktree provenance existed; re-opening through
             # worktree.open attaches it so the workspace nests under the repo.
-            if _worktree_open(project_path, cwd) is not None:
-                return {"workspace": existing}, False, items
-        focus_workspace(existing["workspace_id"])
+            _worktree_open(project_path, cwd)
         return {"workspace": existing}, False, items
     if project_path is not None:
-        opened = _worktree_open(project_path, cwd, label=workspace_label(repo, name))
-        if opened is not None:
+        opened = _worktree_open(project_path, cwd, label=workspace_label(name))
+        if opened is not None and "workspace" in opened:
             return opened, not opened.get("already_open", False), items
     created = herdr(
         "workspace",
@@ -104,8 +107,8 @@ def focus_or_create(
         "--cwd",
         str(cwd),
         "--label",
-        workspace_label(repo, name),
-        "--focus",
+        workspace_label(name),
+        "--no-focus",
     )
     return created, True, items
 
@@ -118,7 +121,7 @@ def _worktree_open(
     args = ["worktree", "open", "--cwd", str(project_path), "--path", str(cwd)]
     if label is not None:
         args.extend(["--label", label])
-    args.append("--focus")
+    args.append("--no-focus")
     try:
         return herdr(*args)
     except HerdrError:
@@ -126,7 +129,6 @@ def _worktree_open(
 
 
 def close_for_jj(
-    repo: str,
     name: str,
     workspaces: list[Workspace] | None = None,
     path: Path | None = None,
@@ -134,7 +136,7 @@ def close_for_jj(
     items = list_workspaces() if workspaces is None else workspaces
     existing = find_by_worktree_path(path, items) if path is not None else None
     if existing is None:
-        existing = find_for_jj(repo, name, items)
+        existing = find_for_jj(name, items)
     if existing is not None:
         herdr("workspace", "close", existing["workspace_id"])
     return existing, items

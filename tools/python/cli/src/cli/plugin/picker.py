@@ -29,7 +29,7 @@ def picker(env: Mapping[str, str] | None = None) -> int:
     lines = []
     for item in jj_workspaces:
         token = status_token(primary, rev=f"{item.name}@")
-        existing = find_for_jj(primary.name, item.name, herdr_workspaces)
+        existing = find_for_jj(item.name, herdr_workspaces)
         marker = existing.get("label", "open") if existing else "—"
         lines.append(f"{item.name}\t{token}\t{marker}")
 
@@ -47,7 +47,7 @@ def picker(env: Mapping[str, str] | None = None) -> int:
     if key == "ctrl-d":
         return remove_workspace(path, primary, env=env)
 
-    existing = find_for_jj(primary.name, name, herdr_workspaces)
+    existing = find_for_jj(name, herdr_workspaces)
     if existing is not None:
         focus_workspace(existing["workspace_id"])
         return 0

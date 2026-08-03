@@ -1,10 +1,9 @@
 """Open a jj workspace as a laid-out herdr workspace.
 
-Invoked by herdr-jj with the workspace path. If a herdr workspace labeled
-ws-<project>-<name> already
-exists it is focused; otherwise it is created with a vertical split: the left
-pane runs the project's `mise run bootstrap` task (if any) and the right pane
-runs opencode.
+Invoked by herdr-jj with the workspace path. If a herdr workspace labeled with
+the jj workspace name already exists it is focused; otherwise it is created
+with a vertical split: the left pane runs the project's `mise run bootstrap`
+task (if any) and the right pane runs opencode.
 """
 
 import argparse
@@ -14,16 +13,18 @@ import sys
 from pathlib import Path
 
 from . import guard
-from .herdr import HerdrError, Workspace, focus_or_create, herdr, workspace_label
+from .herdr import (
+    HerdrError,
+    Workspace,
+    ensure_open,
+    focus_workspace,
+    herdr,
+    workspace_label,
+)
 
 
-def herdr_label_for(project: str, name: str) -> str:
-    return workspace_label(project, name)
-
-
-def herdr_label(path: Path, project_path: Path | None = None) -> str:
-    project = project_path.name if project_path is not None else path.parent.name
-    return herdr_label_for(project, path.name)
+def herdr_label(path: Path) -> str:
+    return workspace_label(path.name)
 
 
 def has_bootstrap_task(path: Path) -> bool:
@@ -52,18 +53,16 @@ def open_workspace(
     project_path: Path | None = None,
     workspace_name: str | None = None,
 ) -> int:
-    project = project_path.name if project_path is not None else path.parent.name
     name = path.name if workspace_name is None else workspace_name
-    created, is_new, workspaces = focus_or_create(
-        project, name, path, project_path=project_path
-    )
+    created, is_new, workspaces = ensure_open(name, path, project_path=project_path)
     workspace_id = created["workspace"]["workspace_id"]
     if not is_new:
+        focus_workspace(workspace_id)
         _arm(workspace_id, path, workspaces)
         return 0
 
     left = created["root_pane"]["pane_id"]
-    right = herdr("pane", "split", left, "--direction", "right", "--focus")["pane"][
+    right = herdr("pane", "split", left, "--direction", "right", "--no-focus")["pane"][
         "pane_id"
     ]
 
@@ -71,6 +70,7 @@ def open_workspace(
         herdr("pane", "run", left, "mise run bootstrap")
     herdr("pane", "run", right, "opencode")
     _arm(workspace_id, path, workspaces)
+    focus_workspace(workspace_id)
     return 0
 
 

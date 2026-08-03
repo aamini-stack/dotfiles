@@ -37,6 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--revision",
         help="revision/revset to base a created workspace on (default: @)",
     )
+    switch.add_argument(
+        "--force",
+        action="store_true",
+        help="move aside a leftover directory occupying the workspace destination",
+    )
     switch.set_defaults(run=_switch)
 
     remove = subparsers.add_parser(
@@ -84,7 +89,7 @@ def _switch(args: argparse.Namespace) -> int:
         if not args.name:
             raise WtError("switch --create requires a name")
         try:
-            target = create_workspace(cwd, args.name, args.revision)
+            target = create_workspace(cwd, args.name, args.revision, force=args.force)
         except CreateHookError as error:
             _emit(error.workspace.root)
             print(f"wt: {error}", file=sys.stderr)

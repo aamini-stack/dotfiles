@@ -70,8 +70,8 @@ class TestPicker:
         rc, calls, primary, ws_root, feat = run_picker(
             monkeypatch,
             layout,
-            ("enter", "feat\ttok-feat@\tws-dotfiles-feat"),
-            workspaces=[{"label": "ws-dotfiles-feat", "workspace_id": "w2"}],
+            ("enter", "feat\ttok-feat@\tfeat"),
+            workspaces=[{"label": "feat", "workspace_id": "w2"}],
         )
 
         assert rc == 0
@@ -100,10 +100,10 @@ class TestPicker:
             monkeypatch,
             layout,
             ("esc", None),
-            workspaces=[{"label": "ws-dotfiles-feat", "workspace_id": "w2"}],
+            workspaces=[{"label": "feat", "workspace_id": "w2"}],
         )
 
-        assert calls["lines"][1] == "feat\ttok-feat@\tws-dotfiles-feat"
+        assert calls["lines"][1] == "feat\ttok-feat@\tfeat"
 
     def test_ctrl_d_invokes_remove_for_highlighted(self, monkeypatch, layout):
         rc, calls, primary, ws_root, feat = run_picker(

@@ -21,7 +21,7 @@ def test_remove_delegates_lifecycle_then_closes_herdr(monkeypatch, tmp_path):
     monkeypatch.setattr(
         remove_module,
         "close_workspace",
-        lambda repo, name: calls.append(("close", repo, name)) or 0,
+        lambda name, path=None: calls.append(("close", name, path)) or 0,
     )
 
     env = {"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")}
@@ -31,7 +31,7 @@ def test_remove_delegates_lifecycle_then_closes_herdr(monkeypatch, tmp_path):
     assert calls[0][0:3] == ("remove", target, None)
     assert calls[0][3]["assume_yes"] is True
     assert calls[0][3]["env"] == env
-    assert calls[1] == ("close", "dotfiles", "feat")
+    assert calls[1] == ("close", "feat", target)
 
 
 def test_remove_does_not_close_when_lifecycle_aborts(monkeypatch, tmp_path, capsys):

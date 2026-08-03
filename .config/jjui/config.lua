@@ -133,6 +133,59 @@ function setup(config)
     scope = "revisions",
   })
 
+  config.action("delete workspace", function()
+    local workspaces, err = list_workspaces()
+    if not workspaces then
+      flash({ text = "workspace list failed: " .. tostring(err), error = true })
+      return
+    end
+
+    local current = current_workspace_root()
+    local removable = {}
+    for _, ws in ipairs(workspaces) do
+      if ws.root ~= current then table.insert(removable, ws) end
+    end
+    if #removable == 0 then
+      flash("no other workspaces to delete")
+      return
+    end
+
+    local options = {}
+    for _, ws in ipairs(removable) do
+      table.insert(options, ws.name .. "  (" .. ws.root .. ")")
+    end
+
+    local choice = choose({ options = options, title = "Delete workspace", ordered = true })
+    if not choice then return end
+
+    local target
+    for i, option in ipairs(options) do
+      if option == choice then
+        target = removable[i]
+        break
+      end
+    end
+    if not target then return end
+
+    local confirm = choose({
+      options = { "delete " .. target.name, "cancel" },
+      title = "Delete workspace " .. target.name .. "?",
+    })
+    if confirm == nil or confirm == "cancel" then return end
+
+    local ok = exec_shell(string.format("command wt rm -y %q", target.name))
+    if ok == false then
+      flash({ text = "delete failed: " .. target.name, error = true })
+      return
+    end
+    revisions.refresh()
+    flash("deleted workspace: " .. target.name)
+  end, {
+    desc = "delete workspace",
+    seq = { "w", "d" },
+    scope = "revisions",
+  })
+
   config.action("open revision in Hunk", function()
     local change_id = context.change_id()
     if not change_id or change_id == "" then
@@ -159,6 +212,28 @@ function setup(config)
   end, {
     desc = "open file diff in Hunk",
     key = "enter",
+    scope = "revisions.details",
+  })
+
+  config.action("preview image", function()
+    local change_id = context.change_id()
+    local file = context.file()
+    if not change_id or change_id == "" or not file or file == "" then
+      flash({ text = "No file selected", error = true })
+      return
+    end
+
+    local ext = file:lower():match("%.([%w]+)$")
+    local image_exts = { png = true, jpg = true, jpeg = true, webp = true, gif = true, bmp = true, tiff = true, avif = true }
+    if not ext or not image_exts[ext] then
+      ui.preview_toggle()
+      return
+    end
+
+    exec_shell(string.format("jj file show -r %q -- %q | imgview --hold -", change_id, file))
+  end, {
+    desc = "preview image",
+    key = "p",
     scope = "revisions.details",
   })
 

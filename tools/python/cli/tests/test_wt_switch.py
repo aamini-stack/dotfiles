@@ -64,12 +64,27 @@ def test_switch_create_creates_and_emits(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(
         main,
         "create_workspace",
-        lambda cwd, name, revision: seen.update(name=name, revision=revision) or target,
+        lambda cwd, name, revision, force=False: (
+            seen.update(name=name, revision=revision, force=force) or target
+        ),
     )
 
     assert run_wt(monkeypatch, ["switch", "-c", "feat", "-r", "trunk()"]) == 0
-    assert seen == {"name": "feat", "revision": "trunk()"}
+    assert seen == {"name": "feat", "revision": "trunk()", "force": False}
     assert capsys.readouterr().out.strip() == str(target.root)
+
+
+def test_switch_create_forwards_force(monkeypatch, tmp_path, capsys):
+    target = Workspace("feat", tmp_path / "ws" / "feat")
+    seen = {}
+    monkeypatch.setattr(
+        main,
+        "create_workspace",
+        lambda cwd, name, revision, force=False: seen.update(force=force) or target,
+    )
+
+    assert run_wt(monkeypatch, ["switch", "-c", "feat", "--force"]) == 0
+    assert seen == {"force": True}
 
 
 def test_switch_create_requires_name(monkeypatch, capsys):
@@ -118,7 +133,7 @@ def test_switch_create_emits_destination_even_when_hooks_fail(
     target = Workspace("feat", tmp_path / "ws" / "feat")
     result_file = tmp_path / "result"
 
-    def failing_create(cwd, name, revision):
+    def failing_create(cwd, name, revision, force=False):
         raise lifecycle.CreateHookError(target, "post-create.bootstrap failed")
 
     monkeypatch.setattr(main, "create_workspace", failing_create)

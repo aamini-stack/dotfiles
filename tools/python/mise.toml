@@ -1,12 +1,16 @@
 [tools]
 python = "3.14"
 
+[deps.uv]
+auto = true
+
 [tasks.sync]
 description = "Install locked workspace dependencies"
-run = 'uv sync --locked --python "$(command -v python)"'
+run = "mise deps uv --force"
 
 [tasks.lint]
 description = "Lint all Python"
+sources = ["**/*.py", "pyproject.toml", "uv.lock"]
 run = "ruff check ."
 
 [tasks.format]
@@ -15,10 +19,12 @@ run = "ruff format ."
 
 [tasks."format:check"]
 description = "Check Python formatting"
+sources = ["**/*.py", "pyproject.toml", "uv.lock"]
 run = "ruff format --check ."
 
 [tasks.test]
 description = "Run all Python tests"
+sources = ["**/*.py", "uv.lock"]
 run = '''
 cd cli && uv run --python "$(command -v python)" python -m unittest discover -s tests -v
 uv run --python "$(command -v python)" python -m pytest -m "not e2e" -q
@@ -27,6 +33,7 @@ cd ../infra && uv run --python "$(command -v python)" python -m compileall -q __
 
 [tasks."test:e2e"]
 description = "Run end-to-end plugin tests (real jj, fake herdr)"
+sources = ["**/*.py", "uv.lock"]
 run = 'cd cli && uv run --python "$(command -v python)" python -m pytest -m e2e -q'
 
 [tasks.check]
@@ -35,4 +42,5 @@ depends = [":lint", ":format:check", ":test"]
 
 [tasks.install]
 description = "Install the cli package as an editable uv tool"
+sources = ["cli/pyproject.toml", "cli/src/**/*.py", "uv.lock"]
 run = 'uv tool install --python "$(command -v python)" --editable --reinstall ./cli'

@@ -3,6 +3,10 @@ monorepo_root = true
 [monorepo]
 config_roots = ["tools/python"]
 
+[shell_alias]
+dots = "cd {{config_root}}"
+restow = "cd {{config_root}} && stow --restow -v --target=\"$HOME\" ."
+
 [tasks.install]
 description = "Install all dotfiles tools"
 depends = ["//tools/python:install"]

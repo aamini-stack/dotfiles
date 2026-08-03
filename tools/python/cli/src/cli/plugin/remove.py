@@ -34,7 +34,7 @@ def remove_workspace(
     except (JjError, WtError, ConfigError, HookError) as error:
         print(f"herdr-jj remove: {error}", file=sys.stderr)
         return 1
-    return close_workspace(primary.name, removed.name)
+    return close_workspace(removed.name, removed.root)
 
 
 def remove_current(

@@ -71,6 +71,48 @@ def test_create_leaves_workspace_when_hook_fails(monkeypatch, tmp_path):
     assert destination.is_dir()
 
 
+def test_create_refuses_leftover_destination_without_force(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    destination = tmp_path / "workspaces" / "repo" / "feat"
+    (destination / ".vite").mkdir(parents=True)
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+
+    with pytest.raises(WtError, match="already exists and is not empty"):
+        lifecycle.create_workspace(
+            primary,
+            "feat",
+            env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+        )
+    assert (destination / ".vite").is_dir()
+
+
+def test_create_force_moves_leftover_aside(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    caller = tmp_path / "parent"
+    destination = tmp_path / "workspaces" / "repo" / "feat"
+    (destination / ".vite").mkdir(parents=True)
+    calls = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(
+        lifecycle,
+        "add_workspace",
+        lambda dest, name, cwd, revision=None: calls.append((dest, name)),
+    )
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: True)
+
+    lifecycle.create_workspace(
+        caller,
+        "feat",
+        env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+        force=True,
+    )
+
+    assert calls == [(destination, "feat")]
+    assert not destination.exists()
+
+
 def test_create_explicitly_bases_default_on_caller_at(monkeypatch, tmp_path):
     primary = tmp_path / "repo"
     caller = tmp_path / "parent"

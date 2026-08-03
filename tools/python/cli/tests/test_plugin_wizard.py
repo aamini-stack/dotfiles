@@ -54,7 +54,7 @@ class TestWizard:
         from cli.open import herdr_label
 
         assert rc == 0
-        assert herdr_label(calls["open"][0], calls["open"][1]) == "ws-dotfiles-feat"
+        assert herdr_label(calls["open"][0]) == "feat"
 
     def test_arms_reporter_ensure(self, monkeypatch, tmp_path):
         env = {
