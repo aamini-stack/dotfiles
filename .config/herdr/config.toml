@@ -220,8 +220,6 @@ directory = "~/.herdr/workspaces"
 [ui.sidebar.spaces]
 rows = [["state_icon", "workspace"], ["branch", "git_status", "$jj_status"]]
 
-# Background notification popup delivery
-agent_panel_sort = "spaces"
 [ui.toast]
 delivery = "terminal"
 # off = disable pop-up notifications
