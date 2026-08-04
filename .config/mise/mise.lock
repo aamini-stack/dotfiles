@@ -8163,6 +8163,10 @@ backend = "npm:@typescript/native-preview"
 version = "0.35.0"
 backend = "npm:corepack"
 
+[[tools."npm:greptile"]]
+version = "3.2.3"
+backend = "npm:greptile"
+
 [[tools."npm:hunkdiff"]]
 version = "0.17.7"
 backend = "npm:hunkdiff"

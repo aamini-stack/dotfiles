@@ -121,6 +121,7 @@ jq = "latest"
 "nix:erdtree" = "latest"
 pi = "latest"
 "npm:varlock" = "1.11.0"
+"npm:greptile" = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"
