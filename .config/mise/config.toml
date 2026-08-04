@@ -62,7 +62,7 @@ shellcheck = "latest"
 #===============================================================================
 
 # Shell
-herdr = "0.7.4"
+herdr = "0.8.0"
 "nix:zsh" = "latest"
 "oh-my-posh" = "latest"
 
