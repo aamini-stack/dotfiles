@@ -5,6 +5,11 @@ return {
     dependencies = { 'MunifTanjim/nui.nvim' },
     config = function()
       require('hunk').setup {
+        ui = {
+          tree = {
+            use_float = true,
+          },
+        },
         hooks = {
           on_tree_mount = function(context)
             -- Hunk does not expose its preview action yet (julienvincent/hunk.nvim#36),
