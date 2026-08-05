@@ -173,9 +173,9 @@ function setup(config)
     })
     if confirm == nil or confirm == "cancel" then return end
 
-    local ok = exec_shell(string.format("command wt rm -y %q", target.name))
-    if ok == false then
-      flash({ text = "delete failed: " .. target.name, error = true })
+    local _, run_err = jj("util", "exec", "--", "wt", "rm", "-y", target.name)
+    if run_err then
+      flash({ text = "delete failed: " .. tostring(run_err), error = true })
       return
     end
     revisions.refresh()

@@ -8164,7 +8164,7 @@ version = "0.35.0"
 backend = "npm:corepack"
 
 [[tools."npm:greptile"]]
-version = "3.2.3"
+version = "3.3.1"
 backend = "npm:greptile"
 
 [[tools."npm:hunkdiff"]]
