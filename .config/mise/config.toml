@@ -71,7 +71,6 @@ herdr = "0.8.0"
 claude = "latest"
 "npm:playwriter" = "latest"
 "npm:lavish-axi" = "latest"
-"http:coderabbit" = { version = "0.6.5", url = "https://cli.coderabbit.ai/releases/{{ version }}/coderabbit-linux-arm64.zip", postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/coderabbit" }
 
 # nvim
 "neovim" = "0.12.2"
