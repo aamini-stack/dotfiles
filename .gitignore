@@ -4,10 +4,13 @@
 
 .pi
 
+.impeccable/update-check.json
+
 .config/herdr/*
 !.config/herdr/config.toml
 
 __pycache__
+node_modules/
 
 .venv
 .ruff_cache
