@@ -8211,6 +8211,10 @@ backend = "npm:pnpm"
 version = "3.9.4"
 backend = "npm:prettier"
 
+[[tools."npm:t3"]]
+version = "0.0.31"
+backend = "npm:t3"
+
 [[tools."npm:typescript"]]
 version = "7.0.2"
 backend = "npm:typescript"

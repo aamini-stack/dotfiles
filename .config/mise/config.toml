@@ -121,6 +121,7 @@ jq = "latest"
 pi = "latest"
 "npm:varlock" = "1.11.0"
 "npm:greptile" = "latest"
+"npm:t3" = "latest"
 
 [tasks.diff]
 dir = "{{cwd}}"
