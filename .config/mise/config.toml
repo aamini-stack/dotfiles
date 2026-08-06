@@ -1,5 +1,5 @@
 [env]
-_.file = { path = "~/.env" }
+_.file = [{ path = "~/.env" }, { path = "~/.env.local", required = false }]
 # mise-nix replays each nix package's build env (postgresql injects
 # CFLAGS=-flto, breaking all Rust builds); PATH entries are all we need
 MISE_NIX_ENV_MODE = "path-only"
