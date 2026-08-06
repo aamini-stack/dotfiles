@@ -132,6 +132,8 @@ flag "-f --format <format>" help="Diff format: side-by-side or overlay" default=
 '''
 run = '''
 set -eu
+[ -n "${usage_expected:-}" ] && usage_expected="$(realpath "$usage_expected")"
+[ -n "${usage_actual:-}" ] && usage_actual="$(realpath "$usage_actual")"
 cd "$(git rev-parse --show-toplevel)"
 tmp_dir="$(mktemp -d -t mise-diff-XXXXXX)"
 cleanup() { rm -rf "$tmp_dir"; }
@@ -174,5 +176,11 @@ else
 fi
 echo "Format: $fmt"
 echo
-imgview "$final" || imgcat "$final" || chafa --fit-width "$final"
+if [ "${HERDR_ENV:-}" = "1" ] || [ -n "${KITTY_WINDOW_ID:-}" ] || [ "${TERM_PROGRAM:-}" = "ghostty" ] || [ "${TERM_PROGRAM:-}" = "WezTerm" ]; then
+  chafa -f kitty "$final"
+elif [ "${TERM_PROGRAM:-}" = "iTerm.app" ]; then
+  chafa -f iterm "$final"
+else
+  imgview "$final" || chafa "$final" || imgcat "$final"
+fi
 '''
