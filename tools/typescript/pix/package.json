@@ -1,0 +1,16 @@
+{
+  "name": "pix",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "pix": "./src/index.ts"
+  },
+  "dependencies": {
+    "@opentui/core": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "bun-types": "latest",
+    "typescript": "latest"
+  }
+}

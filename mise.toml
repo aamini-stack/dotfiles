@@ -1,7 +1,7 @@
 monorepo_root = true
 
 [monorepo]
-config_roots = ["tools/python"]
+config_roots = ["tools/*"]
 
 [shell_alias]
 dots = "cd {{config_root}}"
@@ -9,8 +9,8 @@ restow = "cd {{config_root}} && stow --restow -v --target=\"$HOME\" ."
 
 [tasks.install]
 description = "Install all dotfiles tools"
-depends = ["//tools/python:install"]
+depends = ["//tools/python:install", "//tools/typescript:install"]
 
 [tasks.check]
 description = "Run all checks"
-depends = ["//tools/python:check"]
+depends = ["//tools/python:check", "//tools/typescript:check"]

@@ -27,6 +27,22 @@ validation
 5. **Boundaries** (server fn validators, API bodies, form resolvers) parse
    with the derived schema: `(data: unknown) => schema.parse(data)`.
 
+## Client-safe derivation
+
+When the table → schema chain would ship pg-core or classic zod to the client,
+derive client schemas (zod/mini) from the same dependency-free domain root the
+table derives from (enum/question/field definitions). The root stays single;
+the derivations fan out:
+
+domain definitions → drizzle columns → table → `createInsertSchema` (server)
+domain definitions → zod/mini schemas (client)
+
+- Both sides derive from shared definitions — a hand-written parallel shape is
+  still a violation.
+- Add a parity contract test (fixture round-trip + key-set equality) between
+  the client schema and the `createInsertSchema` output. This replaces the
+  guarantee codegen gave you for free — do not skip it.
+
 ## Never
 
 - No `interface`/`type` that mirrors a table or restates a schema's fields.
@@ -40,6 +56,10 @@ validation
 
 Touch the table and the UI. If a change requires editing a third place, a
 derivation is missing — fix the chain, don't patch the copy.
+
+Under client-safe derivation, enum/question fields still touch one place (the
+domain root). A new non-question column touches the table and the client field
+defs; forgetting one side must fail the parity test.
 
 ## Non-persisted shapes
 
