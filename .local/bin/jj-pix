@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  printf 'usage: %s CHANGE_ID [FILE]\n' "$0" >&2
+  exit 2
+}
+
+case "$#" in
+  1) rev=$1; only_file= ;;
+  2) rev=$1; only_file=$2 ;;
+  *) usage ;;
+esac
+
+tmp=$(mktemp -d -t jj-pix-XXXXXX)
+trap 'rm -rf "$tmp"' EXIT
+
+extract() {
+  jj file show -r "$1" -- "$2" >"$3" 2>/dev/null && [ -s "$3" ]
+}
+
+blank_from() {
+  magick "${1}[0]" -alpha off -fill white -colorize 100 "$2"
+}
+
+make_pair() {
+  local file=$1 stem=$2 ext=${1##*.}
+  local raw_before="$tmp/$stem.before.$ext" raw_after="$tmp/$stem.after.$ext"
+  local have_before=0 have_after=0
+  extract "${rev}@-" "$file" "$raw_before" && have_before=1
+  extract "$rev" "$file" "$raw_after" && have_after=1
+  if [ "$have_before" = 0 ] && [ "$have_after" = 0 ]; then
+    printf 'jj-pix: %s not found at %s or its parent\n' "$file" "$rev" >&2
+    return 1
+  fi
+  [ "$have_before" = 0 ] && blank_from "$raw_after" "$raw_before"
+  [ "$have_after" = 0 ] && blank_from "$raw_before" "$raw_after"
+  magick "${raw_before}[0]" "$tmp/$stem-expected.png"
+  magick "${raw_after}[0]" "$tmp/$stem-actual.png"
+  rm -f "$raw_before" "$raw_after"
+}
+
+if [ -n "$only_file" ]; then
+  make_pair "$only_file" "pair"
+else
+  files=$(jj diff -r "$rev" --name-only | grep -iE '\.(png|jpg|jpeg|webp|gif|bmp|tiff|avif)$' || true)
+  if [ -z "$files" ]; then
+    printf 'jj-pix: no image changes in %s\n' "$rev" >&2
+    exit 1
+  fi
+  i=0
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    i=$((i + 1))
+    noext=${f%.*}
+    printf -v stem '%03d_%s' "$i" "${noext//\//__}"
+    make_pair "$f" "$stem" || true
+  done <<<"$files"
+fi
+
+pix "$tmp"

@@ -237,6 +237,41 @@ function setup(config)
     scope = "revisions.details",
   })
 
+  config.action("diff change images in pix", function()
+    local change_id = context.change_id()
+    if not change_id or change_id == "" then
+      flash({ text = "No revision selected", error = true })
+      return
+    end
+
+    exec_shell(string.format("jj-pix %q", change_id))
+  end, {
+    desc = "diff change images in pix",
+    key = "shift+p",
+    scope = "revisions",
+  })
+
+  config.action("diff image in pix", function()
+    local change_id = context.change_id()
+    local file = context.file()
+    if not change_id or change_id == "" then
+      flash({ text = "No revision selected", error = true })
+      return
+    end
+
+    local ext = file and file:lower():match("%.([%w]+)$")
+    local image_exts = { png = true, jpg = true, jpeg = true, webp = true, gif = true, bmp = true, tiff = true, avif = true }
+    if ext and image_exts[ext] then
+      exec_shell(string.format("jj-pix %q %q", change_id, file))
+    else
+      exec_shell(string.format("jj-pix %q", change_id))
+    end
+  end, {
+    desc = "diff image in pix",
+    key = "shift+p",
+    scope = "revisions.details",
+  })
+
   config.action("open file in nvim", function()
     local file = context.file()
     if not file or file == "" then
