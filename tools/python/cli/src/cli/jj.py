@@ -128,18 +128,24 @@ def workspace_names(cwd: Path) -> list[str]:
 
 def forget_workspace(name: str, cwd: Path) -> None:
     jj("workspace", "forget", name, cwd=cwd)
-    _prune_git_worktrees(cwd)
+    _prune_git_worktrees(name, cwd)
 
 
-def _prune_git_worktrees(primary: Path) -> None:
+def _prune_git_worktrees(name: str, primary: Path) -> None:
     # wt trashes the workspace directory before forgetting, so the fork's
     # `workspace forget --cleanup` (which runs `git worktree remove`) cannot
-    # find it and the registration goes stale. No-op for non-colocated repos
-    # and on stock jj, which never registers worktrees.
+    # find it and the registration goes stale, so prune the registration and
+    # delete the fork's plumbing branch directly. No-op for non-colocated
+    # repos and on stock jj, which never registers worktrees.
     if not (primary / ".git").exists():
         return
     subprocess.run(
         ["git", "-C", str(primary), "worktree", "prune"],
+        capture_output=True,
+        check=False,
+    )
+    subprocess.run(
+        ["git", "-C", str(primary), "branch", "-D", f"jj-worktree-{name}"],
         capture_output=True,
         check=False,
     )

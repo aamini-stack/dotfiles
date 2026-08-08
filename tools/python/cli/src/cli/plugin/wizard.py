@@ -1,4 +1,9 @@
-"""Popup wizard: name a new jj workspace, create it, open it in herdr."""
+"""Popup wizard: name a new jj workspace, create it, open it in herdr.
+
+Creation never runs post-create hooks in the popup: the herdr workspace opens
+and focuses immediately, and the hooks run in its left pane instead, so a
+slow or failing setup neither blocks the UI nor prevents the switch.
+"""
 
 import argparse
 import json
@@ -10,7 +15,6 @@ from typing import Callable, Mapping
 from ..jj import JjError, primary_root
 from ..open import open_workspace
 from ..wt.config import ConfigError
-from ..wt.hooks import HookError
 from ..wt.lifecycle import WtError, create_workspace
 from . import state
 from .reporter import ensure
@@ -65,12 +69,12 @@ def wizard(
         return 1
 
     try:
-        created = create_workspace(cwd, name, env=env)
-    except (JjError, WtError, ConfigError, HookError) as error:
+        created = create_workspace(cwd, name, env=env, run_post_create=False)
+    except (JjError, WtError, ConfigError) as error:
         print(f"herdr-jj wizard: {error}", file=sys.stderr)
         return 1
 
-    rc = open_workspace(created.root, primary, created.name)
+    rc = open_workspace(created.root, primary, created.name, run_setup=True)
     if rc == 0:
         ensure(env)
     return rc

@@ -21,7 +21,7 @@ from ..jj import (
 from ..fzf import fzf_select
 from . import config as config_module
 from .copy_ignored import copy_ignored
-from .hooks import HookError, run_hooks, run_named_hook
+from .hooks import PHASES, HookError, run_hooks, run_named_hook
 from .template import TemplateError, render, sanitize
 
 
@@ -71,6 +71,7 @@ def create_workspace(
     env: Mapping[str, str] | None = None,
     *,
     force: bool = False,
+    run_post_create: bool = True,
 ) -> Workspace:
     if not name.strip():
         raise WtError("workspace name cannot be empty")
@@ -87,6 +88,8 @@ def create_workspace(
         _move_aside(destination)
     add_workspace(destination, name, cwd=cwd, revision=revision or "@")
     created = Workspace(name=name, root=destination)
+    if not run_post_create:
+        return created
     try:
         run_hooks(config, "post-create", name, destination, primary)
     except HookError as error:
@@ -226,6 +229,17 @@ def run_configured_hook(cwd: Path, hook_name: str, env=None) -> None:
     primary = primary_root(cwd)
     config = config_module.load(primary, env)
     run_named_hook(config, hook_name, current.name, current.root, primary)
+
+
+def run_configured_phase(cwd: Path, phase: str, env=None) -> None:
+    if phase not in PHASES:
+        raise WtError(
+            f"unknown hook phase '{phase}'; expected one of {', '.join(PHASES)}"
+        )
+    current = current_workspace(cwd)
+    primary = primary_root(cwd)
+    config = config_module.load(primary, env)
+    run_hooks(config, phase, current.name, current.root, primary)
 
 
 def copy_ignored_to_current(cwd: Path, env=None) -> int:

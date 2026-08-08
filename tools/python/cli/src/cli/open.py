@@ -2,8 +2,9 @@
 
 Invoked by herdr-jj with the workspace path. If a herdr workspace labeled with
 the jj workspace name already exists it is focused; otherwise it is created
-with a vertical split: the left pane runs the project's `mise run bootstrap`
-task (if any) and the right pane runs opencode.
+with a vertical split: the left pane runs the project's setup (post-create
+hooks for freshly created workspaces, then the `mise run bootstrap` task if
+any) and the right pane runs opencode.
 """
 
 import argparse
@@ -52,6 +53,7 @@ def open_workspace(
     path: Path,
     project_path: Path | None = None,
     workspace_name: str | None = None,
+    run_setup: bool = False,
 ) -> int:
     name = path.name if workspace_name is None else workspace_name
     created, is_new, workspaces = ensure_open(name, path, project_path=project_path)
@@ -66,8 +68,13 @@ def open_workspace(
         "pane_id"
     ]
 
+    setup = []
+    if run_setup:
+        setup.append("wt hook post-create")
     if has_bootstrap_task(path):
-        herdr("pane", "run", left, "mise run bootstrap")
+        setup.append("mise run bootstrap")
+    if setup:
+        herdr("pane", "run", left, " && ".join(setup))
     herdr("pane", "run", right, "opencode")
     _arm(workspace_id, path, workspaces)
     focus_workspace(workspace_id)

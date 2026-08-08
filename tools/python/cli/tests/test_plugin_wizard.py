@@ -11,13 +11,13 @@ def run_wizard(monkeypatch, tmp_path, env, name="feat"):
 
     monkeypatch.setattr(wizard_module, "primary_root", lambda cwd: repo)
 
-    def fake_create(cwd, ws_name, revision=None, env=None):
-        dest = Path(env["JJ_WORKSPACE_ROOT"]) / repo.name / ws_name
-        calls["create"] = (cwd, ws_name, revision, env)
+    def fake_create(cwd, ws_name, revision=None, env=None, run_post_create=True):
+        dest = Path((env or {})["JJ_WORKSPACE_ROOT"]) / repo.name / ws_name
+        calls["create"] = (cwd, ws_name, revision, env, run_post_create)
         return Workspace(ws_name, dest)
 
-    def fake_open(path, project_path=None, workspace_name=None):
-        calls["open"] = (path, project_path, workspace_name)
+    def fake_open(path, project_path=None, workspace_name=None, run_setup=False):
+        calls["open"] = (path, project_path, workspace_name, run_setup)
         return 0
 
     monkeypatch.setattr(wizard_module, "create_workspace", fake_create)
@@ -41,8 +41,8 @@ class TestWizard:
 
         dest = tmp_path / "workspaces" / "dotfiles" / "feat"
         assert rc == 0
-        assert calls["create"] == (tmp_path, "feat", None, env)
-        assert calls["open"] == (dest, repo, "feat")
+        assert calls["create"] == (tmp_path, "feat", None, env, False)
+        assert calls["open"] == (dest, repo, "feat", True)
 
     def test_herdr_label_matches_herdr_ws_convention(self, monkeypatch, tmp_path):
         env = {
@@ -77,7 +77,9 @@ class TestWizard:
         monkeypatch.setattr(
             wizard_module,
             "create_workspace",
-            lambda cwd, name, revision=None, env=None: Workspace(name, tmp_path / name),
+            lambda cwd, name, revision=None, env=None, **_: Workspace(
+                name, tmp_path / name
+            ),
         )
         monkeypatch.setattr(wizard_module, "open_workspace", lambda *a, **k: 0)
         monkeypatch.setattr(wizard_module, "ensure", lambda env: 0)
@@ -107,7 +109,9 @@ class TestWizard:
         monkeypatch.setattr(
             wizard_module,
             "create_workspace",
-            lambda cwd, name, revision=None, env=None: Workspace(name, tmp_path / name),
+            lambda cwd, name, revision=None, env=None, **_: Workspace(
+                name, tmp_path / name
+            ),
         )
         monkeypatch.setattr(wizard_module, "open_workspace", lambda *a, **k: 0)
         monkeypatch.setattr(wizard_module, "ensure", lambda env: 0)
@@ -160,7 +164,7 @@ class TestWizard:
         assert "empty" in capsys.readouterr().err
 
     def test_reports_jj_add_failure_and_skips_open(self, monkeypatch, tmp_path, capsys):
-        def fail_add(cwd, name, revision=None, env=None):
+        def fail_add(cwd, name, revision=None, env=None, **_):
             raise JjError("jj workspace add failed (1): name exists")
 
         monkeypatch.setattr(wizard_module, "primary_root", lambda cwd: tmp_path)

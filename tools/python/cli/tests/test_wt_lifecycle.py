@@ -45,6 +45,64 @@ def test_create_adds_workspace_then_runs_hooks(monkeypatch, tmp_path):
     ]
 
 
+def test_create_skips_hooks_when_disabled(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    caller = tmp_path / "workspaces" / "repo" / "parent"
+    destination = tmp_path / "workspaces" / "repo" / "feat"
+    calls = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(
+        lifecycle,
+        "add_workspace",
+        lambda dest, name, cwd, revision=None: calls.append(
+            ("add", dest, name, cwd, revision)
+        ),
+    )
+    monkeypatch.setattr(
+        lifecycle,
+        "run_hooks",
+        lambda *args, **kwargs: calls.append(("hooks", args)),
+    )
+
+    created = lifecycle.create_workspace(
+        caller,
+        "feat",
+        env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+        run_post_create=False,
+    )
+
+    assert created == Workspace("feat", destination)
+    assert calls == [("add", destination, "feat", caller, "@")]
+
+
+def test_run_configured_phase_runs_all_phase_hooks(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    current = tmp_path / "workspaces" / "repo" / "feat"
+    calls = []
+    monkeypatch.setattr(
+        lifecycle, "current_workspace", lambda cwd: Workspace("feat", current)
+    )
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(
+        lifecycle,
+        "run_hooks",
+        lambda config, phase, name, path, primary: calls.append(
+            (phase, name, path, primary)
+        ),
+    )
+
+    lifecycle.run_configured_phase(current, "post-create")
+
+    assert calls == [("post-create", "feat", current, primary)]
+
+
+def test_run_configured_phase_rejects_unknown_phase(monkeypatch, tmp_path):
+    with pytest.raises(WtError, match="unknown hook phase"):
+        lifecycle.run_configured_phase(tmp_path, "post-createe")
+
+
 def test_create_leaves_workspace_when_hook_fails(monkeypatch, tmp_path):
     primary = tmp_path / "repo"
     destination = tmp_path / "workspaces" / "repo" / "feat"

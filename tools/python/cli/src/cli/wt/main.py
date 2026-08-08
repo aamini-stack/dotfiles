@@ -8,7 +8,7 @@ from pathlib import Path
 from ..jj import JjError
 from .config import ConfigError
 from .copy_ignored import CopyIgnoredError
-from .hooks import HookError
+from .hooks import PHASES, HookError
 from .lifecycle import (
     CreateHookError,
     WtError,
@@ -20,6 +20,7 @@ from .lifecycle import (
     remove_workspace,
     resolve_workspace,
     run_configured_hook,
+    run_configured_phase,
 )
 
 
@@ -54,7 +55,11 @@ def build_parser() -> argparse.ArgumentParser:
     listing = subparsers.add_parser("ls", aliases=["list"], help="list jj workspaces")
     listing.set_defaults(run=_list)
 
-    hook = subparsers.add_parser("hook", help="run a configured hook by name")
+    hook = subparsers.add_parser(
+        "hook",
+        help="run a configured hook by name, or a whole phase "
+        "(post-create, pre-remove, post-remove)",
+    )
     hook.add_argument("name")
     hook.set_defaults(run=_hook)
 
@@ -136,7 +141,10 @@ def _list(args: argparse.Namespace) -> int:
 
 
 def _hook(args: argparse.Namespace) -> int:
-    run_configured_hook(Path.cwd(), args.name)
+    if args.name in PHASES:
+        run_configured_phase(Path.cwd(), args.name)
+    else:
+        run_configured_hook(Path.cwd(), args.name)
     return 0
 
 

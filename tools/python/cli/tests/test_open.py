@@ -31,6 +31,8 @@ class FindWorkspaceTests(unittest.TestCase):
         }
         with patch.object(herdr_module, "herdr", return_value=payload):
             found = herdr_module.find_workspace("plugin")
+        self.assertIsNotNone(found)
+        assert found is not None
         self.assertEqual(found["workspace_id"], "w2")
 
     def test_returns_none_without_match(self):
@@ -172,6 +174,74 @@ class OpenWorkspaceTests(unittest.TestCase):
 
         run_calls = [call for call in calls if call[:2] == ("pane", "run")]
         self.assertEqual(run_calls, [("pane", "run", "p2", "opencode")])
+
+    def test_runs_setup_hooks_before_bootstrap_when_requested(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=True),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
+
+        run_calls = [call for call in calls if call[:2] == ("pane", "run")]
+        self.assertEqual(
+            run_calls,
+            [
+                ("pane", "run", "p1", "wt hook post-create && mise run bootstrap"),
+                ("pane", "run", "p2", "opencode"),
+            ],
+        )
+
+    def test_runs_setup_hooks_alone_when_bootstrap_absent(self):
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": []}
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "w9"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module, "has_bootstrap_task", return_value=False),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
+
+        run_calls = [call for call in calls if call[:2] == ("pane", "run")]
+        self.assertEqual(
+            run_calls,
+            [
+                ("pane", "run", "p1", "wt hook post-create"),
+                ("pane", "run", "p2", "opencode"),
+            ],
+        )
 
     def test_opens_via_worktree_open_when_project_path_given(self):
         calls = []

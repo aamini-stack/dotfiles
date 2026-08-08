@@ -200,11 +200,16 @@ class TestForgetWorkspace:
             patch.object(jj_module.subprocess, "run") as mock_run,
         ):
             jj_module.forget_workspace("feat", cwd=tmp_path)
-        mock_run.assert_called_once_with(
-            ["git", "-C", str(tmp_path), "worktree", "prune"],
-            capture_output=True,
-            check=False,
-        )
+        assert mock_run.call_args_list == [
+            (
+                (["git", "-C", str(tmp_path), "worktree", "prune"],),
+                {"capture_output": True, "check": False},
+            ),
+            (
+                (["git", "-C", str(tmp_path), "branch", "-D", "jj-worktree-feat"],),
+                {"capture_output": True, "check": False},
+            ),
+        ]
 
     def test_skips_prune_without_git_dir(self, tmp_path):
         with (

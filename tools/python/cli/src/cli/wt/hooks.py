@@ -12,6 +12,9 @@ class HookError(RuntimeError):
     pass
 
 
+PHASES = ("post-create", "pre-remove", "post-remove")
+
+
 def variables(name: str, workspace_path: Path, primary_path: Path) -> dict[str, str]:
     return {
         "name": name,
@@ -52,7 +55,7 @@ def run_named_hook(
 ) -> None:
     matching = [
         hook
-        for phase in ("post-create", "pre-remove", "post-remove")
+        for phase in PHASES
         for hook in config.hooks(phase)
         if hook.name == hook_name
     ]

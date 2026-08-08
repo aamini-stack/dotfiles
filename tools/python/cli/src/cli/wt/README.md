@@ -17,6 +17,7 @@ focus, panes, and status reporting.
 | Remove the current workspace | `wt rm` | The primary workspace is never removable |
 | Remove without a prompt | `wt rm feat --yes` | Intended for trusted integrations such as herdr-jj |
 | Run a named hook | `wt hook copy-envs` | Searches `post-create`, `pre-remove`, and `post-remove` hooks |
+| Run a whole hook phase | `wt hook post-create` | Runs every hook in the phase, stopping at the first failure |
 | Copy ignored files | `wt copy-ignored` | Copies from the primary into the current workspace |
 
 `wt remove` and `wt list` are aliases for `wt rm` and `wt ls`.
