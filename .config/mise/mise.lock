@@ -8159,6 +8159,10 @@ backend = "npm:@tailwindcss/language-server"
 version = "7.0.0-dev.20260701.1"
 backend = "npm:@typescript/native-preview"
 
+[[tools."npm:chrome-devtools-axi"]]
+version = "0.1.29"
+backend = "npm:chrome-devtools-axi"
+
 [[tools."npm:corepack"]]
 version = "0.35.0"
 backend = "npm:corepack"
