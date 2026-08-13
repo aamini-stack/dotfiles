@@ -1,0 +1,22 @@
+# TanStack application template
+
+This is a full-stack TanStack Start application using React 19, Vite+, Drizzle,
+Postgres, Better Auth, Tailwind v4, shadcn, and Varlock. Local services are
+provided by Docker Compose (Postgres and MinIO).
+
+Error monitoring is wired through Sentry (`@sentry/tanstackstart-react`).
+
+Product analytics run through PostHog behind a `/api/ingest` proxy.
+
+## Commands
+
+- `vp dev` — start development
+- `vp check` — format, lint, and type-check
+- `vp test run` — run Vitest projects
+- `vp run e2e` — run Playwright smoke tests
+- `vp run compose:up` — start local services
+- `vp run db:push` — apply the current schema
+- `vp run db:migrate` — run migrations
+
+Use `pnpm` through Vite+ (`vp i`, `vp run <script>`). Secrets and environment
+values resolve through Varlock; do not commit generated or local secret files.

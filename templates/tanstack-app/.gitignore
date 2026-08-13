@@ -1,0 +1,15 @@
+.env*.local
+.mise.local.toml
+src/vite-env.d.ts
+.output
+.nitro
+.tanstack
+node_modules
+.DS_Store
+.playwright
+.vitest-attachments
+visual-diffs.html
+e2e/.auth
+.pnpm-store
+.projects
+.fallow

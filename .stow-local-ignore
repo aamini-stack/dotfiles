@@ -12,3 +12,4 @@ skills-lock.json
 ^/mise\.toml$
 ^/mise\.lock$
 tools
+templates

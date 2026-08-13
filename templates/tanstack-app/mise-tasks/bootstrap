@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+vp i
+if [[ -f .env.local ]]; then
+	 vp exec varlock encrypt --file .env.local
+fi
+vp run compose:up
+vp run db:migrate
