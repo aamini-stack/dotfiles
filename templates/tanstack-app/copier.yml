@@ -61,6 +61,6 @@ _message_after_copy: |
     mise trust && mise install
     mise run bootstrap
     {%- if google_auth %}
-    mise run setup:auth   # Google OAuth checklist (console-only step)
+    mise run setup-auth   # Google OAuth checklist (console-only step)
     {%- endif %}
     vp dev

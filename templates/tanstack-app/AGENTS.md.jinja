@@ -22,7 +22,7 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 - `vp run db:push` — apply the current schema
 - `vp run db:migrate` — run migrations
 {%- if google_auth %}
-- `mise run setup:auth` — validate Google OAuth env, print console checklist
+- `mise run setup-auth` — validate Google OAuth env, print console checklist
 {%- endif %}
 
 Use `pnpm` through Vite+ (`vp i`, `vp run <script>`). Secrets and environment
