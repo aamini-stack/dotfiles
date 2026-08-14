@@ -42,7 +42,6 @@ google_auth:
 _templates_suffix: ".jinja"
 
 _exclude:
-  - copier.yml
   - "{% if not sentry %}instrument.server.mjs{% endif %}"
   - "{% if not sentry %}src/instrument.client.ts{% endif %}"
   - "{% if not posthog %}src/lib/utils/proxy.ts{% endif %}"
