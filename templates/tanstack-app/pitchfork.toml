@@ -8,4 +8,4 @@ run = "exec vp dev"
 mise = true
 auto = ["start", "stop"]
 retry = 3
-ready_output = "ready in"
+ready_output = "Local:"
