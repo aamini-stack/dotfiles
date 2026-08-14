@@ -1,9 +1,25 @@
 #!/usr/bin/env bash
+# Bootstrap a fresh jj workspace: env files, deps, docker, database.
 set -euo pipefail
+
 cd "$(dirname "$0")/.."
+
+# .env.local holds only the Bitwarden machine account token (encrypted via
+# varlock()); copy it from the default workspace so new workspaces can
+# resolve secrets without re-pasting. Everything else is regenerated or
+# resolved from Bitwarden.
+main_root="$(jj workspace root --name default 2>/dev/null || true)"
+if [[ -n "$main_root" && "$main_root" != "$PWD" ]]; then
+	if [[ ! -f .env.local && -f "$main_root/.env.local" ]]; then
+		cp "$main_root/.env.local" .env.local
+		echo "copied .env.local from $main_root"
+	fi
+fi
+
 vp i
 if [[ -f .env.local ]]; then
 	 vp exec varlock encrypt --file .env.local
 fi
+vp exec tsx scripts/setup.ts
 vp run compose:up
 vp run db:migrate
