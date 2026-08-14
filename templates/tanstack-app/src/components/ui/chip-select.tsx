@@ -63,7 +63,7 @@ export function ChipSelect<TValue extends string>({
 						className={cn(
 							'flex min-h-10 items-center gap-2.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-all',
 							isSelected
-								? 'border-primary bg-sky-tint text-primary'
+								? 'border-primary bg-primary/10 text-primary'
 								: 'border-border bg-background text-foreground hover:border-foreground/30 hover:bg-muted/30',
 							(isAtLimit || disabled) && 'pointer-events-none opacity-50',
 						)}
