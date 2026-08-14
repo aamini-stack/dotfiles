@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { basename } from 'node:path'
 
 const MASK_64 = (1n << 64n) - 1n
 
@@ -172,7 +172,10 @@ function setDaemonPort(appPort: number): void {
 	const base = 'pitchfork.toml'
 	if (!existsSync(base)) return
 	const contents = readFileSync(base, 'utf8').replace(/^port = \d+\n/m, '')
-	writeFileSync('pitchfork.local.toml', `${contents.trimEnd()}\nport = ${appPort}\n`)
+	writeFileSync(
+		'pitchfork.local.toml',
+		`${contents.trimEnd()}\nport = ${appPort}\n`,
+	)
 }
 
 function readEnvFile(path: string): Record<string, string> {
@@ -263,28 +266,8 @@ function main(): void {
 		hashPort(`minio-console-${branch}`)
 
 	const mainRoot = defaultWorkspaceRoot()
-	const isDefaultWorkspace = realpathSync('.') === mainRoot
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
-	// Google only accepts registered redirect URIs, so workspaces proxy OAuth
-	// through the default workspace's origin (the one registered per app).
-	// With a public-suffix proxy TLD the slug URL itself is registered and the
-	// callback rides the proxy (auto-starting the daemon); otherwise fall back
-	// to the default workspace's localhost port. See .env.schema's
-	// GOOGLE_CLIENT_ID notes.
-	const oauthOriginGroup: Record<string, string>[] = []
-	if (!isDefaultWorkspace) {
-		const mainAppPort =
-			Number(
-				readEnvFile(join(mainRoot, '.env.development.local'))['APP_PORT'],
-			) || 3000
-		oauthOriginGroup.push({
-			BETTER_AUTH_URL:
-				tld === 'localhost'
-					? `http://localhost:${mainAppPort}`
-					: `https://${proxySlug}.${tld}`,
-		})
-	}
 
 	updateEnvFile('.env.development.local', [
 		{
@@ -308,7 +291,6 @@ function main(): void {
 			AWS_SECRET_ACCESS_KEY,
 			AWS_S3_BUCKET_NAME: 'app',
 		},
-		...oauthOriginGroup,
 	])
 
 	setDaemonPort(appPort)
