@@ -25,6 +25,7 @@ vite-plus = "https://github.com/markmals/mise-vite-plus"
 uv = "latest"
 "pipx:basedpyright" = "latest"
 "pipx:ruff" = "latest"
+"pipx:copier" = "latest"
 
 # Rust
 rust = "latest"

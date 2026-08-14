@@ -1,5 +1,5 @@
 {
-	"name": "__APP_NAME__",
+	"name": "{{ app_name }}",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -8,9 +8,15 @@
 	],
 	"scripts": {
 		"dev": "vp dev",
+{%- if sentry %}
 		"build": "vp build && cp instrument.server.mjs .output/server",
 		"preview": "vp preview",
 		"start": "varlock run -- node --import ./.output/server/instrument.server.mjs .output/server/index.mjs",
+{%- else %}
+		"build": "vp build",
+		"preview": "vp preview",
+		"start": "varlock run -- node .output/server/index.mjs",
+{%- endif %}
 		"check": "vp check",
 		"test": "vp test run --passWithNoTests",
 		"test:unit": "vp test run --project unit --passWithNoTests",
@@ -49,7 +55,9 @@
 		"@radix-ui/react-tooltip": "^1.1.12",
 		"@remixicon/react": "^4.9.0",
 		"@rolldown/plugin-babel": "^0.2.3",
+{%- if sentry %}
 		"@sentry/tanstackstart-react": "^10.69.0",
+{%- endif %}
 		"@tanstack/react-query": "5.101.0",
 		"@tanstack/react-router": "1.170.18",
 		"@tanstack/react-router-devtools": "1.167.0",
@@ -65,7 +73,9 @@
 		"framer-motion": "^12.40.0",
 		"nitro": "3.0.260610-beta",
 		"pg": "^8.22.0",
+{%- if posthog %}
 		"posthog-js": "^1.391.2",
+{%- endif %}
 		"radix-ui": "^1.6.2",
 		"react": "^19.2.7",
 		"react-dom": "^19.2.7",

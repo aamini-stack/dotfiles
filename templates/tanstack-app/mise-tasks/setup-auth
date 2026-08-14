@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#MISE description="Validate Google OAuth env and print the console setup checklist"
+#MISE dir="{{config_root}}"
+
+# Google exposes no API for creating OAuth clients (the IAP OAuth Admin API was
+# shut down in 2026), so this is a guided checklist + env validation, not a
+# provisioning script.
+set -euo pipefail
+
+ok() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
+missing() { printf '  \033[31m✗\033[0m %s\n' "$1"; }
+
+client_id="$(varlock run -- printenv GOOGLE_CLIENT_ID 2>/dev/null || true)"
+secret_set="$(varlock run -- sh -c 'test -n "${GOOGLE_CLIENT_SECRET:-}" && echo yes' 2>/dev/null || true)"
+
+echo "Google OAuth status:"
+if [ -n "$client_id" ]; then
+	ok "GOOGLE_CLIENT_ID resolves ($client_id)"
+else
+	missing "GOOGLE_CLIENT_ID is not set"
+fi
+if [ "$secret_set" = "yes" ]; then
+	ok "GOOGLE_CLIENT_SECRET is set"
+else
+	missing "GOOGLE_CLIENT_SECRET is not set"
+fi
+
+if [ -z "$client_id" ] || [ "$secret_set" != "yes" ]; then
+	cat <<'EOF'
+
+One-time console setup (Google is console-only for this):
+  1. https://console.cloud.google.com/apis/credentials
+     → Create Credentials → OAuth client ID → Web application
+  2. Authorized JavaScript origins:
+       http://localhost:3000
+  3. Authorized redirect URIs:
+       http://localhost:3000/api/auth/callback/google
+       https://<your-prod-domain>/api/auth/callback/google
+  4. Store the secret in Bitwarden and reference it from .env.development.local;
+     put the public client ID in .env.development:
+       GOOGLE_CLIENT_ID="....apps.googleusercontent.com"
+  5. Re-run: mise run setup:auth
+
+Dev tip: one OAuth client can list many redirect URIs — reuse a single dev
+client across apps instead of creating one per app.
+EOF
+	exit 1
+fi
+
+echo
+ok "Both values resolve — the Google provider registers on next server start."

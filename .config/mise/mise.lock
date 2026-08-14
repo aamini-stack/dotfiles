@@ -8419,6 +8419,10 @@ uvx_args = "--prerelease=allow"
 version = "1.39.9"
 backend = "pipx:basedpyright"
 
+[[tools."pipx:copier"]]
+version = "9.17.1"
+backend = "pipx:copier"
+
 [[tools."pipx:ruff"]]
 version = "0.16.0"
 backend = "pipx:ruff"

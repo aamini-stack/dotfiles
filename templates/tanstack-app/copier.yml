@@ -1,0 +1,62 @@
+_min_copier_version: "9"
+
+app_name:
+  type: str
+  help: App name in kebab-case (e.g. dutch-oven)
+  validator: >-
+    {%- set ns = namespace(bad=false) -%}
+    {%- for ch in app_name -%}
+    {%- if not ('a' <= ch <= 'z' or '0' <= ch <= '9' or ch == '-') -%}
+    {%- set ns.bad = true -%}
+    {%- endif -%}
+    {%- endfor -%}
+    {%- if ns.bad or app_name == '' or '--' in app_name or app_name[0] == '-' or app_name[-1] == '-' %}
+    app_name must be kebab-case (lowercase letters, digits, single hyphens)
+    {%- endif %}
+
+app_name_snake:
+  type: str
+  help: Snake-case identifier (used for the dev database name)
+  default: "{{ app_name | replace('-', '_') }}"
+  when: false
+
+sentry:
+  type: bool
+  help: Error monitoring via @sentry/tanstackstart-react
+  default: true
+
+posthog:
+  type: bool
+  help: Product analytics via posthog-js behind a /api/ingest proxy
+  default: true
+
+google_auth:
+  type: bool
+  help: Google OAuth sign-in alongside email/password
+  default: true
+
+_templates_suffix: ".jinja"
+
+_exclude:
+  - copier.yml
+  - "{% if not sentry %}instrument.server.mjs{% endif %}"
+  - "{% if not sentry %}src/instrument.client.ts{% endif %}"
+  - "{% if not posthog %}src/lib/utils/proxy.ts{% endif %}"
+  - "{% if not posthog %}src/lib/utils/proxy.unit.test.ts{% endif %}"
+  - "{% if not posthog %}src/routes/api/ingest.$.ts{% endif %}"
+  - "{% if not google_auth %}src/components/google-auth-button.tsx{% endif %}"
+  - "{% if not google_auth %}src/lib/auth/use-google-auth.ts{% endif %}"
+  - "{% if not google_auth %}mise-tasks/setup-auth{% endif %}"
+
+_tasks:
+  - "jj git init --colocate 2>/dev/null || jj git init"
+
+_message_after_copy: |
+  Next steps:
+    cd {{ _copier_conf.dst_path }}
+    mise trust && mise install
+    mise run bootstrap
+    {%- if google_auth %}
+    mise run setup:auth   # Google OAuth checklist (console-only step)
+    {%- endif %}
+    vp dev
