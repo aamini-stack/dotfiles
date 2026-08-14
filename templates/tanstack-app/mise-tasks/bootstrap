@@ -4,6 +4,15 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Shells spawned from another workspace (herdr, wt hooks) inherit that
+# project's exported env; stale values beat .env.development.local in both
+# varlock and docker compose. Drop them so this workspace's ports win.
+unset \
+	APP_PORT COMPOSE_PROJECT_NAME WORKTREE_NAME \
+	POSTGRES_PORT POSTGRES_DB DATABASE_URL \
+	MINIO_PORT MINIO_CONSOLE_PORT \
+	AWS_ENDPOINT_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET_NAME
+
 # .env.local holds only the Bitwarden machine account token (encrypted via
 # varlock()); copy it from the default workspace so new workspaces can
 # resolve secrets without re-pasting. Everything else is regenerated or
