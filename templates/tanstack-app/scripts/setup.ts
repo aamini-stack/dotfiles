@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
-import { basename } from 'node:path'
+import { basename, join } from 'node:path'
 
 const MASK_64 = (1n << 64n) - 1n
 
@@ -179,6 +179,27 @@ function setDaemonPort(appPort: number): void {
 	if (next !== contents) writeFileSync(path, next)
 }
 
+function readEnvFile(path: string): Record<string, string> {
+	if (!existsSync(path)) return {}
+	return Object.fromEntries(
+		readFileSync(path, 'utf8')
+			.split('\n')
+			.flatMap((line) => {
+				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
+				return match ? [[match[1]!, match[2]!]] : []
+			}),
+	)
+}
+
+function defaultWorkspaceRoot(): string {
+	try {
+		return realpathSync(run('jj', ['workspace', 'root', '--name', 'default']))
+	} catch {
+		// not a jj repo — the current directory is the root
+		return realpathSync('.')
+	}
+}
+
 // Registers a stable https://<slug>.localhost URL for the project. Only the
 // default workspace registers; other jj workspaces are reached via
 // https://<workspace>.<slug>.localhost through `proxy.worktree`
@@ -193,14 +214,7 @@ function registerProxySlug(): string | undefined {
 			timeout: 10_000,
 		}).trim()
 	try {
-		let mainRoot = realpathSync('.')
-		try {
-			mainRoot = realpathSync(
-				run('jj', ['workspace', 'root', '--name', 'default']),
-			)
-		} catch {
-			// not a jj repo — register against the current directory
-		}
+		const mainRoot = defaultWorkspaceRoot()
 		const slug = basename(mainRoot)
 			.toLowerCase()
 			.replaceAll(/[^a-z0-9-]/g, '-')
@@ -220,15 +234,7 @@ function registerProxySlug(): string | undefined {
 // and re-running setup here must not move this workspace's existing
 // database or registered OAuth redirect URIs out from under it).
 function existingPorts(worktree: string): Record<string, string> {
-	if (!existsSync('.env.development.local')) return {}
-	const entries = Object.fromEntries(
-		readFileSync('.env.development.local', 'utf8')
-			.split('\n')
-			.flatMap((line) => {
-				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
-				return match ? [[match[1]!, match[2]!]] : []
-			}),
-	)
+	const entries = readEnvFile('.env.development.local')
 	if (entries['WORKTREE_NAME'] !== worktree) return {}
 	return entries
 }
@@ -248,6 +254,22 @@ function main(): void {
 	const minioConsolePort =
 		Number(existing['MINIO_CONSOLE_PORT']) ||
 		hashPort(`minio-console-${branch}`)
+
+	const mainRoot = defaultWorkspaceRoot()
+	const isDefaultWorkspace = realpathSync('.') === mainRoot
+	// Google only accepts registered redirect URIs, so workspaces proxy OAuth
+	// through the default workspace's origin (the one registered per app).
+	// See .env.schema's GOOGLE_CLIENT_ID notes.
+	const oauthOriginGroup: Record<string, string>[] = []
+	if (!isDefaultWorkspace) {
+		const mainAppPort =
+			Number(
+				readEnvFile(join(mainRoot, '.env.development.local'))['APP_PORT'],
+			) || 3000
+		oauthOriginGroup.push({
+			BETTER_AUTH_URL: `http://localhost:${mainAppPort}`,
+		})
+	}
 
 	updateEnvFile('.env.development.local', [
 		{
@@ -271,6 +293,7 @@ function main(): void {
 			AWS_SECRET_ACCESS_KEY,
 			AWS_S3_BUCKET_NAME: 'app',
 		},
+		...oauthOriginGroup,
 	])
 
 	setDaemonPort(appPort)
