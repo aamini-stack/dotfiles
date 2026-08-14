@@ -13,3 +13,4 @@ e2e/.auth
 .pnpm-store
 .projects
 .fallow
+pitchfork.local.toml
