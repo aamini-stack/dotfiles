@@ -59,6 +59,6 @@ _message_after_copy: |
     mise trust && mise install
     mise run bootstrap
     {%- if google_auth %}
-    # Google sign-in: one-time setup documented in .env.development.local
+    # Google sign-in: one-time setup documented in .env.schema
     {%- endif %}
     vp dev
