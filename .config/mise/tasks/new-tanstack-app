@@ -5,4 +5,4 @@
 
 set -euo pipefail
 
-exec copier copy --trust "$HOME/dotfiles/templates/tanstack-app" "$usage_target"
+exec copier copy --trust "$HOME/dotfiles" "$usage_target"

@@ -1,5 +1,9 @@
 _min_copier_version: "9"
 
+# Template lives inside the dotfiles repo; update support requires the repo
+# root as the source path.
+_subdirectory: templates/tanstack-app
+
 app_name:
   type: str
   help: App name in kebab-case (e.g. dutch-oven)
