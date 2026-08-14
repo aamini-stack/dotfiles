@@ -162,6 +162,36 @@ function updateEnvFile(path: string, groups: Record<string, string>[]): void {
 	writeFileSync(path, `${lines.join('\n')}\n`)
 }
 
+// Registers a stable https://<slug>.localhost URL for the project. Best
+// effort: pitchfork is a local convenience, never a bootstrap blocker.
+// The slug points at the default workspace; `proxy.worktree` auto-discovery
+// routes jj workspaces from there. `proxy trust` needs sudo, so it stays a
+// one-time manual step.
+function registerProxySlug(): string | undefined {
+	const runQuiet = (args: string[]): string =>
+		execFileSync('pitchfork', args, {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			timeout: 10_000,
+		}).trim()
+	try {
+		const slug = basename(realpathSync('.'))
+			.toLowerCase()
+			.replaceAll(/[^a-z0-9-]/g, '-')
+		runQuiet(['settings', 'set', 'proxy.enable', 'true', '--global'])
+		let mainRoot = '.'
+		try {
+			mainRoot = run('jj', ['workspace', 'root', '--name', 'default'])
+		} catch {
+			// not a jj repo — register against the current directory
+		}
+		runQuiet(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
+		return slug
+	} catch {
+		return undefined
+	}
+}
+
 function main(): void {
 	const detected = detectWorkspace()
 	const branch = process.env.WORKTREE_BRANCH || detected.branch
@@ -197,10 +227,13 @@ function main(): void {
 		},
 	])
 
+	const proxySlug = registerProxySlug()
+
 	console.log(`Generated .env.development.local for ${branch}:`)
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
+	if (proxySlug) console.log(`  proxy:    https://${proxySlug}.localhost`)
 }
 
 main()
