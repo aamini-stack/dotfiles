@@ -6,7 +6,7 @@ _subdirectory: templates/tanstack-app
 
 app_name:
   type: str
-  help: App name in kebab-case (e.g. dutch-oven)
+  help: App name in kebab-case (e.g. cool-app)
   validator: >-
     {%- set ns = namespace(bad=false) -%}
     {%- for ch in app_name -%}
@@ -49,7 +49,6 @@ _exclude:
   - "{% if not posthog %}src/routes/api/ingest.$.ts{% endif %}"
   - "{% if not google_auth %}src/components/google-auth-button.tsx{% endif %}"
   - "{% if not google_auth %}src/lib/auth/use-google-auth.ts{% endif %}"
-  - "{% if not google_auth %}mise-tasks/setup-auth{% endif %}"
 
 _tasks:
   - "jj git init --colocate 2>/dev/null || jj git init"
@@ -60,6 +59,6 @@ _message_after_copy: |
     mise trust && mise install
     mise run bootstrap
     {%- if google_auth %}
-    mise run setup-auth   # Google OAuth checklist (console-only step)
+    # Google sign-in: one-time setup documented in .env.development.local
     {%- endif %}
     vp dev
