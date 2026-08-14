@@ -4,7 +4,7 @@
 
 .pi
 
-.impeccable/update-check.json
+.impeccable
 
 .config/herdr/*
 !.config/herdr/config.toml
