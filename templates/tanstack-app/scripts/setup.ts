@@ -200,32 +200,43 @@ function defaultWorkspaceRoot(): string {
 	}
 }
 
-// Registers a stable https://<slug>.localhost URL for the project. Only the
-// default workspace registers; other jj workspaces are reached via
-// https://<workspace>.<slug>.localhost through `proxy.worktree`
-// auto-discovery. Best effort: pitchfork is a local convenience, never a
-// bootstrap blocker. `proxy trust` needs sudo, so it stays a one-time manual
-// step.
-function registerProxySlug(): string | undefined {
-	const runQuiet = (args: string[]): string =>
-		execFileSync('pitchfork', args, {
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			timeout: 10_000,
-		}).trim()
+function pitchfork(args: string[]): string {
+	return execFileSync('pitchfork', args, {
+		encoding: 'utf8',
+		stdio: ['ignore', 'pipe', 'ignore'],
+		timeout: 10_000,
+	}).trim()
+}
+
+// The proxy TLD (settings proxy.tld) decides where slugs live. A custom TLD
+// with a public suffix (e.g. lvh.example.com) makes slug URLs registrable as
+// OAuth redirect URIs; the default 'localhost' TLD is not registrable.
+function proxyTld(): string {
 	try {
-		const mainRoot = defaultWorkspaceRoot()
-		const slug = basename(mainRoot)
-			.toLowerCase()
-			.replaceAll(/[^a-z0-9-]/g, '-')
-		if (realpathSync('.') === mainRoot) {
-			runQuiet(['settings', 'set', 'proxy.enable', 'true', '--global'])
-			runQuiet(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
-		}
-		return slug
+		return pitchfork(['settings', 'get', 'proxy.tld']) || 'localhost'
 	} catch {
-		return undefined
+		return 'localhost'
 	}
+}
+
+// Registers a stable https://<slug>.<tld> URL for the project. Only the
+// default workspace registers; other jj workspaces are reached via
+// https://<workspace>.<slug>.<tld> through `proxy.worktree` auto-discovery.
+// Best effort: pitchfork is a local convenience, never a bootstrap blocker.
+// `proxy trust` needs sudo, so it stays a one-time manual step.
+function registerProxySlug(mainRoot: string): string {
+	const slug = basename(mainRoot)
+		.toLowerCase()
+		.replaceAll(/[^a-z0-9-]/g, '-')
+	if (realpathSync('.') === mainRoot) {
+		try {
+			pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
+			pitchfork(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
+		} catch {
+			// pitchfork unavailable — skip registration
+		}
+	}
+	return slug
 }
 
 // Ports are stable once assigned: only regenerate when the env file is
@@ -257,9 +268,14 @@ function main(): void {
 
 	const mainRoot = defaultWorkspaceRoot()
 	const isDefaultWorkspace = realpathSync('.') === mainRoot
+	const tld = proxyTld()
+	const proxySlug = registerProxySlug(mainRoot)
 	// Google only accepts registered redirect URIs, so workspaces proxy OAuth
 	// through the default workspace's origin (the one registered per app).
-	// See .env.schema's GOOGLE_CLIENT_ID notes.
+	// With a public-suffix proxy TLD the slug URL itself is registered and the
+	// callback rides the proxy (auto-starting the daemon); otherwise fall back
+	// to the default workspace's localhost port. See .env.schema's
+	// GOOGLE_CLIENT_ID notes.
 	const oauthOriginGroup: Record<string, string>[] = []
 	if (!isDefaultWorkspace) {
 		const mainAppPort =
@@ -267,7 +283,10 @@ function main(): void {
 				readEnvFile(join(mainRoot, '.env.development.local'))['APP_PORT'],
 			) || 3000
 		oauthOriginGroup.push({
-			BETTER_AUTH_URL: `http://localhost:${mainAppPort}`,
+			BETTER_AUTH_URL:
+				tld === 'localhost'
+					? `http://localhost:${mainAppPort}`
+					: `https://${proxySlug}.${tld}`,
 		})
 	}
 
@@ -297,19 +316,16 @@ function main(): void {
 	])
 
 	setDaemonPort(appPort)
-	const proxySlug = registerProxySlug()
 
 	console.log(`Generated .env.development.local for ${branch}:`)
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
-	if (proxySlug) {
-		const proxyHost =
-			worktree === proxySlug
-				? `${proxySlug}.localhost`
-				: `${worktree}.${proxySlug}.localhost`
-		console.log(`  proxy:    https://${proxyHost}`)
-	}
+	const proxyHost =
+		worktree === proxySlug
+			? `${proxySlug}.${tld}`
+			: `${worktree}.${proxySlug}.${tld}`
+	console.log(`  proxy:    https://${proxyHost}`)
 }
 
 main()
