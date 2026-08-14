@@ -5752,6 +5752,55 @@ checksum = "sha256:58eeae3f4368dabcb3276ad6e5ff55582220f2dfa04ec50229d91eb7e3ba1
 url = "https://github.com/eersnington/jj-navi/releases/download/v0.2.3/jj-navi-darwin-x64.tar.gz"
 url_api = "https://api.github.com/repos/eersnington/jj-navi/releases/assets/412118967"
 
+[[tools."github:herdrdev/herdr"]]
+version = "0.8.0"
+backend = "github:herdrdev/herdr"
+
+[tools."github:herdrdev/herdr"."platforms.linux-arm64"]
+checksum = "sha256:f647ac66468d9efbc642fe534fb284468f0aea60641606fc008dfc0d82a3ca87"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422627"
+
+[tools."github:herdrdev/herdr"."platforms.linux-arm64-musl"]
+checksum = "sha256:f647ac66468d9efbc642fe534fb284468f0aea60641606fc008dfc0d82a3ca87"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422627"
+
+[tools."github:herdrdev/herdr"."platforms.linux-x64"]
+checksum = "sha256:b872ea7e40fa2cb17e857ac9b62b1bf26db7b403c622f5d2f3f5b35f6e9acd28"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422625"
+
+[tools."github:herdrdev/herdr"."platforms.linux-x64-baseline"]
+checksum = "sha256:b872ea7e40fa2cb17e857ac9b62b1bf26db7b403c622f5d2f3f5b35f6e9acd28"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422625"
+
+[tools."github:herdrdev/herdr"."platforms.linux-x64-musl"]
+checksum = "sha256:b872ea7e40fa2cb17e857ac9b62b1bf26db7b403c622f5d2f3f5b35f6e9acd28"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422625"
+
+[tools."github:herdrdev/herdr"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:b872ea7e40fa2cb17e857ac9b62b1bf26db7b403c622f5d2f3f5b35f6e9acd28"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422625"
+
+[tools."github:herdrdev/herdr"."platforms.macos-arm64"]
+checksum = "sha256:d53a9f93fccfdfcc55632927bf51002f5add0aa7990bcdf508ffbd84ac658178"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-macos-aarch64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422629"
+
+[tools."github:herdrdev/herdr"."platforms.macos-x64"]
+checksum = "sha256:77cb5afd6c8fcaaaf3bc28e474ec01c209331ad08094e20d7f8aa9b0bb78d649"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-macos-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422626"
+
+[tools."github:herdrdev/herdr"."platforms.macos-x64-baseline"]
+checksum = "sha256:77cb5afd6c8fcaaaf3bc28e474ec01c209331ad08094e20d7f8aa9b0bb78d649"
+url = "https://github.com/herdrdev/herdr/releases/download/v0.8.0/herdr-macos-x86_64"
+url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/500422626"
+
 [[tools."github:hpjansson/chafa"]]
 version = "1.18.2"
 backend = "github:hpjansson/chafa"
@@ -8426,6 +8475,40 @@ backend = "pipx:copier"
 [[tools."pipx:ruff"]]
 version = "0.16.0"
 backend = "pipx:ruff"
+
+[[tools.pitchfork]]
+version = "2.21.0"
+backend = "aqua:jdx/pitchfork"
+
+[tools.pitchfork."platforms.linux-arm64"]
+checksum = "sha256:aa05b24c0ffdcc8d7421285a6a9a32951b50d90911a286f362fecf9cf4211402"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508634504"
+
+[tools.pitchfork."platforms.linux-x64"]
+checksum = "sha256:aedb05279060ee4a3d786dda98d14e7662d3b7bba01fee70309796f9e04c2588"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508633425"
+
+[tools.pitchfork."platforms.linux-x64-baseline"]
+checksum = "sha256:aedb05279060ee4a3d786dda98d14e7662d3b7bba01fee70309796f9e04c2588"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508633425"
+
+[tools.pitchfork."platforms.macos-arm64"]
+checksum = "sha256:808111e3c6b4c72407be627449e91cb0fc8c315aa950aca584743be896cf8e78"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508636197"
+
+[tools.pitchfork."platforms.windows-x64"]
+checksum = "sha256:55d73c1aab3cbd69c7737db462a0ec6ae04933ecfbca48993e5d73909540f15f"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508640979"
+
+[tools.pitchfork."platforms.windows-x64-baseline"]
+checksum = "sha256:55d73c1aab3cbd69c7737db462a0ec6ae04933ecfbca48993e5d73909540f15f"
+url = "https://github.com/jdx/pitchfork/releases/download/v2.21.0/pitchfork-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/pitchfork/releases/assets/508640979"
 
 [[tools.pulumi]]
 version = "3.254.0"

@@ -63,7 +63,7 @@ shellcheck = "latest"
 #===============================================================================
 
 # Shell
-herdr = "0.8.0"
+"github:herdrdev/herdr" = "0.8.0"
 "nix:zsh" = "latest"
 "oh-my-posh" = "latest"
 
@@ -124,3 +124,4 @@ pi = "latest"
 "npm:greptile" = "latest"
 "npm:t3" = "latest"
 "npm:chrome-devtools-axi" = "latest"
+pitchfork = "latest"
