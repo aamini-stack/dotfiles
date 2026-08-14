@@ -21,6 +21,7 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 - `vp run compose:up` — start local services
 - `vp run db:push` — apply the current schema
 - `vp run db:migrate` — run migrations
+- `vp run dead-code` — find unused exports with fallow
 {%- if google_auth %}
 - `mise run setup-auth` — validate Google OAuth env, print console checklist
 {%- endif %}
