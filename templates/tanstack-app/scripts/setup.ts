@@ -162,11 +162,29 @@ function updateEnvFile(path: string, groups: Record<string, string>[]): void {
 	writeFileSync(path, `${lines.join('\n')}\n`)
 }
 
-// Registers a stable https://<slug>.localhost URL for the project. Best
-// effort: pitchfork is a local convenience, never a bootstrap blocker.
-// The slug points at the default workspace; `proxy.worktree` auto-discovery
-// routes jj workspaces from there. `proxy trust` needs sudo, so it stays a
-// one-time manual step.
+// Pins the daemon port in pitchfork.toml so the pitchfork proxy never has to
+// guess which listening socket is the app (vite+/nitro opens more than one).
+function setDaemonPort(appPort: number): void {
+	const path = 'pitchfork.toml'
+	if (!existsSync(path)) return
+	const contents = readFileSync(path, 'utf8')
+	let next: string
+	if (/^port = \d+$/m.test(contents)) {
+		next = contents.replace(/^port = \d+$/m, `port = ${appPort}`)
+	} else if (/^ready_output = .*$/m.test(contents)) {
+		next = contents.replace(/^(ready_output = .*)$/m, `$1\nport = ${appPort}`)
+	} else {
+		return
+	}
+	if (next !== contents) writeFileSync(path, next)
+}
+
+// Registers a stable https://<slug>.localhost URL for the project. Only the
+// default workspace registers; other jj workspaces are reached via
+// https://<workspace>.<slug>.localhost through `proxy.worktree`
+// auto-discovery. Best effort: pitchfork is a local convenience, never a
+// bootstrap blocker. `proxy trust` needs sudo, so it stays a one-time manual
+// step.
 function registerProxySlug(): string | undefined {
 	const runQuiet = (args: string[]): string =>
 		execFileSync('pitchfork', args, {
@@ -175,21 +193,44 @@ function registerProxySlug(): string | undefined {
 			timeout: 10_000,
 		}).trim()
 	try {
-		const slug = basename(realpathSync('.'))
-			.toLowerCase()
-			.replaceAll(/[^a-z0-9-]/g, '-')
-		runQuiet(['settings', 'set', 'proxy.enable', 'true', '--global'])
-		let mainRoot = '.'
+		let mainRoot = realpathSync('.')
 		try {
-			mainRoot = run('jj', ['workspace', 'root', '--name', 'default'])
+			mainRoot = realpathSync(
+				run('jj', ['workspace', 'root', '--name', 'default']),
+			)
 		} catch {
 			// not a jj repo — register against the current directory
 		}
-		runQuiet(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
+		const slug = basename(mainRoot)
+			.toLowerCase()
+			.replaceAll(/[^a-z0-9-]/g, '-')
+		if (realpathSync('.') === mainRoot) {
+			runQuiet(['settings', 'set', 'proxy.enable', 'true', '--global'])
+			runQuiet(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
+		}
 		return slug
 	} catch {
 		return undefined
 	}
+}
+
+// Ports are stable once assigned: only regenerate when the env file is
+// absent or belongs to another worktree (wt copy-ignored clones the default
+// workspace's file into new workspaces, which must not keep its ports —
+// and re-running setup here must not move this workspace's existing
+// database or registered OAuth redirect URIs out from under it).
+function existingPorts(worktree: string): Record<string, string> {
+	if (!existsSync('.env.development.local')) return {}
+	const entries = Object.fromEntries(
+		readFileSync('.env.development.local', 'utf8')
+			.split('\n')
+			.flatMap((line) => {
+				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
+				return match ? [[match[1]!, match[2]!]] : []
+			}),
+	)
+	if (entries['WORKTREE_NAME'] !== worktree) return {}
+	return entries
 }
 
 function main(): void {
@@ -197,11 +238,16 @@ function main(): void {
 	const branch = process.env.WORKTREE_BRANCH || detected.branch
 	const worktree = process.env.WORKTREE_NAME || detected.worktree
 	const compose = sanitizeDatabaseName(worktree)
-	const database = sanitizeDatabaseName(branch)
-	const appPort = hashPort(branch)
-	const postgresPort = hashPort(`db-${branch}`)
-	const minioPort = hashPort(`minio-${branch}`)
-	const minioConsolePort = hashPort(`minio-console-${branch}`)
+	const existing = existingPorts(worktree)
+	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
+	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
+	const postgresPort =
+		Number(existing['POSTGRES_PORT']) || hashPort(`db-${branch}`)
+	const minioPort =
+		Number(existing['MINIO_PORT']) || hashPort(`minio-${branch}`)
+	const minioConsolePort =
+		Number(existing['MINIO_CONSOLE_PORT']) ||
+		hashPort(`minio-console-${branch}`)
 
 	updateEnvFile('.env.development.local', [
 		{
@@ -227,13 +273,20 @@ function main(): void {
 		},
 	])
 
+	setDaemonPort(appPort)
 	const proxySlug = registerProxySlug()
 
 	console.log(`Generated .env.development.local for ${branch}:`)
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
-	if (proxySlug) console.log(`  proxy:    https://${proxySlug}.localhost`)
+	if (proxySlug) {
+		const proxyHost =
+			worktree === proxySlug
+				? `${proxySlug}.localhost`
+				: `${worktree}.${proxySlug}.localhost`
+		console.log(`  proxy:    https://${proxyHost}`)
+	}
 }
 
 main()
