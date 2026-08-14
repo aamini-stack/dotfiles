@@ -51,7 +51,7 @@ _exclude:
   - "{% if not google_auth %}src/lib/auth/use-google-auth.ts{% endif %}"
 
 _tasks:
-  - "jj git init --colocate 2>/dev/null || jj git init"
+  - "[ -d .jj ] || jj git init --colocate 2>/dev/null || jj git init"
 
 _message_after_copy: |
   Next steps:
