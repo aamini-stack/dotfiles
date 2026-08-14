@@ -52,6 +52,23 @@ exclude = [".env.local", ".cache/"]
     assert config.copy_ignored_exclude == (".cache/", ".env.local")
 
 
+def test_hook_tables_hold_multiple_named_commands(tmp_path):
+    primary = tmp_path / "repo"
+    config_dir = primary / ".config"
+    config_dir.mkdir(parents=True)
+    (config_dir / "wt.toml").write_text(
+        """
+[post-create]
+one = "echo one"
+two = "echo two"
+"""
+    )
+
+    config = load(primary, {"XDG_CONFIG_HOME": str(tmp_path / "xdg")})
+
+    assert [hook.name for hook in config.post_create] == ["one", "two"]
+
+
 def test_rejects_non_table_legacy_step_config(tmp_path):
     primary = tmp_path / "repo"
     config_dir = primary / ".config"

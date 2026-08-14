@@ -2,6 +2,11 @@ workspace-path = "~/.herdr/workspaces/{{ repo }}/{{ name | sanitize }}"
 
 [[post-create]]
 copy-envs = "wt copy-ignored"
+bootstrap = "cd '{{ workspace_path }}' && if [ -f mise-tasks/bootstrap ]; then mise run bootstrap; fi"
+start-pitchfork = "cd '{{ workspace_path }}' && if [ -f pitchfork.toml ]; then pitchfork start -l; fi"
+
+[[pre-remove]]
+stop-pitchfork = "cd '{{ workspace_path }}' && pitchfork stop -l || true"
 
 [[post-remove]]
 close-herdr = "herdr-ws close --name '{{ name }}' --path '{{ workspace_path }}' --primary '{{ primary_path }}'"

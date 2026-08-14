@@ -35,7 +35,7 @@ new zsh or run `source ~/.zshrc` after installing the wrapper.
 | `wt switch -c feat --base main` | `wt switch -c feat -r 'trunk()'` | wt accepts a jj revset, not a branch |
 | `wt remove` | `wt rm` | jj commits survive workspace removal |
 | `wt step copy-ignored --force` | `wt copy-ignored` | wt overwrites copied ignored files |
-| `[[pre-start]]` | `[[post-create]]` | Sequential and blocking |
+| `[pre-start]` | `[post-create]` | Sequential and blocking |
 | `[[post-start]]` server hooks | herdr panes | Long-running processes are not lifecycle hooks |
 | `[pre-remove]` | `[pre-remove]` | Failures warn but do not strand the workspace |
 | `{{ branch }}` | `{{ name }}` | jj workspace name; no bookmark ceremony |
@@ -58,16 +58,10 @@ exclude = [".cache/", ".turbo/"]
 
 ```toml
 # <repo>/.config/wt.toml
-[[post-create]]
+[post-create]
 copy-envs = "wt copy-ignored"
-
-[[post-create]]
 env = "WORKSPACE_NAME='{{ name }}' COMPOSE_NAME='{{ name | sanitize_db }}' APP_PORT='{{ name | hash_port }}' POSTGRES_PORT='{{ ('db-' ~ name) | hash_port }}' DB_NAME='{{ name | sanitize_db }}' MINIO_PORT='{{ ('minio-' ~ name) | hash_port }}' MINIO_CONSOLE_PORT='{{ ('minio-console-' ~ name) | hash_port }}' wt-generate-env"
-
-[[post-create]]
 install = "vp i"
-
-[[post-create]]
 compose = "docker compose --env-file .env.compose up -d --wait --remove-orphans postgres minio"
 
 [pre-remove]
@@ -77,7 +71,8 @@ compose-down = "docker compose --env-file .env.compose down"
 exclude = [".env.development.local", ".env.compose"]
 ```
 
-Each hook table contains one named shell command. `post-create` stops at the
+Each hook phase is a table of named shell commands, run in declaration order
+(`[[post-create]]` arrays of single-command tables are also accepted). `post-create` stops at the
 first failure and leaves the new workspace in place for diagnosis; `wt switch`
 still emits the destination, so the zsh wrapper lands you in the workspace to
 inspect the failure and re-run hooks with `wt hook <name>`.

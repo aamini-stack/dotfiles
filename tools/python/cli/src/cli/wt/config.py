@@ -75,19 +75,24 @@ def _read(path: Path) -> dict[str, Any]:
 
 
 def _hooks(data: dict[str, Any], phase: str) -> list[Hook]:
-    raw = data.get(phase, [])
-    if isinstance(raw, dict):
-        raw = [raw]
+    raw = data.get(phase, {})
     if isinstance(raw, str):
-        raw = [{phase: raw}]
-    if not isinstance(raw, list):
+        raw = {phase: raw}
+    if isinstance(raw, dict):
+        entries = list(raw.items())
+    elif isinstance(raw, list):
+        entries = []
+        for entry in raw:
+            if not isinstance(entry, dict) or len(entry) != 1:
+                raise ConfigError(
+                    f"each {phase} hook must have exactly one named command"
+                )
+            entries.extend(entry.items())
+    else:
         raise ConfigError(f"{phase} must be a table or array of tables")
 
     hooks = []
-    for entry in raw:
-        if not isinstance(entry, dict) or len(entry) != 1:
-            raise ConfigError(f"each {phase} hook must have exactly one named command")
-        name, command = next(iter(entry.items()))
+    for name, command in entries:
         if not isinstance(command, str):
             raise ConfigError(f"{phase}.{name} must be a string")
         hooks.append(Hook(phase=phase, name=name, command=command))
