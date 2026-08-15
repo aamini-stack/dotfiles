@@ -3,6 +3,7 @@
 src/vite-env.d.ts
 .output
 .nitro
+.vite
 .tanstack
 node_modules
 .DS_Store
