@@ -31,7 +31,7 @@ sentry:
 
 posthog:
   type: bool
-  help: Product analytics via posthog-js behind a /api/ingest proxy
+  help: Product analytics via @posthog/react behind a /api/ingest proxy
   default: true
 
 google_auth:
@@ -46,11 +46,14 @@ _templates_suffix: ".jinja"
 _skip_if_exists:
   - .env.local
   - .env.development.local
+  - .env.deployed
+  - .env.preview
   - .env.production
 
 _exclude:
   - "{% if not sentry %}instrument.server.mjs{% endif %}"
   - "{% if not sentry %}src/instrument.client.ts{% endif %}"
+  - "{% if not posthog %}src/lib/analytics/posthog.tsx{% endif %}"
   - "{% if not posthog %}src/lib/utils/proxy.ts{% endif %}"
   - "{% if not posthog %}src/lib/utils/proxy.unit.test.ts{% endif %}"
   - "{% if not posthog %}src/routes/api/ingest.$.ts{% endif %}"

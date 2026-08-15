@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap a fresh jj workspace: env files, deps, docker, database.
+#MISE description="Bootstrap a fresh clone or jj workspace: tools, deps, docker, database"
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -12,6 +12,8 @@ unset \
 	POSTGRES_PORT POSTGRES_DB DATABASE_URL \
 	MINIO_PORT MINIO_CONSOLE_PORT \
 	AWS_ENDPOINT_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET_NAME
+
+mise install
 
 # .env.local holds only the Bitwarden machine account token (encrypted via
 # varlock()); copy it from the default workspace so new workspaces can
@@ -26,9 +28,16 @@ if [[ -n "$main_root" && "$main_root" != "$PWD" ]]; then
 fi
 
 vp i
+
+# Triggers varlock(prompt) for the Bitwarden token on first run.
+vp exec varlock load
 if [[ -f .env.local ]]; then
-	 vp exec varlock encrypt --file .env.local
+	vp exec varlock encrypt --file .env.local
 fi
+
 vp exec tsx scripts/setup.ts
 vp run compose:up
 vp run db:migrate
+
+echo
+echo "Bootstrap complete. Run 'vp dev' to start the app."
