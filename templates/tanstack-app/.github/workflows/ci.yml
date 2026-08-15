@@ -16,7 +16,7 @@ env:
 
 jobs:
   check:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -28,7 +28,7 @@ jobs:
       - run: vp test run --project unit
 
   test-db:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -40,7 +40,7 @@ jobs:
         run: vp test run --project server
 
   test-visual:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
