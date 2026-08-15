@@ -47,8 +47,8 @@ Managed by [varlock](https://varlock.dev); `.env.schema` defines what is
 required per environment. Deployed environments (preview, production) import
 `.env.deployed`, where secrets resolve from Bitwarden — set `BWS_ACCESS_TOKEN`
 in `.env.local` (gitignored, prompted on first bootstrap). Local development
-points at the docker services via `.env.development.local`, regenerated per
-jj workspace by `scripts/setup.ts`.
+points at the docker services via `.env.development.local`, regenerated per jj
+workspace by `mise-tasks/setup`.
 
 ## Services
 

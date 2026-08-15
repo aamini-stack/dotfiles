@@ -1,7 +1,7 @@
 #:schema https://pitchfork.jdx.dev/schema.json
 
 # The daemon namespace derives from the directory name, so each jj workspace
-# (wt switch) gets isolated daemons with its own ports from scripts/setup.ts.
+# (wt switch) gets isolated daemons with its own ports from mise-tasks/setup.
 
 [daemons.dev]
 run = "exec vp dev"

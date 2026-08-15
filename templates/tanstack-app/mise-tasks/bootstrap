@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 # varlock and docker compose. Drop them so this workspace's ports win.
 unset \
 	APP_PORT COMPOSE_PROJECT_NAME WORKTREE_NAME \
-	POSTGRES_PORT POSTGRES_DB DATABASE_URL \
+	POSTGRES_PORT POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD DATABASE_URL \
 	MINIO_PORT MINIO_CONSOLE_PORT \
 	AWS_ENDPOINT_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET_NAME
 
@@ -35,7 +35,7 @@ if [[ -f .env.local ]]; then
 	vp exec varlock encrypt --file .env.local
 fi
 
-vp exec tsx scripts/setup.ts
+mise run setup
 vp run compose:up
 vp run db:migrate
 

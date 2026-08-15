@@ -1,3 +1,5 @@
+#!/usr/bin/env -S vp exec tsx
+//MISE description="Generate per-workspace ports and .env.development.local"
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
@@ -123,23 +125,35 @@ function detectWorkspace(): { branch: string; worktree: string } {
 	}
 }
 
+const POSTGRES_USER = 'app_user'
+const POSTGRES_PASSWORD = 'app_dev'
 const AWS_ACCESS_KEY_ID = 'app_minio'
 const AWS_SECRET_ACCESS_KEY = 'app_minio_secret'
 
-const ENV_SPEC_HEADER = ['# @defaultSensitive=false', '# ---', '']
+const ENV_SPEC_HEADER = ['# ---', '# @defaultSensitive=false', '# ---', '']
 
-function updateEnvFile(path: string, groups: Record<string, string>[]): void {
+function updateEnvFile(
+	path: string,
+	groups: Record<string, string>[],
+	replace = false,
+): void {
 	const updates: Record<string, string> = Object.assign({}, ...groups)
-	const lines = existsSync(path)
-		? readFileSync(path, 'utf8').split(/\r?\n/)
-		: []
+	const lines =
+		!replace && existsSync(path)
+			? readFileSync(path, 'utf8').split(/\r?\n/)
+			: []
 	const specIndex = lines.findIndex((line) =>
 		line.includes('@defaultSensitive'),
 	)
 	if (specIndex === -1) {
 		lines.unshift(...ENV_SPEC_HEADER)
-	} else if (lines[specIndex + 1]?.trim() !== '# ---') {
-		lines.splice(specIndex + 1, 0, '# ---', '')
+	} else {
+		if (lines[specIndex + 1]?.trim() !== '# ---') {
+			lines.splice(specIndex + 1, 0, '# ---', '')
+		}
+		if (specIndex === 0 || lines[specIndex - 1]?.trim() !== '# ---') {
+			lines.splice(specIndex, 0, '# ---')
+		}
 	}
 	const remaining = new Set(Object.keys(updates))
 
@@ -243,6 +257,7 @@ function registerProxySlug(mainRoot: string): string {
 // workspace's file into new workspaces, which must not keep its ports —
 // and re-running setup here must not move this workspace's existing
 // database or registered OAuth redirect URIs out from under it).
+// A foreign file is fully rewritten so the canonical key order is restored.
 function existingPorts(worktree: string): Record<string, string> {
 	const entries = readEnvFile('.env.development.local')
 	if (entries['WORKTREE_NAME'] !== worktree) return {}
@@ -255,6 +270,9 @@ function main(): void {
 	const worktree = process.env.WORKTREE_NAME || detected.worktree
 	const compose = sanitizeDatabaseName(worktree)
 	const existing = existingPorts(worktree)
+	const isForeign =
+		existsSync('.env.development.local') &&
+		readEnvFile('.env.development.local')['WORKTREE_NAME'] !== worktree
 	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
 	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
 	const postgresPort =
@@ -271,15 +289,15 @@ function main(): void {
 
 	updateEnvFile('.env.development.local', [
 		{
-			WORKTREE_NAME: worktree,
-			COMPOSE_PROJECT_NAME: compose,
 			APP_PORT: String(appPort),
 		},
 		{
 			POSTGRES_PORT: String(postgresPort),
 			POSTGRES_DB: database,
+			POSTGRES_USER,
+			POSTGRES_PASSWORD,
 			DATABASE_URL:
-				'postgres://app_user:app_dev@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
+				'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
 		},
 		{
 			MINIO_PORT: String(minioPort),
@@ -291,7 +309,11 @@ function main(): void {
 			AWS_SECRET_ACCESS_KEY,
 			AWS_S3_BUCKET_NAME: 'app',
 		},
-	])
+		{
+			WORKTREE_NAME: worktree,
+			COMPOSE_PROJECT_NAME: compose,
+		},
+	], isForeign)
 
 	setDaemonPort(appPort)
 

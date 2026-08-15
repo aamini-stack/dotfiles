@@ -53,7 +53,7 @@ _skip_if_exists:
 _exclude:
   - "{% if not sentry %}instrument.server.mjs{% endif %}"
   - "{% if not sentry %}src/instrument.client.ts{% endif %}"
-  - "{% if not posthog %}src/lib/analytics/posthog.tsx{% endif %}"
+  - "{% if not posthog %}src/lib/analytics/posthog.server.ts{% endif %}"
   - "{% if not posthog %}src/lib/utils/proxy.ts{% endif %}"
   - "{% if not posthog %}src/lib/utils/proxy.unit.test.ts{% endif %}"
   - "{% if not posthog %}src/routes/api/ingest.$.ts{% endif %}"
@@ -69,7 +69,4 @@ _message_after_copy: |
     cd {{ _copier_conf.dst_path }}
     mise trust && mise install
     mise run bootstrap
-    {%- if google_auth %}
-    # Google sign-in: one-time setup documented in .env.schema
-    {%- endif %}
     vp dev

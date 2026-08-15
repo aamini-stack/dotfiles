@@ -3,8 +3,8 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-{{ app_name_snake }}_dev}
-      POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: app_dev
+      POSTGRES_USER: ${POSTGRES_USER:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_dev}
     ports:
       - '${POSTGRES_PORT:-5433}:5432'
   minio:
