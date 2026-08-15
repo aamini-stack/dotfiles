@@ -47,10 +47,7 @@ function RootComponent() {
 				<QueryClientProvider client={queryClient}>
 {%- if posthog %}
 					{posthogToken ? (
-						<PostHogProvider
-							apiKey={posthogToken}
-							options={posthogOptions}
-						>
+						<PostHogProvider apiKey={posthogToken} options={posthogOptions}>
 							<Outlet />
 						</PostHogProvider>
 					) : (
