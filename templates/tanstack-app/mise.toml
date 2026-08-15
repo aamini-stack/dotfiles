@@ -5,3 +5,8 @@ vite-plus = "https://github.com/markmals/mise-vite-plus"
 vite-plus = "latest"
 jq = "latest"
 bitwarden = "latest"
+
+# Headless VM has no keyring/TPM; skip varlock's native encryption helper,
+# which otherwise prints backend probes on every run.
+[env]
+_VARLOCK_FORCE_FILE_ENCRYPTION_FALLBACK = "1"
