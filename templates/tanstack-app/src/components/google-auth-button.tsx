@@ -24,15 +24,11 @@ export function GoogleAuthButton({
 }: GoogleAuthButtonProps) {
 	const internal = useGoogleAuth({ fallbackRedirect })
 	const isLoading = externalIsLoading ?? internal.isLoading
-	const isAvailable = internal.isAvailable
-
-	if (!isAvailable) return null
-
 	return (
 		<Button
 			type="button"
 			onClick={onClick ?? internal.signIn}
-			disabled={isLoading || disabled}
+			disabled={isLoading || disabled || !internal.isAvailable}
 			variant={variant}
 			className={className}
 		>
