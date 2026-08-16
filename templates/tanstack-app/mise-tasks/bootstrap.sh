@@ -3,6 +3,10 @@
 
 set -euo pipefail
 
+# Headless bootstrap has no keyring/TPM; skip varlock's native encryption
+# helper, which otherwise prints backend probes on every run.
+export _VARLOCK_FORCE_FILE_ENCRYPTION_FALLBACK=1
+
 cd "$(dirname "$0")/.."
 
 mise install

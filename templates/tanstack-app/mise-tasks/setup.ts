@@ -289,33 +289,37 @@ function main(): void {
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
 
-	updateEnvFile('.env.development.local', [
-		{
-			APP_PORT: String(appPort),
-		},
-		{
-			POSTGRES_PORT: String(postgresPort),
-			POSTGRES_DB: database,
-			POSTGRES_USER,
-			POSTGRES_PASSWORD,
-			DATABASE_URL:
-				'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
-		},
-		{
-			MINIO_PORT: String(minioPort),
-			MINIO_CONSOLE_PORT: String(minioConsolePort),
-		},
-		{
-			AWS_ENDPOINT_URL: 'http://localhost:${MINIO_PORT}',
-			AWS_ACCESS_KEY_ID,
-			AWS_SECRET_ACCESS_KEY,
-			AWS_S3_BUCKET_NAME: 'app',
-		},
-		{
-			WORKTREE_NAME: worktree,
-			COMPOSE_PROJECT_NAME: compose,
-		},
-	], isForeign)
+	updateEnvFile(
+		'.env.development.local',
+		[
+			{
+				APP_PORT: String(appPort),
+			},
+			{
+				POSTGRES_PORT: String(postgresPort),
+				POSTGRES_DB: database,
+				POSTGRES_USER,
+				POSTGRES_PASSWORD,
+				DATABASE_URL:
+					'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
+			},
+			{
+				MINIO_PORT: String(minioPort),
+				MINIO_CONSOLE_PORT: String(minioConsolePort),
+			},
+			{
+				AWS_ENDPOINT_URL: 'http://localhost:${MINIO_PORT}',
+				AWS_ACCESS_KEY_ID,
+				AWS_SECRET_ACCESS_KEY,
+				AWS_S3_BUCKET_NAME: 'app',
+			},
+			{
+				WORKTREE_NAME: worktree,
+				COMPOSE_PROJECT_NAME: compose,
+			},
+		],
+		isForeign,
+	)
 
 	setDaemonPort(appPort)
 
