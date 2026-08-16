@@ -1,12 +1,12 @@
-import json
 import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from cli import open as open_module
-from cli import herdr as herdr_module
 from cli.herdr import HerdrError
+
+from cli import herdr as herdr_module
+from cli import open as open_module
 
 
 def completed(stdout: str = "", returncode: int = 0):
@@ -38,25 +38,6 @@ class FindWorkspaceTests(unittest.TestCase):
     def test_returns_none_without_match(self):
         with patch.object(herdr_module, "herdr", return_value={"workspaces": []}):
             self.assertIsNone(herdr_module.find_workspace("nope"))
-
-
-class BootstrapDetectionTests(unittest.TestCase):
-    def test_detects_plain_and_monorepo_task_names(self):
-        tasks = json.dumps([{"name": "bootstrap"}, {"name": "//:check"}])
-        with patch.object(subprocess, "run", return_value=completed(tasks)):
-            self.assertTrue(open_module.has_bootstrap_task(Path("/tmp")))
-
-        tasks = json.dumps([{"name": "//tools/x:bootstrap"}])
-        with patch.object(subprocess, "run", return_value=completed(tasks)):
-            self.assertTrue(open_module.has_bootstrap_task(Path("/tmp")))
-
-    def test_absent_or_broken_mise_means_no_task(self):
-        with patch.object(subprocess, "run", return_value=completed("[]")):
-            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
-        with patch.object(subprocess, "run", return_value=completed("", 1)):
-            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
-        with patch.object(subprocess, "run", side_effect=OSError):
-            self.assertFalse(open_module.has_bootstrap_task(Path("/tmp")))
 
 
 class OpenWorkspaceTests(unittest.TestCase):
@@ -121,7 +102,6 @@ class OpenWorkspaceTests(unittest.TestCase):
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=True),
             patch.object(open_module.guard, "arm") as arm,
         ):
             self.assertEqual(open_module.open_workspace(path), 0)
@@ -140,14 +120,13 @@ class OpenWorkspaceTests(unittest.TestCase):
                     "--no-focus",
                 ),
                 ("pane", "split", "p1", "--direction", "right", "--no-focus"),
-                ("pane", "run", "p1", "mise run bootstrap"),
                 ("pane", "run", "p2", "opencode"),
                 ("workspace", "focus", "w9"),
             ],
         )
         arm.assert_called_once_with("w9", path, {"w9"})
 
-    def test_skips_bootstrap_when_task_absent(self):
+    def test_runs_setup_hooks_when_requested(self):
         calls = []
 
         def fake_herdr(*args):
@@ -167,69 +146,6 @@ class OpenWorkspaceTests(unittest.TestCase):
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=False),
-            patch.object(open_module.guard, "arm"),
-        ):
-            self.assertEqual(open_module.open_workspace(path), 0)
-
-        run_calls = [call for call in calls if call[:2] == ("pane", "run")]
-        self.assertEqual(run_calls, [("pane", "run", "p2", "opencode")])
-
-    def test_runs_setup_hooks_before_bootstrap_when_requested(self):
-        calls = []
-
-        def fake_herdr(*args):
-            calls.append(args)
-            if args[:2] == ("workspace", "list"):
-                return {"workspaces": []}
-            if args[:2] == ("workspace", "create"):
-                return {
-                    "root_pane": {"pane_id": "p1"},
-                    "workspace": {"workspace_id": "w9"},
-                }
-            if args[:2] == ("pane", "split"):
-                return {"pane": {"pane_id": "p2"}}
-            return {}
-
-        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
-        with (
-            patch.object(open_module, "herdr", side_effect=fake_herdr),
-            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=True),
-            patch.object(open_module.guard, "arm"),
-        ):
-            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
-
-        run_calls = [call for call in calls if call[:2] == ("pane", "run")]
-        self.assertEqual(
-            run_calls,
-            [
-                ("pane", "run", "p1", "wt hook post-create && mise run bootstrap"),
-                ("pane", "run", "p2", "opencode"),
-            ],
-        )
-
-    def test_runs_setup_hooks_alone_when_bootstrap_absent(self):
-        calls = []
-
-        def fake_herdr(*args):
-            calls.append(args)
-            if args[:2] == ("workspace", "list"):
-                return {"workspaces": []}
-            if args[:2] == ("workspace", "create"):
-                return {
-                    "root_pane": {"pane_id": "p1"},
-                    "workspace": {"workspace_id": "w9"},
-                }
-            if args[:2] == ("pane", "split"):
-                return {"pane": {"pane_id": "p2"}}
-            return {}
-
-        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
-        with (
-            patch.object(open_module, "herdr", side_effect=fake_herdr),
-            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=False),
             patch.object(open_module.guard, "arm"),
         ):
             self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
@@ -265,7 +181,6 @@ class OpenWorkspaceTests(unittest.TestCase):
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=False),
             patch.object(open_module.guard, "arm"),
         ):
             self.assertEqual(open_module.open_workspace(path, primary), 0)
@@ -313,7 +228,6 @@ class OpenWorkspaceTests(unittest.TestCase):
         with (
             patch.object(open_module, "herdr", side_effect=fake_herdr),
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
-            patch.object(open_module, "has_bootstrap_task", return_value=False),
             patch.object(open_module.guard, "arm"),
         ):
             self.assertEqual(open_module.open_workspace(path, primary), 0)

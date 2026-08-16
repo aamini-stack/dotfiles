@@ -2,14 +2,11 @@
 
 Invoked by herdr-jj with the workspace path. If a herdr workspace labeled with
 the jj workspace name already exists it is focused; otherwise it is created
-with a vertical split: the left pane runs the project's setup (post-create
-hooks for freshly created workspaces, then the `mise run bootstrap` task if
-any) and the right pane runs opencode.
+with a vertical split: the left pane runs the project's post-create hooks
+(for freshly created workspaces) and the right pane runs opencode.
 """
 
 import argparse
-import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -26,27 +23,6 @@ from .herdr import (
 
 def herdr_label(path: Path) -> str:
     return workspace_label(path.name)
-
-
-def has_bootstrap_task(path: Path) -> bool:
-    try:
-        result = subprocess.run(
-            ["mise", "tasks", "--json"],
-            cwd=path,
-            text=True,
-            capture_output=True,
-            timeout=10,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    if result.returncode:
-        return False
-    try:
-        tasks = json.loads(result.stdout)
-    except json.JSONDecodeError:
-        return False
-    return any(task.get("name", "").split(":")[-1] == "bootstrap" for task in tasks)
 
 
 def open_workspace(
@@ -68,13 +44,8 @@ def open_workspace(
         "pane_id"
     ]
 
-    setup = []
     if run_setup:
-        setup.append("wt hook post-create")
-    if has_bootstrap_task(path):
-        setup.append("mise run bootstrap")
-    if setup:
-        herdr("pane", "run", left, " && ".join(setup))
+        herdr("pane", "run", left, "wt hook post-create")
     herdr("pane", "run", right, "opencode")
     _arm(workspace_id, path, workspaces)
     focus_workspace(workspace_id)
