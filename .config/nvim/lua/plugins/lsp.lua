@@ -70,7 +70,14 @@ return {
       ---@type table<string, vim.lsp.Config>
       local servers = {
         -- Web / TypeScript
-        tsgo = {},
+        -- tsgo must not format: oxfmt is the formatter, and conform's
+        -- lsp_format='fallback' would let both run with tsgo landing last.
+        tsgo = {
+          on_attach = function(client)
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+          end,
+        },
         oxlint = {
           cmd = function(dispatchers, config) return vim.lsp.rpc.start({ vite_plus_bin(config.root_dir, 'oxlint'), '--lsp' }, dispatchers) end,
           root_dir = vite_root,
