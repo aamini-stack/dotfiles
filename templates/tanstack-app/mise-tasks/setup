@@ -76,6 +76,7 @@ function sanitizeDatabaseName(value: string): string {
 		.replace(/[^a-z0-9]+/g, '_')
 		.replace(/^_+/, '')
 	if (!result) result = 'workspace'
+	if (!/^[a-z]/.test(result)) result = `w_${result}`
 	result = result.slice(0, 44)
 	if (!result.endsWith('_')) result += '_'
 	return `${result}${shortHash(value)}`
@@ -196,7 +197,7 @@ function readEnvFile(path: string): Record<string, string> {
 	if (!existsSync(path)) return {}
 	return Object.fromEntries(
 		readFileSync(path, 'utf8')
-			.split('\n')
+			.split(/\r?\n/)
 			.flatMap((line) => {
 				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
 				return match ? [[match[1]!, match[2]!]] : []
@@ -265,9 +266,10 @@ function existingPorts(worktree: string): Record<string, string> {
 }
 
 function main(): void {
-	const detected = detectWorkspace()
-	const branch = process.env.WORKTREE_BRANCH || detected.branch
-	const worktree = process.env.WORKTREE_NAME || detected.worktree
+	// Never honor WORKTREE_NAME/WORKTREE_BRANCH from the environment:
+	// nothing legitimate sets them (wt passes template vars, not env), and
+	// inherited stale values from another workspace must not steer setup.
+	const { branch, worktree } = detectWorkspace()
 	const compose = sanitizeDatabaseName(worktree)
 	const existing = existingPorts(worktree)
 	const isForeign =

@@ -50,7 +50,7 @@ export function getAuth() {
 			// dev). In prod appOrigin is the real domain and the proxy no-ops.
 			oAuthProxy({
 				productionURL: appOrigin,
-				secret: env.BETTER_AUTH_SECRET,
+				secret: env.OAUTH_PROXY_SECRET,
 			}),
 			tanstackStartCookies(),
 		],
