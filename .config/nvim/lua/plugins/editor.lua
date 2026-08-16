@@ -297,7 +297,18 @@ return {
       {
         '-',
         mode = { 'n', 'v' },
-        '<cmd>Yazi<cr>',
+        function()
+          if vim.bo.modified then
+            local choice = vim.fn.confirm(
+              'Save changes to ' .. vim.fn.expand('%:.') .. '?',
+              '&Save\n&Discard\n&Cancel',
+              1
+            )
+            if choice == 3 then return end
+            if choice == 1 then vim.cmd.write() end
+          end
+          vim.cmd.Yazi()
+        end,
         desc = 'Open yazi at the current file',
       },
       {
