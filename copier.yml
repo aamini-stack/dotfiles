@@ -29,15 +29,49 @@ sentry:
   help: Error monitoring via @sentry/tanstackstart-react
   default: true
 
+sentry_org:
+  type: str
+  help: Sentry organization slug (from your Sentry org settings)
+  when: "{{ sentry }}"
+
+sentry_project:
+  type: str
+  help: Sentry project slug
+  default: "{{ app_name }}"
+  when: "{{ sentry }}"
+
+sentry_dsn:
+  type: str
+  help: Sentry client DSN (public, safe to commit)
+  when: "{{ sentry }}"
+  validator: >-
+    {% if not (sentry_dsn.startswith('https://') and '.ingest.' in sentry_dsn and 'sentry.io' in sentry_dsn) %}
+    sentry_dsn must look like https://<key>@o<org-id>.ingest.<region>.sentry.io/<project-id>
+    {% endif %}
+
 posthog:
   type: bool
   help: Product analytics via @posthog/react behind a /api/ingest proxy
   default: true
 
+posthog_project_token:
+  type: str
+  help: PostHog project token (public client key, safe to commit)
+  when: "{{ posthog }}"
+
 google_auth:
   type: bool
   help: Google OAuth sign-in alongside email/password
   default: true
+
+google_client_id:
+  type: str
+  help: Google OAuth "Web application" client ID for deployed envs (dev reuses the shared "Desktop app" client)
+  when: "{{ google_auth }}"
+  validator: >-
+    {% if not google_client_id.endswith('.apps.googleusercontent.com') %}
+    google_client_id must end with .apps.googleusercontent.com
+    {% endif %}
 
 _templates_suffix: ".jinja"
 

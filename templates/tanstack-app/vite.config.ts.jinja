@@ -135,8 +135,8 @@ export default defineConfig({
 		varlockVitePlugin({ ssrInjectMode: 'resolved-env' }),
 {%- if sentry %}
 		sentryTanstackStart({
-			org: '{{ app_name }}',
-			project: 'javascript-tanstackstart-react',
+			org: '{{ sentry_org }}',
+			project: '{{ sentry_project }}',
 			authToken: process.env.SENTRY_AUTH_TOKEN ?? '',
 			telemetry: Boolean(process.env.SENTRY_AUTH_TOKEN),
 			silent: !process.env.CI,
