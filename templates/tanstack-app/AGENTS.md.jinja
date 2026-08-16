@@ -10,8 +10,9 @@ or leaving the directory; each jj workspace gets unique ports via
 {%- if google_auth %}
 
 Google sign-in uses one shared dev OAuth client (type "Desktop app", so any
-loopback port works) hardcoded in `.env.schema`. Deployed environments get
-dedicated credentials via `.env.deployed`.
+loopback port works) hardcoded in `.env.development`. Deployed environments get
+dedicated credentials via `.env.preview` / `.env.production`, resolving secrets
+from Infisical.
 {%- endif %}
 {%- if sentry %}
 

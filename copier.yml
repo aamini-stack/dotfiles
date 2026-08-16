@@ -46,7 +46,6 @@ _templates_suffix: ".jinja"
 _skip_if_exists:
   - .env.local
   - .env.development.local
-  - .env.deployed
   - .env.preview
   - .env.production
 
@@ -59,7 +58,6 @@ _exclude:
   - "{% if not posthog %}src/routes/api/ingest.$.ts{% endif %}"
   - "{% if not google_auth %}src/components/google-auth-button.tsx{% endif %}"
   - "{% if not google_auth %}src/lib/auth/use-google-auth.ts{% endif %}"
-  - "{% if not google_auth %}.env.local{% endif %}"
 
 _tasks:
   - "[ -d .jj ] || jj git init --colocate 2>/dev/null || jj git init"

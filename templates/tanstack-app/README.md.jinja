@@ -9,7 +9,7 @@
   TypeScript; use `vp` instead of `npm`/`vite`
 - **Drizzle, Postgres** — database
 - **Varlock** — environment variable management, loaded via
-  `varlock run -- <command>`; secrets resolve from Bitwarden
+  `varlock run -- <command>`; secrets resolve from Infisical
 - **mise** — runtime and tool version manager (`mise.toml`)
 
 ## Local Development
@@ -44,11 +44,10 @@ vp dev
 ## Environment Variables
 
 Managed by [varlock](https://varlock.dev); `.env.schema` defines what is
-required per environment. Deployed environments (preview, production) import
-`.env.deployed`, where secrets resolve from Bitwarden — set `BWS_ACCESS_TOKEN`
-in `.env.local` (gitignored, prompted on first bootstrap). Local development
-points at the docker services via `.env.development.local`, regenerated per jj
-workspace by `mise-tasks/setup`.
+required per environment. All environments resolve secrets from Infisical —
+set `INFISICAL_CLIENT_SECRET` in `.env.local` (gitignored, prompted on first
+bootstrap). Local development points at the docker services via
+`.env.development.local`, regenerated per jj workspace by `mise-tasks/setup`.
 
 ## Services
 
@@ -61,4 +60,4 @@ workspace by `mise-tasks/setup`.
 {%- if sentry %}
 - **Sentry** — error monitoring
 {%- endif %}
-- **Bitwarden** — secrets manager
+- **Infisical** — secrets manager

@@ -4,5 +4,4 @@ vite-plus = "https://github.com/markmals/mise-vite-plus"
 [tools]
 vite-plus = "latest"
 jq = "latest"
-bitwarden = "latest"
 
