@@ -18,16 +18,12 @@
 # Diff tools
 # ============================================
 
-# CLI `git diff` / `git show` use Hunk as the pager.
 [core]
     pager = hunk pager
 
-# `git add -p` uses Delta for colorized hunks without breaking interactive selection.
 [interactive]
     diffFilter = delta --color-only
 
-# `git difftool` and lazygit `<ctrl+t>` use Hunk via a wrapper that
-# generates a clean patch from the directory/file pairs Git provides.
 [diff]
     tool = hunk
 
@@ -47,5 +43,6 @@
 [credential "https://*.visualstudio.com"]
 	helper = !git-credential-manager-windows
 
- [coderabbit]
+[coderabbit]
  	machineId = cli/3b6783e4de2f405aba3006a22ff8817a
+

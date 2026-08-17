@@ -17,4 +17,29 @@ node_modules/
 
 .local
 .config/jj/repos
+
+# Work
 .config/pulse/cookie
+.config/microsoft-edge
+.config/enchant
+.config/evolution
+.config/gnome-initial-setup-done
+.config/gtk-3.0
+.config/ibus
+.config/microsoft-edge-dev
+.config/mimeapps.list
+.config/tiling-assistant
+.config/xfce4
+.config/ubuntu-xdg-terminals.list
+.config/user-dirs.dirs
+.config/user-dirs.locale
+.config/.gsd-keyboard.settings-ported
+.config/GNOME-xdg-terminals.list
+.config/Thunar/uca.xml
+.config/dconf/user
+.config/microsoft-azurevpnclient
+.config/xdg-terminals.list
+
+# Hermes
+.config/systemd/user/hermes-gateway.service
+.config/systemd/user/default.target.wants/hermes-gateway.service
