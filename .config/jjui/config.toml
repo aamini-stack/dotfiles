@@ -6,7 +6,10 @@ revision_command = [
   "util",
   "exec",
   "--",
-  "/home/aamini.linux/.config/jjui/revision-preview.sh",
+  "bash",
+  "-c",
+  'set -o pipefail; jj show --color always --git -r "$1" | delta --dark --paging=never --line-numbers --side-by-side --tabs 2',
+  "jjui-preview",
   "$change_id",
 ]
 oplog_command = [
@@ -15,13 +18,18 @@ oplog_command = [
   "--",
   "bash",
   "-c",
-  "jj op show $operation_id --git --color always | delta --dark --paging=never --line-numbers --side-by-side --tabs 2",
+  'set -o pipefail; jj op show "$1" --git --color always | delta --dark --paging=never --line-numbers --side-by-side --tabs 2',
+  "jjui-preview",
+  "$operation_id",
 ]
 file_command = [
   "util",
   "exec",
   "--",
-  "/home/aamini.linux/.config/jjui/file-preview.sh",
+  "bash",
+  "-c",
+  'set -o pipefail; jj diff --color always --git -r "$1" -- "$2" | delta --dark --paging=never --line-numbers --side-by-side --tabs 2',
+  "jjui-preview",
   "$change_id",
   "$file",
 ]
