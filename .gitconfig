@@ -40,5 +40,12 @@
 [credential "https://github.com"]
 	helper = !gh auth git-credential
 
+[credential "https://dev.azure.com"]
+	helper = !git-credential-manager-windows
+	useHttpPath = true
+
+[credential "https://*.visualstudio.com"]
+	helper = !git-credential-manager-windows
+
  [coderabbit]
  	machineId = cli/3b6783e4de2f405aba3006a22ff8817a

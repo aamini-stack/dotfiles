@@ -100,7 +100,7 @@ imagemagick = "latest"
 "nix:gh-dash" = "latest"
 
 # Devops
-"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow" }
+"pipx:azure-cli" = "latest"
 kubectl = "latest"
 helm = "latest"
 pulumi = "latest"
