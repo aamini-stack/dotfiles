@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { serverEnv } from '@/env.server'
 import { createPostHogProxyRequestHandler } from '@/lib/utils/proxy'
 
 const proxyRequest = createPostHogProxyRequestHandler({
-	publicPathPrefix: '/api/ingest/',
+	publicPathPrefix: `${serverEnv.VITE_POSTHOG_HOST ?? '/api/ingest'}/`,
 	upstreamOrigin: 'https://us.i.posthog.com',
 })
 
