@@ -5709,7 +5709,6 @@ checksum = "sha256:bcb0d855e91f102f28a370e850f8566b3b44b79e6274d806ea5246837c0fd
 url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64.zip"
 url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901018"
 provenance = "github-attestations"
-provenance_verified = true
 
 [tools."github:JohnnyMorganz/StyLua"."platforms.linux-x64-baseline"]
 checksum = "sha256:bcb0d855e91f102f28a370e850f8566b3b44b79e6274d806ea5246837c0fd5ab"
@@ -8902,7 +8901,6 @@ checksum = "sha256:9793dd1c106e8bc8749057f448cbfabbdf72042367db2cd220cc99707993f
 url = "https://github.com/railwayapp/cli/releases/download/v5.23.0/railway-v5.23.0-x86_64-unknown-linux-gnu.tar.gz"
 url_api = "https://api.github.com/repos/railwayapp/cli/releases/assets/456214118"
 provenance = "github-attestations"
-provenance_verified = true
 
 [tools.railway."platforms.linux-x64-baseline"]
 checksum = "sha256:9793dd1c106e8bc8749057f448cbfabbdf72042367db2cd220cc99707993f5c6"
