@@ -13,7 +13,6 @@ name = "Aria Amini"
 email = "amini5454@gmail.com"
 
 [snapshot]
-auto-update-stale = true
 max-new-file-size = "10MiB"
 
 # Only honored by sjawhar/jj fork (colocated-workspaces stack); ignored by stock jj.
