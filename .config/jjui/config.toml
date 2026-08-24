@@ -1,6 +1,9 @@
 [ui.colors]
 "selected" = { bg = "#313244" }
 
+[revisions]
+revset = "trunk() | (trunk()..@) | @::"
+
 [preview]
 revision_command = [
   "util",
