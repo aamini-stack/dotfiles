@@ -5,12 +5,11 @@
 
 \.config/gh
 README.md
-misc
 install.sh
-stow.sh
 skills-lock.json
 ^/mise\.toml$
 ^/mise\.lock$
-^/copier\.yml$
+
 tools
-templates
+infra
+apps

@@ -5,12 +5,16 @@ config_roots = ["tools/*"]
 
 [shell_alias]
 dots = "cd {{config_root}}"
-restow = "cd {{config_root}} && stow --restow -v --target=\"$HOME\" ."
 
 [tasks.install]
 description = "Install all dotfiles tools"
-depends = ["//tools/python:install", "//tools/typescript:install"]
+depends = ["//tools/jj-ws:install", "//tools/imgview:install", "//tools/pix:install"]
 
 [tasks.check]
 description = "Run all checks"
-depends = ["//tools/python:check", "//tools/typescript:check"]
+depends = ["//tools/jj-ws:check", "//tools/imgview:check", "//tools/pix:check"]
+
+[tasks.restow]
+description = "Restow dotfiles into $HOME"
+dir = "{{config_root}}"
+run = 'stow --restow -v --target="$HOME" .'

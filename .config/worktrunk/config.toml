@@ -1,7 +1,0 @@
-worktree-path = "~/.herdr/workspaces/{{ repo }}/{{ branch | replace('jj-worktree-', '') | sanitize }}"
-
-# jj workspaces surface in worktrunk as branches named jj-worktree-<name>
-# (plumbing attached by the jj fork). Removing such a worktree through
-# worktrunk must also forget the jj workspace.
-[post-remove]
-jj-forget = "b={{ branch }}; case $b in jj-worktree-*) jj -R {{ primary_worktree_path }} workspace forget ${b#jj-worktree-} || true ;; esac"

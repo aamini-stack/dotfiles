@@ -244,7 +244,7 @@ function setup(config)
       return
     end
 
-    exec_shell(string.format("jj-pix %q", change_id))
+    exec_shell(string.format("pix jj %q", change_id))
   end, {
     desc = "diff change images in pix",
     key = "shift+p",
@@ -262,9 +262,9 @@ function setup(config)
     local ext = file and file:lower():match("%.([%w]+)$")
     local image_exts = { png = true, jpg = true, jpeg = true, webp = true, gif = true, bmp = true, tiff = true, avif = true }
     if ext and image_exts[ext] then
-      exec_shell(string.format("jj-pix %q %q", change_id, file))
+      exec_shell(string.format("pix jj %q %q", change_id, file))
     else
-      exec_shell(string.format("jj-pix %q", change_id))
+      exec_shell(string.format("pix jj %q", change_id))
     end
   end, {
     desc = "diff image in pix",

@@ -11,11 +11,13 @@ export OLLAMA_HOST="http://127.0.0.1:11434"
 # Global-only mise setting (kept out of .config/mise/config.toml so jj
 # workspace copies of that file loaded as project configs don't warn).
 export MISE_TRUSTED_CONFIG_PATHS="$HOME/.herdr/worktrees/:$HOME/.herdr/workspaces/"
+
 # ── Path ──────────────────────────────────────────────────────
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+
 # ── Initialization ────────────────────────────────────────────
 eval "$(mise activate zsh)"
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi

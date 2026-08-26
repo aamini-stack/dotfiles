@@ -4,7 +4,7 @@ workspace-path = "~/.herdr/workspaces/{{ repo }}/{{ name | sanitize }}"
 copy-envs = "wt copy-ignored"
 
 [[post-remove]]
-close-herdr = "herdr-ws close --name '{{ name }}' --path '{{ workspace_path }}' --primary '{{ primary_path }}'"
+close-herdr = "herdr-jj close --name '{{ name }}' --path '{{ workspace_path }}' --primary '{{ primary_path }}'"
 
 [copy-ignored]
 exclude = [".env.compose", "*node_modules/*"]

@@ -4,7 +4,7 @@ cd "$HOME"
 
 # clone: dotfiles
 if [ ! -d "$HOME/dotfiles" ]; then
-  git clone "https://github.com/aamini-stack/dotfiles.git" "$HOME/dotfiles"
+  git clone "https://github.com/aria-amini/dotfiles.git" "$HOME/dotfiles"
 fi
 
 # git (latest stable from ppa, jj requires >= 2.41)
@@ -38,8 +38,6 @@ grep -Fqx "$mise_activation" "$HOME/.bashrc" || printf '%s\n' "$mise_activation"
 eval "$(mise activate bash)"
 mise i
 mise trust -y "$HOME/dotfiles/mise.toml"
-mise trust -y "$HOME/dotfiles/tools/python/mise.toml"
-mise trust -y "$HOME/dotfiles/tools/typescript/mise.toml"
 mise -C "$HOME/dotfiles" install --monorepo
 mise -C "$HOME/dotfiles" //:install
 

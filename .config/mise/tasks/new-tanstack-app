@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Scaffold a new TanStack Start app from the dotfiles template"
-#MISE dir="{{cwd}}"
-#USAGE arg "<target>" help="Destination directory for the new app"
-
-set -euo pipefail
-
-exec copier copy --trust "$HOME/dotfiles" "$usage_target"
