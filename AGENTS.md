@@ -15,3 +15,12 @@ This document outlines global rules for Aria's agents to follow.
      imposed by external systems, or links to reference material.
    - **Section markers** — short labels (often one word) like `// Shared`, or
      the banner style `// ===== Section =====`, to annotate blocks of code.
+4. Please make plans incredibly terse. I find long plans with too many details
+   very difficult to read.
+5. For Technical text, use ASD-STE100 style. Max 20 words per sentence in
+   instructions, 25 in descriptions. Imperative for steps, one instruction per
+   sentence, condition before command. Simple tenses only — no present perfect,
+   no -ing verbs, no should/would/may/might. Active voice. One word per meaning
+   — no synonym rotation. No contractions, keep articles and "that". Delete
+   filler: simply, robust, seamlessly, leverage. Code and identifiers stay
+   exact.
