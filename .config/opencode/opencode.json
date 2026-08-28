@@ -1,7 +1,8 @@
 {
 	"$schema": "https://opencode.ai/config.json",
 	"instructions": [
-		"~/AGENTS.md"
+		"~/AGENTS.md",
+		"~/.config/opencode/instructions/workspaces.md"
 	],
 	"agent": {
 		"explore": {
@@ -9,7 +10,16 @@
 		}
 	},
 	"permission": {
-		"*": "allow"
+		"*": "allow",
+		"bash": {
+			"*": "allow",
+			"jj workspace add": "deny",
+			"jj workspace add *": "deny",
+			"jj ws add": "deny",
+			"jj ws add *": "deny",
+			"wt switch --create *": "deny",
+			"wt switch -c *": "deny"
+		}
 	},
 	"formatter": {
 		"prettier": {
@@ -19,19 +29,8 @@
 	},
 	"lsp": {
 		"typescript": {
-			"command": [
-				"tsgo",
-				"--lsp",
-				"--stdio"
-			],
-			"extensions": [
-				".ts",
-				".tsx",
-				".js",
-				".jsx",
-				".mts",
-				".cts"
-			]
+			"command": ["tsgo", "--lsp", "--stdio"],
+			"extensions": [".ts", ".tsx", ".js", ".jsx", ".mts", ".cts"]
 		}
 	}
 }
