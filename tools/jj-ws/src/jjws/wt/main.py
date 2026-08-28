@@ -105,6 +105,8 @@ def main() -> int:
         args.gh_args = extra
     try:
         return args.run(args)
+    except KeyboardInterrupt:
+        return 130
     except (JjError, WtError, ConfigError, HookError, CopyIgnoredError) as error:
         print(f"wt: {error}", file=sys.stderr)
         return 1

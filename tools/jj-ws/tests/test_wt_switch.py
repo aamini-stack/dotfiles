@@ -51,6 +51,16 @@ def run_wt(monkeypatch, argv, env=None):
     return main.main()
 
 
+def test_keyboard_interrupt_exits_without_traceback(monkeypatch, capsys):
+    def interrupt(cwd, name):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(main, "switch_to_workspace", interrupt)
+
+    assert run_wt(monkeypatch, ["switch", "feat"]) == 130
+    assert capsys.readouterr().err == ""
+
+
 def test_switch_named_emits_existing_root(monkeypatch, tmp_path, capsys):
     target = Workspace("feat", tmp_path / "ws" / "feat")
     monkeypatch.setattr(main, "switch_to_workspace", lambda cwd, name: target)
