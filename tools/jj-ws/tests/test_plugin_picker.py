@@ -1,6 +1,7 @@
 import json
 
 import pytest
+
 from jjws.herdr import picker as picker_module
 from jjws.lib.jj import Workspace
 
@@ -70,7 +71,13 @@ class TestPicker:
             monkeypatch,
             layout,
             ("enter", "feat\ttok-feat@\tfeat"),
-            workspaces=[{"label": "feat", "workspace_id": "w2"}],
+            workspaces=[
+                {
+                    "label": "feat",
+                    "workspace_id": "w2",
+                    "worktree": {"checkout_path": str(layout[2])},
+                }
+            ],
         )
 
         assert rc == 0
@@ -99,7 +106,13 @@ class TestPicker:
             monkeypatch,
             layout,
             ("esc", None),
-            workspaces=[{"label": "feat", "workspace_id": "w2"}],
+            workspaces=[
+                {
+                    "label": "feat",
+                    "workspace_id": "w2",
+                    "worktree": {"checkout_path": str(layout[2])},
+                }
+            ],
         )
 
         assert calls["lines"][1] == "feat\ttok-feat@\tfeat"
@@ -133,3 +146,53 @@ class TestPicker:
 
         assert rc == 0
         assert calls["open"] == [(primary, primary, "default")]
+
+    def test_slash_hyphen_label_collision_uses_checkout_path(self, monkeypatch, layout):
+        primary, _ws_root, feat = layout
+        wrong = primary.parent / "other" / "feature-auth"
+        workspaces = [
+            {
+                "label": "feature-auth",
+                "workspace_id": "wrong",
+                "worktree": {"checkout_path": str(wrong)},
+            },
+            {
+                "label": "feature-auth",
+                "workspace_id": "right",
+                "worktree": {"checkout_path": str(feat)},
+            },
+        ]
+
+        rc, calls, *_ = run_picker(
+            monkeypatch,
+            layout,
+            ("enter", "feat\ttok-feat@\tfeature-auth"),
+            workspaces=workspaces,
+        )
+
+        assert rc == 0
+        assert calls["focus"] == ["right"]
+        assert calls["open"] == []
+
+    def test_same_label_in_other_repository_opens_selected_path(
+        self, monkeypatch, layout
+    ):
+        other = layout[0].parent / "other-repo" / "feat"
+        workspaces = [
+            {
+                "label": "feat",
+                "workspace_id": "other",
+                "worktree": {"checkout_path": str(other)},
+            }
+        ]
+
+        rc, calls, primary, _ws_root, feat = run_picker(
+            monkeypatch,
+            layout,
+            ("enter", "feat\ttok-feat@\t—"),
+            workspaces=workspaces,
+        )
+
+        assert rc == 0
+        assert calls["focus"] == []
+        assert calls["open"] == [(feat, primary, "feat")]

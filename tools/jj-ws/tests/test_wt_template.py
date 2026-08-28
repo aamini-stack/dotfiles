@@ -1,7 +1,15 @@
 import subprocess
 
 import pytest
-from jjws.wt.template import TemplateError, hash_port, render, sanitize_db
+
+from jjws.wt.hooks import variables
+from jjws.wt.template import (
+    TemplateError,
+    hash_port,
+    render,
+    sanitize_db,
+    sanitize_hash,
+)
 
 VARS = {
     "name": "feat/auth",
@@ -29,6 +37,28 @@ def test_unknown_variable_and_filter_fail():
         render("{{ branch }}", VARS)
     with pytest.raises(TemplateError, match="unknown filter"):
         render("{{ name | nope }}", VARS)
+
+
+def test_worktrunk_aliases_and_sanitize_hash(tmp_path):
+    primary = tmp_path / "repo"
+    worktree = tmp_path / "worktrees" / "feat-auth"
+    context = variables(
+        "feat/auth",
+        worktree,
+        primary,
+        hook_type="pre-start",
+        hook_name="env",
+    )
+
+    assert render("{{ branch }} {{ worktree_name }}", context) == "feat/auth feat-auth"
+    assert context["worktree_path"] == str(worktree)
+    assert context["repo_path"] == str(primary)
+    assert context["primary_worktree_path"] == str(primary)
+    assert context["cwd"] == str(worktree)
+    assert context["hook_type"] == "pre-start"
+    assert context["hook_name"] == "env"
+    assert sanitize_hash("feat/auth").startswith("feat-auth-")
+    assert sanitize_hash("feat-auth") == "feat-auth"
 
 
 def test_shell_rendering_is_safe_inside_existing_quotes(tmp_path):

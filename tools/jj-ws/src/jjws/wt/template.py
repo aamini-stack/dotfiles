@@ -36,6 +36,13 @@ def sanitize_db(value: str) -> str:
     return base + _short_hash(value)
 
 
+def sanitize_hash(value: str) -> str:
+    sanitized = sanitize(value)
+    if sanitized == value:
+        return value
+    return f"{sanitized}-{_short_hash(value)}"
+
+
 def hash_port(value: str) -> str:
     number = int.from_bytes(hashlib.sha256(value.encode()).digest()[:8], "little")
     return str(10000 + number % 10000)
@@ -44,6 +51,7 @@ def hash_port(value: str) -> str:
 _FILTERS = {
     "sanitize": sanitize,
     "sanitize_db": sanitize_db,
+    "sanitize_hash": sanitize_hash,
     "hash_port": hash_port,
 }
 

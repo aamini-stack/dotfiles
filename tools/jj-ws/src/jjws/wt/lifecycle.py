@@ -1,6 +1,7 @@
 """The single implementation of jj workspace lifecycle operations."""
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 
 from ..lib.fzf import fzf_select
 from ..lib.jj import (
+    JjError,
     Workspace,
     add_workspace,
     commit_id,
@@ -22,7 +24,7 @@ from ..lib.jj import (
 from . import config as config_module
 from .copy_ignored import copy_ignored
 from .hooks import PHASES, HookError, run_hooks, run_named_hook
-from .template import TemplateError, render, sanitize
+from .template import TemplateError, render, sanitize, sanitize_hash
 
 
 class WtError(RuntimeError):
@@ -35,15 +37,75 @@ class CreateHookError(HookError):
         self.workspace = workspace
 
 
-def _move_aside(path: Path) -> None:
+_WORKSPACE_NAME = re.compile(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*")
+
+
+def validate_workspace_name(name: str) -> None:
+    if not _WORKSPACE_NAME.fullmatch(name) or any(
+        part in (".", "..") for part in name.split("/")
+    ):
+        raise WtError(
+            "workspace name must contain only letters, digits, '.', '_', '-', and "
+            "safe '/' separators"
+        )
+
+
+def _move_aside(path: Path) -> Path:
     trash = path.with_name(f".{path.name}.trash-{uuid.uuid4().hex[:8]}")
     try:
         path.rename(trash)
     except OSError as error:
         raise WtError(f"could not move {path} aside: {error}") from error
+    return trash
+
+
+def _delete_aside(trash: Path) -> None:
     shutil.rmtree(trash, ignore_errors=True)
     if trash.exists():
         print(f"wt: leftover files moved aside to {trash}", file=sys.stderr)
+
+
+def _restore_destination(destination: Path, original: Path) -> None:
+    partial = None
+    if destination.exists():
+        partial = _move_aside(destination)
+    try:
+        original.rename(destination)
+    except OSError as error:
+        details = f"; partial workspace remains at {partial}" if partial else ""
+        raise WtError(
+            f"could not restore original destination from {original}: {error}{details}"
+        ) from error
+    if partial:
+        print(f"wt: partial workspace left at {partial}", file=sys.stderr)
+
+
+def _rollback_new_registration(
+    primary: Path,
+    name: str,
+    destination: Path,
+    registrations: set[tuple[str, Path]],
+) -> None:
+    current = {(item.name, item.root.resolve()) for item in workspaces(primary)}
+    target = (name, destination.resolve())
+    if target in current and target not in registrations:
+        forget_workspace(name, cwd=primary)
+
+
+def _reject_registered_destination(primary: Path, name: str, destination: Path) -> None:
+    owner = next(
+        (
+            item.name
+            for item in workspaces(primary)
+            if item.root.resolve() == destination.resolve() and item.name != name
+        ),
+        None,
+    )
+    if owner is not None:
+        raise WtError(
+            f"destination {destination} belongs to jj workspace '{owner}'; "
+            "refusing --force"
+        )
 
 
 def workspace_destination(
@@ -55,9 +117,18 @@ def workspace_destination(
     env = os.environ if env is None else env
     override = env.get("JJ_WORKSPACE_ROOT")
     if override:
-        return Path(override).expanduser() / primary.name / sanitize(name)
+        return Path(override).expanduser() / primary.name / sanitize_hash(name)
     try:
-        value = render(config.workspace_path, {"repo": primary.name, "name": name})
+        value = render(
+            config.workspace_path,
+            {
+                "repo": primary.name,
+                "name": name,
+                "branch": name,
+                "repo_path": str(primary),
+                "primary_worktree_path": str(primary),
+            },
+        )
     except TemplateError as error:
         raise WtError(f"workspace-path: {error}") from error
     path = Path(value).expanduser()
@@ -73,27 +144,61 @@ def create_workspace(
     force: bool = False,
     run_post_create: bool = True,
 ) -> Workspace:
-    if not name.strip():
-        raise WtError("workspace name cannot be empty")
+    validate_workspace_name(name)
     primary = primary_root(cwd)
     config = config_module.load(primary, env)
     destination = workspace_destination(primary, name, config, env)
+    if force:
+        _reject_registered_destination(primary, name, destination)
+    run_hooks(config, "pre-switch", name, destination, primary, cwd=cwd)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    original = None
+    registrations = set()
     if destination.exists() and any(destination.iterdir()):
         if not force:
             raise WtError(
                 f"destination {destination} already exists and is not empty; "
                 "re-run with --force to move it aside"
             )
-        _move_aside(destination)
-    add_workspace(destination, name, cwd=cwd, revision=revision or "@")
-    created = Workspace(name=name, root=destination)
-    if not run_post_create:
-        return created
+        registrations = {
+            (item.name, item.root.resolve()) for item in workspaces(primary)
+        }
+        original = _move_aside(destination)
     try:
-        run_hooks(config, "post-create", name, destination, primary)
+        add_workspace(destination, name, cwd=cwd, revision=revision or "@")
+    except BaseException as error:
+        if original is not None:
+            try:
+                _rollback_new_registration(primary, name, destination, registrations)
+            except (JjError, OSError) as rollback_error:
+                raise WtError(
+                    f"workspace creation failed and rollback could not forget "
+                    f"'{name}'; original destination remains at {original}: "
+                    f"{rollback_error}"
+                ) from error
+            _restore_destination(destination, original)
+        raise
+    if original is not None:
+        _delete_aside(original)
+    created = Workspace(name=name, root=destination)
+    try:
+        run_hooks(config, "pre-start", name, destination, primary)
     except HookError as error:
         raise CreateHookError(created, str(error)) from error
+    if not run_post_create:
+        return created
+    hook_error = None
+    try:
+        run_hooks(config, "post-start", name, destination, primary)
+    except HookError as error:
+        hook_error = error
+    try:
+        run_hooks(config, "post-switch", name, destination, primary)
+    except HookError as error:
+        if hook_error is None:
+            hook_error = error
+    if hook_error is not None:
+        raise CreateHookError(created, str(hook_error)) from hook_error
     return created
 
 
@@ -130,7 +235,8 @@ def remove_workspace(
     )
     if target.root.exists():
         try:
-            _move_aside(target.root)
+            trash = _move_aside(target.root)
+            _delete_aside(trash)
         except WtError as error:
             raise WtError(f"{error}; the workspace remains registered") from error
     forget_workspace(target.name, cwd=primary)
@@ -211,6 +317,16 @@ def resolve_workspace(cwd: Path, name: str) -> Workspace:
     return workspace(primary_root(cwd), name)
 
 
+def switch_to_workspace(cwd: Path, name: str, env=None) -> Workspace:
+    validate_workspace_name(name)
+    primary = primary_root(cwd)
+    target = workspace(primary, name)
+    config = config_module.load(primary, env)
+    run_hooks(config, "pre-switch", target.name, target.root, primary, cwd=cwd)
+    run_hooks(config, "post-switch", target.name, target.root, primary)
+    return target
+
+
 def pick_workspace(cwd: Path, select=None) -> Workspace | None:
     select = fzf_select if select is None else select
     current, items = list_workspaces(cwd)
@@ -242,8 +358,14 @@ def run_configured_phase(cwd: Path, phase: str, env=None) -> None:
     run_hooks(config, phase, current.name, current.root, primary)
 
 
-def copy_ignored_to_current(cwd: Path, env=None) -> int:
+def copy_ignored_to_current(cwd: Path, env=None, *, force: bool = False) -> int:
     current = current_workspace(cwd)
     primary = primary_root(cwd)
     config = config_module.load(primary, env)
-    return copy_ignored(primary, current.root, config.copy_ignored_exclude)
+    return copy_ignored(
+        primary,
+        current.root,
+        config.copy_ignored_exclude,
+        config.copy_ignored_include,
+        force=force,
+    )

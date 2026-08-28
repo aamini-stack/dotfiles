@@ -1,5 +1,6 @@
 """Thin wrapper around the herdr CLI's JSON envelope."""
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -77,6 +78,22 @@ def find_by_worktree_path(
     )
 
 
+def find_by_workspace_path(
+    path: Path, workspaces: list[Workspace] | None = None
+) -> Workspace | None:
+    items = list_workspaces() if workspaces is None else workspaces
+    target = str(path)
+    return next(
+        (
+            item
+            for item in items
+            if (item.get("worktree") or {}).get("checkout_path") == target
+            or item.get("cwd") == target
+        ),
+        None,
+    )
+
+
 def focus_workspace(workspace_id: str) -> None:
     herdr("workspace", "focus", workspace_id)
 
@@ -90,7 +107,13 @@ def ensure_open(
     # Never focuses: callers lay out panes first and focus last, because
     # switching focus closes the modal popup the plugin runs inside.
     items = list_workspaces() if workspaces is None else workspaces
-    existing = find_for_jj(name, items)
+    existing = find_by_workspace_path(cwd, items)
+    label = workspace_label(name)
+    if existing is None:
+        labeled = find_for_jj(name, items)
+        if labeled is not None:
+            digest = hashlib.sha256(str(cwd).encode()).hexdigest()[:6]
+            label = f"{label}-{digest}"
     if existing is not None:
         if project_path is not None and "worktree" not in existing:
             # Opened before worktree provenance existed; re-opening through
@@ -98,7 +121,7 @@ def ensure_open(
             _worktree_open(project_path, cwd)
         return {"workspace": existing}, False, items
     if project_path is not None:
-        opened = _worktree_open(project_path, cwd, label=workspace_label(name))
+        opened = _worktree_open(project_path, cwd, label=label)
         if opened is not None and "workspace" in opened:
             return opened, not opened.get("already_open", False), items
     created = herdr(
@@ -107,7 +130,7 @@ def ensure_open(
         "--cwd",
         str(cwd),
         "--label",
-        workspace_label(name),
+        label,
         "--no-focus",
     )
     return created, True, items
@@ -134,9 +157,11 @@ def close_for_jj(
     path: Path | None = None,
 ) -> tuple[Workspace | None, list[Workspace]]:
     items = list_workspaces() if workspaces is None else workspaces
-    existing = find_by_worktree_path(path, items) if path is not None else None
-    if existing is None:
-        existing = find_for_jj(name, items)
+    existing = (
+        find_by_worktree_path(path, items)
+        if path is not None
+        else find_for_jj(name, items)
+    )
     if existing is not None:
         herdr("workspace", "close", existing["workspace_id"])
     return existing, items

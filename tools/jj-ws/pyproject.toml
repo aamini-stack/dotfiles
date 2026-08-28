@@ -3,6 +3,7 @@ name = "jj-ws"
 version = "0.1.0"
 description = "jj workspace management: wt CLI and herdr-jj plugin commands"
 requires-python = ">=3.11"
+dependencies = ["pathspec>=0.12"]
 
 [project.scripts]
 herdr-jj = "jjws.herdr.main:main"

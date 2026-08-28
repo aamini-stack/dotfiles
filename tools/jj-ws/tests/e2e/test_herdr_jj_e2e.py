@@ -83,7 +83,13 @@ class TestRemoveFlow:
             tmp_path,
             {
                 "workspace list": {
-                    "workspaces": [{"label": "feat", "workspace_id": "w1"}]
+                    "workspaces": [
+                        {
+                            "label": "feat",
+                            "workspace_id": "w1",
+                            "worktree": {"checkout_path": str(dest)},
+                        }
+                    ]
                 }
             },
         )
@@ -115,12 +121,18 @@ class TestRemoveFlow:
 class TestPickerFlow:
     def test_picker_focuses_existing(self, tmp_path, jj_repo, plugin_env):
         ws_root = tmp_path / "workspaces"
-        add_workspace(jj_repo, ws_root, "feat")
+        destination = add_workspace(jj_repo, ws_root, "feat")
         write_scenario(
             tmp_path,
             {
                 "workspace list": {
-                    "workspaces": [{"label": "feat", "workspace_id": "w2"}]
+                    "workspaces": [
+                        {
+                            "label": "feat",
+                            "workspace_id": "w2",
+                            "worktree": {"checkout_path": str(destination)},
+                        }
+                    ]
                 }
             },
         )
@@ -165,7 +177,13 @@ class TestPickerFlow:
             tmp_path,
             {
                 "workspace list": {
-                    "workspaces": [{"label": "feat", "workspace_id": "w2"}]
+                    "workspaces": [
+                        {
+                            "label": "feat",
+                            "workspace_id": "w2",
+                            "worktree": {"checkout_path": str(dest)},
+                        }
+                    ]
                 }
             },
         )

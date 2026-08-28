@@ -38,6 +38,19 @@ class FindWorkspaceTests(unittest.TestCase):
         with patch.object(herdr_module, "herdr", return_value={"workspaces": []}):
             self.assertIsNone(herdr_module.find_workspace("nope"))
 
+    def test_find_by_workspace_path_checks_cwd_and_checkout_path(self):
+        path = Path("/workspaces/repo/feature-auth-abc123")
+        by_cwd = {"workspace_id": "cwd", "cwd": str(path)}
+        by_checkout = {
+            "workspace_id": "checkout",
+            "worktree": {"checkout_path": str(path)},
+        }
+
+        self.assertEqual(herdr_module.find_by_workspace_path(path, [by_cwd]), by_cwd)
+        self.assertEqual(
+            herdr_module.find_by_workspace_path(path, [by_checkout]), by_checkout
+        )
+
 
 class OpenWorkspaceTests(unittest.TestCase):
     def test_uses_explicit_workspace_name_for_custom_path(self):
@@ -67,7 +80,15 @@ class OpenWorkspaceTests(unittest.TestCase):
         def fake_herdr(*args):
             calls.append(args)
             if args[:2] == ("workspace", "list"):
-                return {"workspaces": [{"label": "plugin", "workspace_id": "w2"}]}
+                return {
+                    "workspaces": [
+                        {
+                            "label": "plugin",
+                            "workspace_id": "w2",
+                            "cwd": "/home/u/.herdr/workspaces/dotfiles/plugin",
+                        }
+                    ]
+                }
             return {}
 
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
@@ -80,6 +101,137 @@ class OpenWorkspaceTests(unittest.TestCase):
 
         self.assertEqual(calls, [("workspace", "list"), ("workspace", "focus", "w2")])
         arm.assert_called_once_with("w2", path, {"w2"})
+
+    def test_existing_workspace_runs_requested_setup_once(self):
+        calls = []
+        path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "plugin",
+                            "workspace_id": "w2",
+                            "cwd": str(path),
+                        }
+                    ]
+                }
+            if args[:2] == ("tab", "create"):
+                return {"root_pane": {"pane_id": "p3"}}
+            return {}
+
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
+
+        self.assertIn(("pane", "run", "p3", open_module.SETUP_COMMAND), calls)
+        self.assertEqual(
+            len([call for call in calls if call[:2] == ("pane", "run")]), 1
+        )
+
+    def test_label_collision_does_not_focus_wrong_path(self):
+        path = Path("/workspaces/repo/feature-auth")
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "feature-auth",
+                            "workspace_id": "wrong",
+                            "cwd": "/other/repo/feature-auth",
+                        }
+                    ]
+                }
+            if args[:2] == ("workspace", "create"):
+                return {
+                    "root_pane": {"pane_id": "p1"},
+                    "workspace": {"workspace_id": "right"},
+                }
+            if args[:2] == ("pane", "split"):
+                return {"pane": {"pane_id": "p2"}}
+            return {}
+
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(
+                open_module.open_workspace(path, workspace_name="feature/auth"), 0
+            )
+
+        self.assertNotIn(("workspace", "focus", "wrong"), calls)
+        self.assertIn(("workspace", "focus", "right"), calls)
+
+    def test_reopens_collision_suffixed_workspace_by_cwd(self):
+        path = Path("/workspaces/repo/feature-auth-abc123")
+        existing = {
+            "label": "feature-auth-abc123",
+            "workspace_id": "existing",
+            "cwd": str(path),
+        }
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {"workspaces": [existing]}
+            return {}
+
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(
+                open_module.open_workspace(path, workspace_name="feature/auth"), 0
+            )
+
+        self.assertIn(("workspace", "focus", "existing"), calls)
+        self.assertNotIn(("workspace", "create"), [call[:2] for call in calls])
+
+    def test_path_match_wins_before_base_label_collision(self):
+        path = Path("/repos/one/feature-auth-abc123")
+        calls = []
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "feature-auth",
+                            "workspace_id": "wrong",
+                            "cwd": "/repos/two/feature-auth",
+                        },
+                        {
+                            "label": "feature-auth-abc123",
+                            "workspace_id": "right",
+                            "cwd": str(path),
+                        },
+                    ]
+                }
+            return {}
+
+        with (
+            patch.object(open_module, "herdr", side_effect=fake_herdr),
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(open_module.guard, "arm"),
+        ):
+            self.assertEqual(
+                open_module.open_workspace(path, workspace_name="feature/auth"), 0
+            )
+
+        self.assertIn(("workspace", "focus", "right"), calls)
+        self.assertNotIn(("workspace", "focus", "wrong"), calls)
 
     def test_creates_layout_and_runs_agent(self):
         calls = []
@@ -153,7 +305,12 @@ class OpenWorkspaceTests(unittest.TestCase):
         self.assertEqual(
             run_calls,
             [
-                ("pane", "run", "p1", "wt hook post-create"),
+                (
+                    "pane",
+                    "run",
+                    "p1",
+                    open_module.SETUP_COMMAND,
+                ),
                 ("pane", "run", "p2", "opencode"),
             ],
         )

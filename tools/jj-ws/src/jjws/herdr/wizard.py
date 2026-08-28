@@ -1,6 +1,6 @@
 """Popup wizard: name a new jj workspace, create it, open it in herdr.
 
-Creation never runs post-create hooks in the popup: the herdr workspace opens
+Creation never runs post-start hooks in the popup: the herdr workspace opens
 and focuses immediately, and the hooks run in its left pane instead, so a
 slow or failing setup neither blocks the UI nor prevents the switch.
 """

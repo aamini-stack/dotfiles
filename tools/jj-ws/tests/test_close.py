@@ -69,6 +69,63 @@ class CloseWorkspaceTests(unittest.TestCase):
         self.assertEqual(calls, [("workspace", "list"), ("workspace", "close", "w3")])
         disarm.assert_called_once_with("w3")
 
+    def test_path_mismatch_does_not_fall_back_to_colliding_label(self):
+        calls = []
+        requested = Path("/repos/one/workspaces/feature-auth")
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "feature-auth",
+                            "workspace_id": "other",
+                            "worktree": {
+                                "checkout_path": "/repos/two/workspaces/feature-auth"
+                            },
+                        }
+                    ]
+                }
+            return {}
+
+        with (
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(close_module.guard, "disarm") as disarm,
+            patch.object(close_module.guard, "prune"),
+        ):
+            self.assertEqual(close_module.close_workspace("feature/auth", requested), 0)
+
+        self.assertNotIn(("workspace", "close", "other"), calls)
+        disarm.assert_not_called()
+
+    def test_path_mismatch_does_not_close_hyphen_workspace_for_slash_name(self):
+        calls = []
+        requested = Path("/repos/one/feature-auth-abc")
+
+        def fake_herdr(*args):
+            calls.append(args)
+            if args[:2] == ("workspace", "list"):
+                return {
+                    "workspaces": [
+                        {
+                            "label": "feature-auth",
+                            "workspace_id": "hyphen",
+                            "worktree": {"checkout_path": "/repos/one/feature-auth"},
+                        }
+                    ]
+                }
+            return {}
+
+        with (
+            patch.object(herdr_module, "herdr", side_effect=fake_herdr),
+            patch.object(close_module.guard, "disarm"),
+            patch.object(close_module.guard, "prune"),
+        ):
+            self.assertEqual(close_module.close_workspace("feature/auth", requested), 0)
+
+        self.assertNotIn(("workspace", "close", "hyphen"), calls)
+
     def test_noop_when_workspace_absent(self):
         calls = []
 

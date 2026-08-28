@@ -5,9 +5,10 @@ import os
 import sys
 from pathlib import Path
 
-from ..lib.jj import JjError
+from ..lib.jj import JjError, primary_root
 from . import env, pr
 from .config import ConfigError
+from .config import load as load_config
 from .copy_ignored import CopyIgnoredError
 from .hooks import PHASES, HookError
 from .lifecycle import (
@@ -19,10 +20,11 @@ from .lifecycle import (
     list_workspaces,
     pick_workspace,
     remove_workspace,
-    resolve_workspace,
     run_configured_hook,
     run_configured_phase,
+    switch_to_workspace,
 )
+from .template import TemplateError, render
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -58,8 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     hook = subparsers.add_parser(
         "hook",
-        help="run a configured hook by name, or a whole phase "
-        "(post-create, pre-remove, post-remove)",
+        help=f"run a configured hook by name, or a whole phase ({', '.join(PHASES)})",
     )
     hook.add_argument("name")
     hook.set_defaults(run=_hook)
@@ -67,7 +68,20 @@ def build_parser() -> argparse.ArgumentParser:
     copy = subparsers.add_parser(
         "copy-ignored", help="copy ignored files from the primary workspace"
     )
+    copy.add_argument(
+        "--force", action="store_true", help="overwrite existing destination files"
+    )
     copy.set_defaults(run=_copy_ignored)
+
+    step = subparsers.add_parser("step", help="run a compatible Worktrunk step")
+    step_commands = step.add_subparsers(dest="step_command", required=True)
+    step_copy = step_commands.add_parser(
+        "copy-ignored", help="copy ignored files from the primary workspace"
+    )
+    step_copy.add_argument(
+        "--force", action="store_true", help="overwrite existing destination files"
+    )
+    step_copy.set_defaults(run=_copy_ignored)
 
     colocate = subparsers.add_parser(
         "colocate",
@@ -114,11 +128,12 @@ def _switch(args: argparse.Namespace) -> int:
     elif args.name:
         if args.revision:
             raise WtError("--revision only applies with --create")
-        target = resolve_workspace(cwd, args.name)
+        target = switch_to_workspace(cwd, args.name)
     else:
         target = pick_workspace(cwd)
         if target is None:
             return 0
+        target = switch_to_workspace(cwd, target.name)
     _emit(target.root)
     return 0
 
@@ -141,10 +156,33 @@ def _remove(args: argparse.Namespace) -> int:
 
 
 def _list(args: argparse.Namespace) -> int:
-    current, items = list_workspaces(Path.cwd())
+    cwd = Path.cwd()
+    current, items = list_workspaces(cwd)
+    primary = primary_root(cwd)
+    config = load_config(primary)
     for item in items:
         marker = "*" if item.name == current.name else " "
-        print(f"{marker} {item.name}\t{item.root}")
+        suffix = ""
+        if config.list_url:
+            try:
+                url = render(
+                    config.list_url,
+                    {
+                        "name": item.name,
+                        "branch": item.name,
+                        "repo": primary.name,
+                        "workspace_path": str(item.root),
+                        "worktree_path": str(item.root),
+                        "worktree_name": item.root.name,
+                        "primary_path": str(primary),
+                        "repo_path": str(primary),
+                        "primary_worktree_path": str(primary),
+                    },
+                )
+            except TemplateError as error:
+                raise WtError(f"list.url: {error}") from error
+            suffix = f"\t{url}"
+        print(f"{marker} {item.name}\t{item.root}{suffix}")
     return 0
 
 
@@ -157,7 +195,7 @@ def _hook(args: argparse.Namespace) -> int:
 
 
 def _copy_ignored(args: argparse.Namespace) -> int:
-    count = copy_ignored_to_current(Path.cwd())
+    count = copy_ignored_to_current(Path.cwd(), force=args.force)
     print(f"copied {count} ignored file{'s' if count != 1 else ''}")
     return 0
 

@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from ..lib.fzf import fzf_select
-from ..lib.herdr import find_for_jj, focus_workspace, list_workspaces
+from ..lib.herdr import find_by_worktree_path, focus_workspace, list_workspaces
 from ..lib.jj import JjError, primary_root, status_token, workspaces
 from .open import open_workspace
 from .remove import remove_workspace
@@ -29,7 +29,7 @@ def picker(env: Mapping[str, str] | None = None) -> int:
     lines = []
     for item in jj_workspaces:
         token = status_token(primary, rev=f"{item.name}@")
-        existing = find_for_jj(item.name, herdr_workspaces)
+        existing = find_by_worktree_path(item.root, herdr_workspaces)
         marker = existing.get("label", "open") if existing else "—"
         lines.append(f"{item.name}\t{token}\t{marker}")
 
@@ -47,7 +47,7 @@ def picker(env: Mapping[str, str] | None = None) -> int:
     if key == "ctrl-d":
         return remove_workspace(path, primary, env=env)
 
-    existing = find_for_jj(name, herdr_workspaces)
+    existing = find_by_worktree_path(path, herdr_workspaces)
     if existing is not None:
         focus_workspace(existing["workspace_id"])
         return 0

@@ -2,7 +2,7 @@
 
 Invoked by herdr-jj with the workspace path. If a herdr workspace labeled with
 the jj workspace name already exists it is focused; otherwise it is created
-with a vertical split: the left pane runs the project's post-create hooks
+with a vertical split: the left pane runs the project's post-start hooks
 (for freshly created workspaces) and the right pane runs opencode.
 """
 
@@ -20,6 +20,11 @@ from ..lib.herdr import (
     workspace_label,
 )
 
+SETUP_COMMAND = (
+    "wt hook post-start; start=$?; wt hook post-switch; "
+    "switch=$?; [ $start -eq 0 ] && exit $switch; exit $start"
+)
+
 
 def herdr_label(path: Path) -> str:
     return workspace_label(path.name)
@@ -35,6 +40,17 @@ def open_workspace(
     created, is_new, workspaces = ensure_open(name, path, project_path=project_path)
     workspace_id = created["workspace"]["workspace_id"]
     if not is_new:
+        if run_setup:
+            setup = herdr(
+                "tab",
+                "create",
+                "--workspace",
+                workspace_id,
+                "--label",
+                "setup",
+                "--no-focus",
+            )
+            herdr("pane", "run", setup["root_pane"]["pane_id"], SETUP_COMMAND)
         focus_workspace(workspace_id)
         _arm(workspace_id, path, workspaces)
         return 0
@@ -45,7 +61,7 @@ def open_workspace(
     ]
 
     if run_setup:
-        herdr("pane", "run", left, "wt hook post-create")
+        herdr("pane", "run", left, SETUP_COMMAND)
     herdr("pane", "run", right, "opencode")
     _arm(workspace_id, path, workspaces)
     focus_workspace(workspace_id)

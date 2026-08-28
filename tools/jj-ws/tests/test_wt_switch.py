@@ -1,5 +1,6 @@
 from jjws.lib.jj import Workspace
 from jjws.wt import lifecycle, main
+from jjws.wt.config import Config
 
 
 def test_resolve_workspace_looks_up_by_name(monkeypatch, tmp_path):
@@ -52,7 +53,7 @@ def run_wt(monkeypatch, argv, env=None):
 
 def test_switch_named_emits_existing_root(monkeypatch, tmp_path, capsys):
     target = Workspace("feat", tmp_path / "ws" / "feat")
-    monkeypatch.setattr(main, "resolve_workspace", lambda cwd, name: target)
+    monkeypatch.setattr(main, "switch_to_workspace", lambda cwd, name: target)
 
     assert run_wt(monkeypatch, ["switch", "feat"]) == 0
     assert capsys.readouterr().out.strip() == str(target.root)
@@ -100,6 +101,7 @@ def test_switch_revision_without_create_fails(monkeypatch, capsys):
 def test_switch_no_args_picks_with_fzf(monkeypatch, tmp_path, capsys):
     target = Workspace("feat", tmp_path / "ws" / "feat")
     monkeypatch.setattr(main, "pick_workspace", lambda cwd: target)
+    monkeypatch.setattr(main, "switch_to_workspace", lambda cwd, name: target)
 
     assert run_wt(monkeypatch, ["switch"]) == 0
     assert capsys.readouterr().out.strip() == str(target.root)
@@ -115,7 +117,7 @@ def test_switch_pick_cancelled_prints_nothing(monkeypatch, capsys):
 def test_switch_writes_result_file_when_set(monkeypatch, tmp_path, capsys):
     target = Workspace("feat", tmp_path / "ws" / "feat")
     result_file = tmp_path / "result"
-    monkeypatch.setattr(main, "resolve_workspace", lambda cwd, name: target)
+    monkeypatch.setattr(main, "switch_to_workspace", lambda cwd, name: target)
 
     assert (
         run_wt(
@@ -148,3 +150,47 @@ def test_switch_create_emits_destination_even_when_hooks_fail(
     )
     assert result_file.read_text() == str(target.root)
     assert "post-create.bootstrap failed" in capsys.readouterr().err
+
+
+def test_step_copy_ignored_accepts_force(monkeypatch, capsys):
+    seen = {}
+    monkeypatch.setattr(
+        main,
+        "copy_ignored_to_current",
+        lambda cwd, force=False: seen.update(force=force) or 1,
+    )
+
+    assert run_wt(monkeypatch, ["step", "copy-ignored", "--force"]) == 0
+    assert seen == {"force": True}
+    assert capsys.readouterr().out == "copied 1 ignored file\n"
+
+
+def test_direct_copy_command_defaults_to_no_force(monkeypatch, capsys):
+    seen = {}
+    monkeypatch.setattr(
+        main,
+        "copy_ignored_to_current",
+        lambda cwd, force=False: seen.update(force=force) or 0,
+    )
+
+    assert run_wt(monkeypatch, ["copy-ignored"]) == 0
+    assert seen == {"force": False}
+    assert capsys.readouterr().out == "copied 0 ignored files\n"
+
+
+def test_list_renders_project_url(monkeypatch, tmp_path, capsys):
+    primary = tmp_path / "repo"
+    current = Workspace("default", primary)
+    feat = Workspace("feat", tmp_path / "worktrees" / "feat")
+    monkeypatch.setattr(main, "list_workspaces", lambda cwd: (current, [current, feat]))
+    monkeypatch.setattr(main, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(
+        main,
+        "load_config",
+        lambda root: Config(list_url="http://localhost:{{ branch | hash_port }}"),
+    )
+
+    assert run_wt(monkeypatch, ["list"]) == 0
+    output = capsys.readouterr().out
+    assert f"* default\t{primary}\thttp://localhost:" in output
+    assert f"  feat\t{feat.root}\thttp://localhost:" in output
