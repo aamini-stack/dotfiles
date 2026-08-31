@@ -39,16 +39,23 @@ fi
 
 # git (latest stable from ppa, jj requires >= 2.41)
 step "Git"
-gum spin --title "Installing git from ppa..." -- bash -c '
-  sudo add-apt-repository -y ppa:git-core/ppa
-  sudo apt update -y
-  sudo apt install git -y
-'
+if command -v git &> /dev/null && grep -qs "git-core" /etc/apt/sources.list.d/*; then
+  gum style --foreground 245 "  already installed ($(git --version))"
+else
+  gum spin --title "Installing git from ppa..." -- bash -c '
+    sudo add-apt-repository -y ppa:git-core/ppa
+    sudo apt install git -y
+  '
+fi
 
 # stow
 step "Stow"
-gum spin --title "Installing stow and zsh..." -- \
-  sudo apt install stow zsh -y
+if command -v stow &> /dev/null && command -v zsh &> /dev/null; then
+  gum style --foreground 245 "  already installed"
+else
+  gum spin --title "Installing stow and zsh..." -- \
+    sudo apt install stow zsh -y
+fi
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 if [ -f "$HOME/.zshrc" ]; then
@@ -72,26 +79,62 @@ fi
 
 # mise
 step "Mise"
-gum spin --title "Installing mise..." -- \
-  bash -c 'curl -fsSL https://mise.run | sh'
+if command -v mise &> /dev/null; then
+  gum style --foreground 245 "  already installed"
+else
+  gum spin --title "Installing mise..." -- \
+    bash -c 'curl -fsSL https://mise.run | sh'
+fi
 mise_activation="eval \"\$($HOME/.local/bin/mise activate bash)\""
 grep -Fqx "$mise_activation" "$HOME/.bashrc" || printf '%s\n' "$mise_activation" >> "$HOME/.bashrc"
 eval "$(mise activate bash)"
 gum spin --title "Installing runtimes..." -- mise i
-mise trust -y "$HOME/dotfiles/mise.toml"
+gum spin --title "Trusting dotfiles config..." -- \
+  mise trust -y "$HOME/dotfiles/mise.toml"
 gum spin --title "Installing dotfiles tools..." -- \
   mise -C "$HOME/dotfiles" install --monorepo
 gum spin --title "Running tool install tasks..." -- \
   mise -C "$HOME/dotfiles" //:install
 
+# tailscale (system daemon; falls back to `mise run tailscaled` without systemd)
+step "Tailscale"
+if command -v systemctl &> /dev/null; then
+  if ! dpkg -s tailscale &> /dev/null; then
+    gum spin --title "Installing tailscale..." -- \
+      bash -c 'curl -fsSL https://tailscale.com/install.sh | sh'
+  else
+    gum style --foreground 245 "  already installed"
+  fi
+  gum spin --title "Enabling tailscaled..." -- \
+    sudo systemctl enable --now tailscaled
+else
+  gum style --foreground 245 "  no systemd, skipping (use: mise -C ~/dotfiles run tailscaled)"
+fi
+
 # zsh
 step "Shell"
 zsh_path="$(command -v zsh)"
-gum spin --title "Setting zsh as default shell..." -- \
-  sudo usermod -s "$zsh_path" "$USER"
+shell_changed=false
+if [ "$(getent passwd "$USER" | cut -d: -f7)" = "$zsh_path" ]; then
+  gum style --foreground 245 "  already default"
+else
+  gum spin --title "Setting zsh as default shell..." -- \
+    sudo usermod -s "$zsh_path" "$USER"
+  shell_changed=true
+fi
 
 gum style \
   --border rounded --border-foreground 82 --padding "0 3" --margin "1 0" \
   --foreground 82 "✓ Install complete"
 
-gum confirm "Log out is required for zsh. Open a new shell now?" && exec zsh || true
+if command -v tailscale &> /dev/null && ! sudo tailscale status &> /dev/null; then
+  gum style \
+    --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
+    "$(gum style --bold --foreground 214 'One manual step:')" \
+    "run: sudo tailscale up" \
+    "then open the login link it prints"
+fi
+
+if [ "$shell_changed" = true ]; then
+  gum confirm "Log out is required for zsh. Open a new shell now?" && exec zsh || true
+fi

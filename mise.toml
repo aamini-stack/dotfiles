@@ -1,10 +1,26 @@
 monorepo_root = true
 
+[tools]
+"aqua:tailscale/tailscale" = "latest"
+
 [monorepo]
 config_roots = ["tools/*"]
 
 [shell_alias]
 dots = "cd {{config_root}}"
+
+[tasks.tailscaled]
+description = "Run tailscaled in userspace mode (no root needed)"
+run = '''
+mkdir -p "$HOME/.local/share/tailscale"
+exec tailscaled --tun=userspace-networking \
+  --statedir="$HOME/.local/share/tailscale" \
+  --socket="$HOME/.local/share/tailscale/tailscaled.sock"
+'''
+
+[tasks.ts]
+description = "tailscale CLI against the userspace daemon"
+run = 'tailscale --socket="$HOME/.local/share/tailscale/tailscaled.sock" "$@"'
 
 [tasks.install]
 description = "Install all dotfiles tools"
