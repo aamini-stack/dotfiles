@@ -15,7 +15,10 @@ node_modules/
 .venv
 .ruff_cache
 
-.local
+.local/*
+!.local/bin/
+.local/bin/*
+!.local/bin/t3
 .config/jj/repos
 
 # Work

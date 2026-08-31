@@ -107,6 +107,10 @@ if command -v systemctl &> /dev/null; then
   fi
   gum spin --title "Enabling tailscaled..." -- \
     sudo systemctl enable --now tailscaled
+  # operator: lets t3 run tailscale serve without sudo
+  if sudo tailscale status &> /dev/null; then
+    sudo tailscale set --operator="$USER"
+  fi
 else
   gum style --foreground 245 "  no systemd, skipping (use: mise -C ~/dotfiles run tailscaled)"
 fi

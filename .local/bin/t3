@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Wraps the t3 CLI that `t3 service install` vendors under ~/.t3/runtime.
+# install.sh skips a global npm install on purpose: the @pierre/* deps fail
+# mise's npm backend trust policy, so npx owns the package copy.
+
+set -euo pipefail
+
+state="$HOME/.t3/runtime/service-state.json"
+if [ ! -f "$state" ]; then
+  printf 't3 service not installed; run install.sh first\n' >&2
+  exit 1
+fi
+
+version="$(sed -n 's/.*"activeVersion": *"\([^"]*\)".*/\1/p' "$state")"
+bin="$HOME/.t3/runtime/versions/$version/node_modules/t3/dist/bin.mjs"
+if [ ! -f "$bin" ]; then
+  printf 't3 runtime %s missing; reinstall the service\n' "$version" >&2
+  exit 1
+fi
+
+exec node "$bin" "$@"
