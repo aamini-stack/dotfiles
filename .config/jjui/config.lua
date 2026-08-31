@@ -56,6 +56,21 @@ local function switch_workspace(ws)
   flash("workspace: " .. ws.name)
 end
 
+local function first_bookmark(change_id)
+  local out = jj("--color", "never", "log", "-r", change_id, "-T", "bookmarks", "--no-graph")
+  if not out then return nil end
+  return out:match("([%w%._/-]+)")
+end
+
+local function stack_base(change_id)
+  local revset = string.format("latest(::parents(%s) & bookmarks())", change_id)
+  local out = jj("--color", "never", "log", "-r", revset, "-T", "bookmarks", "--no-graph")
+  local base = out and out:match("([%w%._/-]+)")
+  if base then return base end
+  local trunk = jj("--color", "never", "log", "-r", "trunk()", "-T", "bookmarks", "--no-graph")
+  return (trunk and trunk:match("([%w%._/-]+)")) or "main"
+end
+
 function setup(config)
   config.action("switch workspace", function()
     local workspaces, err = list_workspaces()
@@ -183,6 +198,69 @@ function setup(config)
   end, {
     desc = "delete workspace",
     seq = { "w", "d" },
+    scope = "revisions",
+  })
+
+  config.action("create PR", function()
+    local change_id = context.change_id()
+    if not change_id or change_id == "" then
+      flash({ text = "No revision selected", error = true })
+      return
+    end
+
+    local existing = first_bookmark(change_id)
+    if existing then
+      flash({ text = "already bookmarked: " .. existing, error = true })
+      return
+    end
+
+    local name = input({ title = "Create PR", prompt = "branch name: " })
+    if not name then return end
+    name = name:gsub("^%s+", ""):gsub("%s+$", "")
+    if name == "" then return end
+
+    local _, create_err = jj("bookmark", "create", name, "-r", change_id)
+    if create_err then
+      flash({ text = "bookmark failed: " .. tostring(create_err), error = true })
+      return
+    end
+
+    local _, push_err = jj("git", "push", "--bookmark", name, "--allow-new")
+    if push_err then
+      flash({ text = "push failed: " .. tostring(push_err), error = true })
+      return
+    end
+
+    jj_interactive("gh", "pr", "create", "--fill", "--head", name, "--base", stack_base(change_id))
+    revisions.refresh()
+  end, {
+    desc = "create PR",
+    key = "ctrl+p",
+    scope = "revisions",
+  })
+
+  config.action("view PR", function()
+    local change_id = context.change_id()
+    if not change_id or change_id == "" then
+      flash({ text = "No revision selected", error = true })
+      return
+    end
+
+    local name = first_bookmark(change_id)
+    if not name then
+      flash({ text = "no bookmark on revision", error = true })
+      return
+    end
+
+    local out, err = jj("util", "exec", "--", "gh", "pr", "view", name)
+    if not out then
+      flash({ text = "gh failed: " .. tostring(err), error = true })
+      return
+    end
+    jjui.ui.preview.show(out)
+  end, {
+    desc = "view PR",
+    key = "ctrl+o",
     scope = "revisions",
   })
 

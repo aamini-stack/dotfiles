@@ -15,6 +15,9 @@ email = "amini5454@gmail.com"
 [snapshot]
 max-new-file-size = "10MiB"
 
+[remotes.origin]
+auto-track-bookmarks = "*"
+
 # Only honored by sjawhar/jj fork (colocated-workspaces stack); ignored by stock jj.
 [git]
 auto-register-worktrees = true
