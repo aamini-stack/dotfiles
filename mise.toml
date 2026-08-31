@@ -2,6 +2,7 @@ monorepo_root = true
 
 [tools]
 "aqua:tailscale/tailscale" = "latest"
+node = "24"
 
 [monorepo]
 config_roots = ["tools/*"]

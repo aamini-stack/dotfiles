@@ -111,6 +111,24 @@ else
   gum style --foreground 245 "  no systemd, skipping (use: mise -C ~/dotfiles run tailscaled)"
 fi
 
+# t3 code (systemd user service with lingering; needs tailscale for remote pairing)
+# npx instead of mise npm backend: the @pierre/* deps fail mise's aube trust policy
+# system gcc over mise gcc: node-pty must link against system glibc, not nix glibc
+step "T3 Code"
+if ! command -v systemctl &> /dev/null; then
+  gum style --foreground 245 "  no systemd, skipping"
+elif [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
+  gum style --foreground 245 "  already installed"
+else
+  if [ ! -x /usr/bin/g++ ]; then
+    gum spin --title "Installing build-essential..." -- \
+      sudo apt install -y build-essential
+  fi
+  node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
+  gum spin --title "Installing t3 service..." -- \
+    env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@latest service install
+fi
+
 # zsh
 step "Shell"
 zsh_path="$(command -v zsh)"
@@ -133,6 +151,12 @@ if command -v tailscale &> /dev/null && ! sudo tailscale status &> /dev/null; th
     "$(gum style --bold --foreground 214 'One manual step:')" \
     "run: sudo tailscale up" \
     "then open the login link it prints"
+elif [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
+  gum style \
+    --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
+    "$(gum style --bold --foreground 214 'Pair a device:')" \
+    "run: t3 pair --tailscale" \
+    "then scan the QR code from your phone"
 fi
 
 if [ "$shell_changed" = true ]; then
