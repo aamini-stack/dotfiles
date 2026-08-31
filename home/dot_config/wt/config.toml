@@ -7,4 +7,4 @@ copy-envs = "wt copy-ignored"
 close-herdr = "herdr-jj close --name '{{ name }}' --path '{{ workspace_path }}' --primary '{{ primary_path }}'"
 
 [copy-ignored]
-exclude = [".env.compose", "*node_modules/*"]
+exclude = [".env.compose", "**/.venv/", "*node_modules/*"]

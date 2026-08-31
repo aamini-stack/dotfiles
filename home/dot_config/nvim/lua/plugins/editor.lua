@@ -213,7 +213,16 @@ return {
   {
     'brenton-leighton/multiple-cursors.nvim',
     version = '*',
-    opts = {},
+    opts = function()
+      local clipboard
+      return {
+        pre_hook = function()
+          clipboard = vim.opt.clipboard:get()
+          vim.opt.clipboard = {}
+        end,
+        post_hook = function() vim.opt.clipboard = clipboard end,
+      }
+    end,
     keys = {
       { '<C-j>', '<Cmd>MultipleCursorsAddDown<CR>', mode = { 'n', 'x' }, desc = 'Add cursor and move down' },
       { '<C-k>', '<Cmd>MultipleCursorsAddUp<CR>', mode = { 'n', 'x' }, desc = 'Add cursor and move up' },
