@@ -148,16 +148,6 @@ PATH="$PATH:/usr/sbin:/sbin" # Make sure iptables and mount.fuse3 are available
 export PATH
 # Lima END
 
-dev() {
-  local -a targets=(wsl devbox none)
-  [[ "$(uname -s)" == "Darwin" ]] && targets=(lima "${targets[@]}")
-  local target=$(printf '%s\n' "${targets[@]}" | fzf --prompt='devbox target: ')
-  case "$target" in
-    lima) herdr --remote lima-default --remote-keybindings server ;;
-    wsl|devbox) herdr --remote "$target" --remote-keybindings server ;;
-  esac
-}
-
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit
 compinit

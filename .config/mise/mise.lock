@@ -6049,7 +6049,6 @@ checksum = "sha256:976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6ae
 url = "https://github.com/herdrdev/herdr/releases/download/v0.8.2/herdr-linux-x86_64"
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/521169107"
 provenance = "github-attestations"
-provenance_verified = true
 
 [tools."github:herdrdev/herdr"."platforms.linux-x64-baseline"]
 checksum = "sha256:976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6aecf4"
@@ -8404,7 +8403,7 @@ version = "15.2.0"
 backend = "nix:gcc"
 
 [[tools."nix:gh-dash"]]
-version = "4.25.0"
+version = "4.23.2"
 backend = "nix:gh-dash"
 
 [[tools."nix:git-town"]]
@@ -8436,7 +8435,7 @@ version = "2.4.1"
 backend = "nix:stow"
 
 [[tools."nix:tree-sitter"]]
-version = "0.26.9"
+version = "0.25.10"
 backend = "nix:tree-sitter"
 
 [[tools."nix:unzip"]]
@@ -9010,7 +9009,7 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rust]]
-version = "1.97.1"
+version = "1.96.1"
 backend = "core:rust"
 
 [[tools.shellcheck]]

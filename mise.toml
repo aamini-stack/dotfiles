@@ -8,11 +8,11 @@ dots = "cd {{config_root}}"
 
 [tasks.install]
 description = "Install all dotfiles tools"
-depends = ["//tools/jj-ws:install", "//tools/imgview:install", "//tools/pix:install"]
+depends = ["//tools/...:install"]
 
 [tasks.check]
 description = "Run all checks"
-depends = ["//tools/jj-ws:check", "//tools/imgview:check", "//tools/pix:check"]
+depends = ["//tools/...:check"]
 
 [tasks.restow]
 description = "Restow dotfiles into $HOME"

@@ -13,7 +13,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/aria-amini/dotfiles/main/ins
 | Path | What it is |
 | --- | --- |
 | `.config/`, `.zshrc`, … | stowed into `$HOME` |
-| `tools/` | one directory per CLI capability (`jj-ws`, `imgview`, `pix`) |
+| `tools/` | one directory per CLI capability (`dev`, `jj-ws`, `imgview`, `pix`) |
 | `apps/tanstack` | copier template scaffolded by `new-tanstack-app` |
 | `.config/mise/config.toml` | machine-wide toolchains and global tasks |
 
