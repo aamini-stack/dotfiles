@@ -160,6 +160,7 @@ else
   gum style --foreground 214 "  authentication deferred: run gh auth login --web"
 fi
 mise --quiet trust -y "$HOME/dotfiles/mise.toml"
+run_task "Linking Vite+ plugin" mise plugin link --force vite-plus "$HOME/dotfiles/tools/mise-vite-plus"
 
 # Developer Tools
 section "Developer Tools"
