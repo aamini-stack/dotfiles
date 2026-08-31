@@ -1,4 +1,7 @@
 .env*.local
+/.config/
+/.gitconfig
+/.local/
 
 home/dot_config/gh
 
