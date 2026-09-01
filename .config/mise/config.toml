@@ -64,7 +64,6 @@ shellcheck = "latest"
 
 # Shell
 "github:herdrdev/herdr" = "0.8.2"
-"nix:zsh" = "latest"
 "oh-my-posh" = "latest"
 
 # AI
