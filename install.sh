@@ -121,7 +121,13 @@ if [ -d /run/systemd/system ]; then
   fi
   gum spin --title "Enabling tailscaled..." -- \
     sudo systemctl enable --now tailscaled
-  # operator: lets t3 run tailscale serve without sudo
+  if ! sudo tailscale status &> /dev/null; then
+    gum style \
+      --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
+      "$(gum style --bold --foreground 214 'Tailscale authentication required:')" \
+      "open the login link from the command below"
+    sudo tailscale up
+  fi
   if sudo tailscale status &> /dev/null; then
     sudo tailscale set --operator="$USER"
   fi
