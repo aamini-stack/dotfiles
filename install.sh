@@ -141,16 +141,26 @@ fi
 step "T3 Code"
 if [ ! -d /run/systemd/system ]; then
   gum style --foreground 245 "  no systemd, skipping"
-elif [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
-  gum style --foreground 245 "  already installed"
 else
-  if [ ! -x /usr/bin/g++ ]; then
-    gum spin --title "Installing build-essential..." -- \
-      sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential
+  opencode_bin="$(mise -C "$HOME/dotfiles" which opencode)"
+  t3_settings="$HOME/.t3/userdata/settings.json"
+  if [ ! -f "$t3_settings" ]; then
+    mkdir -p "$(dirname "$t3_settings")"
+    jq -n --arg binary_path "$opencode_bin" \
+      '{providers: {opencode: {enabled: true, binaryPath: $binary_path}}}' \
+      > "$t3_settings"
   fi
-  node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
-  gum spin --title "Installing t3 service..." -- \
-    env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@nightly service install
+  if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
+    gum style --foreground 245 "  already installed"
+  else
+    if [ ! -x /usr/bin/g++ ]; then
+      gum spin --title "Installing build-essential..." -- \
+        sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential
+    fi
+    node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
+    gum spin --title "Installing t3 service..." -- \
+      env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@nightly service install
+  fi
 fi
 
 # zsh
