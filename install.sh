@@ -90,7 +90,7 @@ fi
 # and the managed zshrc already adds the Nix profile bin directory to PATH.
 for profile in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.profile"; do
   [ -f "$profile" ] || continue
-  sed -i '/# added by Nix installer$/d' "$profile"
+  sed -i '/# added by Nix installer[[:space:]]*$/d' "$profile"
 done
 
 # mise
