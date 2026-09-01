@@ -144,7 +144,7 @@ else
   fi
   node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
   gum spin --title "Installing t3 service..." -- \
-    env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@latest service install
+    env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@nightly service install
 fi
 
 # zsh
