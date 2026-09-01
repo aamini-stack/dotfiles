@@ -1,0 +1,3 @@
+# azure-cli pins azure-batch==15.0.0b1, which was deleted from PyPI.
+# 15.0.0b2 is the closest surviving release.
+azure-batch==15.0.0b2

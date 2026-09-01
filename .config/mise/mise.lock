@@ -8764,8 +8764,11 @@ url = "https://github.com/earendil-works/pi/releases/download/v0.82.1/pi-windows
 url_api = "https://api.github.com/repos/earendil-works/pi/releases/assets/489434441"
 
 [[tools."pipx:azure-cli"]]
-version = "2.88.0"
+version = "2.89.1"
 backend = "pipx:azure-cli"
+
+[tools."pipx:azure-cli".options]
+uvx_args = "--prerelease=allow --overrides /home/aria-amini/.config/mise/azure-cli-overrides.txt"
 
 [[tools."pipx:basedpyright"]]
 version = "1.39.9"
