@@ -86,6 +86,12 @@ if ! command -v nix &> /dev/null; then
 else
   gum style --foreground 245 "  already installed"
 fi
+# Nix adds this marked line to shell profiles. The script sources Nix itself,
+# and the managed zshrc already adds the Nix profile bin directory to PATH.
+for profile in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.profile"; do
+  [ -f "$profile" ] || continue
+  sed -i '/# added by Nix installer$/d' "$profile"
+done
 
 # mise
 step "Mise"
@@ -163,7 +169,8 @@ if command -v tailscale &> /dev/null && ! sudo tailscale status &> /dev/null; th
     "$(gum style --bold --foreground 214 'One manual step:')" \
     "run: sudo tailscale up" \
     "then open the login link it prints"
-elif [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
+fi
+if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
   gum style \
     --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
     "$(gum style --bold --foreground 214 'Pair a device:')" \
