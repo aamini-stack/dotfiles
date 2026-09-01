@@ -102,7 +102,7 @@ imagemagick = "latest"
 # Devops
 # uvx_args: every recent azure-cli pins azure-batch==15.0.0b1, deleted from
 # PyPI — override to 15.0.0b2 until upstream fixes the pin.
-"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow --overrides /home/aria-amini/.config/mise/azure-cli-overrides.txt" }
+"pipx:azure-cli" = { version = "latest", uvx_args = "--prerelease=allow --overrides {{ env.HOME }}/.config/mise/azure-cli-overrides.txt" }
 kubectl = "latest"
 helm = "latest"
 pulumi = "latest"

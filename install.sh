@@ -24,8 +24,14 @@ gum style \
   "$(gum style --bold --foreground 212 'dotfiles')" \
   "github.com/aria-amini/dotfiles"
 
+step_total=9
+step_current=0
+current_step="bootstrap"
+trap 'gum style --foreground 196 --bold "✗ Failed during: $current_step (exit $?)" >&2' ERR
 step() {
-  gum style --margin "1 0 0 0" --bold --foreground 99 "▸ $1"
+  step_current=$((step_current + 1))
+  current_step="$1"
+  gum style --margin "1 0 0 0" --bold --foreground 99 "▸ [$step_current/$step_total] $1"
 }
 
 # clone: dotfiles
@@ -37,6 +43,11 @@ else
   gum style --foreground 245 "  already cloned"
 fi
 
+# apt (fresh boxes have empty package lists and no add-apt-repository)
+step "Apt"
+sudo apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common xz-utils
+
 # git (latest stable from ppa, jj requires >= 2.41)
 step "Git"
 if command -v git &> /dev/null && grep -qs "git-core" /etc/apt/sources.list.d/*; then
@@ -44,7 +55,7 @@ if command -v git &> /dev/null && grep -qs "git-core" /etc/apt/sources.list.d/*;
 else
   gum spin --title "Installing git from ppa..." -- bash -c '
     sudo add-apt-repository -y ppa:git-core/ppa
-    sudo apt install git -y
+    sudo DEBIAN_FRONTEND=noninteractive apt install git -y
   '
 fi
 
@@ -54,7 +65,7 @@ if command -v stow &> /dev/null && command -v zsh &> /dev/null; then
   gum style --foreground 245 "  already installed"
 else
   gum spin --title "Installing stow and zsh..." -- \
-    sudo apt install stow zsh -y
+    sudo DEBIAN_FRONTEND=noninteractive apt install stow zsh -y
 fi
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
@@ -69,8 +80,7 @@ gum spin --title "Linking dotfiles..." -- bash -c "
 # nix
 step "Nix"
 if ! command -v nix &> /dev/null; then
-  gum spin --title "Installing nix..." -- \
-    sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
+  sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon
   # shellcheck source=/dev/null
   . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 else
@@ -88,17 +98,15 @@ fi
 mise_activation="eval \"\$($HOME/.local/bin/mise activate bash)\""
 grep -Fqx "$mise_activation" "$HOME/.bashrc" || printf '%s\n' "$mise_activation" >> "$HOME/.bashrc"
 eval "$(mise activate bash)"
-gum spin --title "Installing runtimes..." -- mise i
+mise i
 gum spin --title "Trusting dotfiles config..." -- \
   mise trust -y "$HOME/dotfiles/mise.toml"
-gum spin --title "Installing dotfiles tools..." -- \
-  mise -C "$HOME/dotfiles" install --monorepo
-gum spin --title "Running tool install tasks..." -- \
-  mise -C "$HOME/dotfiles" //:install
+mise -C "$HOME/dotfiles" install --monorepo
+mise -C "$HOME/dotfiles" //:install
 
 # tailscale (system daemon; falls back to `mise run tailscaled` without systemd)
 step "Tailscale"
-if command -v systemctl &> /dev/null; then
+if [ -d /run/systemd/system ]; then
   if ! dpkg -s tailscale &> /dev/null; then
     gum spin --title "Installing tailscale..." -- \
       bash -c 'curl -fsSL https://tailscale.com/install.sh | sh'
@@ -119,14 +127,14 @@ fi
 # npx instead of mise npm backend: the @pierre/* deps fail mise's aube trust policy
 # system gcc over mise gcc: node-pty must link against system glibc, not nix glibc
 step "T3 Code"
-if ! command -v systemctl &> /dev/null; then
+if [ ! -d /run/systemd/system ]; then
   gum style --foreground 245 "  no systemd, skipping"
 elif [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
   gum style --foreground 245 "  already installed"
 else
   if [ ! -x /usr/bin/g++ ]; then
     gum spin --title "Installing build-essential..." -- \
-      sudo apt install -y build-essential
+      sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential
   fi
   node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
   gum spin --title "Installing t3 service..." -- \
