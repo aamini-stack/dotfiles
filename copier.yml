@@ -80,6 +80,13 @@ _skip_if_exists:
 _exclude:
   - 'copier.yml'
   - 'node_modules/**'
+  - |
+    {% if _copier_operation == 'update' %}
+    .env.local
+    .env.development.local
+    .env.preview
+    .env.production
+    {% endif %}
   - '{% if not sentry %}instrument.server.mjs{% endif %}'
   - '{% if not sentry %}src/instrument.client.ts{% endif %}'
   - '{% if not posthog %}src/lib/analytics/posthog.server.ts{% endif %}'
