@@ -41,6 +41,16 @@ mise run bootstrap
 vp dev
 ```
 
+## Docker Services
+
+The development stack runs Postgres and MinIO through Docker Compose.
+
+```sh
+vp run compose:up
+vp run compose:down
+vp run compose:reset
+```
+
 ## Environment Variables
 
 Managed by [varlock](https://varlock.dev); `.env.schema` defines what is

@@ -8502,6 +8502,10 @@ url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-win-x64.zip"
 checksum = "sha256:7df0bc9375723f4a86b3aa1b7cc73342423d9677a8df4538aca31a049e309c29"
 url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-win-x64.zip"
 
+[[tools."npm:@openai/codex"]]
+version = "0.152.0"
+backend = "npm:@openai/codex"
+
 [[tools."npm:@opencode-ai/cli"]]
 version = "next"
 backend = "npm:@opencode-ai/cli"
