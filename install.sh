@@ -136,8 +136,6 @@ else
 fi
 
 # t3 code (systemd user service with lingering; needs tailscale for remote pairing)
-# npx instead of mise npm backend: the @pierre/* deps fail mise's aube trust policy
-# system gcc over mise gcc: node-pty must link against system glibc, not nix glibc
 step "T3 Code"
 if [ ! -d /run/systemd/system ]; then
   gum style --foreground 245 "  no systemd, skipping"
@@ -150,16 +148,19 @@ else
       '{providers: {opencode: {enabled: true, binaryPath: $binary_path}}}' \
       > "$t3_settings"
   fi
+  node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
+  if [ ! -x /usr/bin/g++ ]; then
+    gum spin --title "Installing build-essential..." -- \
+      sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential
+  fi
   if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
-    gum style --foreground 245 "  already installed"
+    gum spin --title "Updating T3 Code service..." -- \
+      env PATH="$node_bin_dir:/usr/bin:/bin" \
+      "$node_bin_dir/npx" --yes t3@0.0.38 service update
   else
-    if [ ! -x /usr/bin/g++ ]; then
-      gum spin --title "Installing build-essential..." -- \
-        sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential
-    fi
-    node_bin_dir="$(dirname "$(mise -C "$HOME/dotfiles" which node)")"
-    gum spin --title "Installing t3 service..." -- \
-      env PATH="/usr/bin:/bin:$node_bin_dir" "$node_bin_dir/npx" -y t3@nightly service install
+    gum spin --title "Installing T3 Code service..." -- \
+      env PATH="$node_bin_dir:/usr/bin:/bin" \
+      "$node_bin_dir/npx" --yes t3@0.0.38 service install
   fi
 fi
 
@@ -195,5 +196,5 @@ if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
 fi
 
 if [ "$shell_changed" = true ]; then
-  gum confirm "Log out is required for zsh. Open a new shell now?" && exec zsh || true
+  gum confirm "Reboot now to apply zsh as the login shell?" && sudo reboot || true
 fi
