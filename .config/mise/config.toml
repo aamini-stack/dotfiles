@@ -125,7 +125,8 @@ pi = "latest"
 "npm:varlock" = "1.11.0"
 "npm:greptile" = "latest"
 "npm:chrome-devtools-axi" = "latest"
-pitchfork = "latest"
+# Pinned: the boot service unit records this install path; upgrades move it.
+pitchfork = "2.21.0"
 sqlite = "latest"
 "npm:@openai/codex" = "latest"
 
@@ -134,3 +135,17 @@ description = "Scaffold a new TanStack Start app from the dotfiles template"
 dir = "{{cwd}}"
 usage = 'arg "<target>" help="Destination directory for the new app"'
 run = 'copier copy --trust "$HOME/dotfiles" "$usage_target"'
+
+[tasks.setup-pitchfork]
+description = "One-time Pitchfork proxy setup: TLD, bind host, boot service, CA trust"
+dir = "{{cwd}}"
+usage = 'arg "[host]" help="Proxy bind address: 127.0.0.1 (laptop) or 0.0.0.0 (remote devbox)" default="127.0.0.1"'
+run = '''
+set -euo pipefail
+pitchfork settings set proxy.tld lvh.ariaamini.com --global
+pitchfork settings set proxy.host "$usage_host" --global
+pitchfork settings set supervisor.user "$(id -un)" --global
+sudo "$(mise which pitchfork)" boot enable
+pitchfork proxy status | grep -q 'Trusted: yes' || pitchfork proxy trust
+echo "Setup complete. Reboot (or restart the supervisor) to run the boot service."
+'''
