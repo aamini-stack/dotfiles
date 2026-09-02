@@ -1,4 +1,5 @@
 _min_copier_version: '9'
+_subdirectory: apps/tanstack
 
 app_name:
   type: str

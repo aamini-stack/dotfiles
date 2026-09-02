@@ -133,4 +133,4 @@ sqlite = "latest"
 description = "Scaffold a new TanStack Start app from the dotfiles template"
 dir = "{{cwd}}"
 usage = 'arg "<target>" help="Destination directory for the new app"'
-run = 'copier copy --trust "$HOME/dotfiles/apps/tanstack" "$usage_target"'
+run = 'copier copy --trust "$HOME/dotfiles" "$usage_target"'
