@@ -35,8 +35,3 @@ depends = ["//tools/...:check"]
 description = "Restow dotfiles into $HOME"
 dir = "{{config_root}}"
 run = 'stow --restow -v --target="$HOME" .'
-
-[tasks.e2e]
-description = "Run install.sh in a fresh ubuntu container"
-dir = "{{config_root}}"
-run = "bash tests/e2e/run.sh"

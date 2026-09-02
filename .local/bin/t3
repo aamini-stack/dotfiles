@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+exec env \
+  CC=/usr/bin/gcc \
+  CXX=/usr/bin/g++ \
+  NPM_CONFIG_CACHE="${NPM_CONFIG_CACHE:-$HOME/.cache/npm-t3}" \
+  npx --yes t3@0.0.38 "$@"
