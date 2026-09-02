@@ -72,10 +72,10 @@ _templates_suffix: '.jinja'
 # Value files hold per-instance secrets/local config; never overwrite on update.
 # .env.schema remains template-managed as the contract.
 _skip_if_exists:
-  - .env.local
-  - .env.development.local
-  - .env.preview
-  - .env.production
+  - "{% if _copier_operation != 'update' %}.env.local{% endif %}"
+  - "{% if _copier_operation != 'update' %}.env.development.local{% endif %}"
+  - "{% if _copier_operation != 'update' %}.env.preview{% endif %}"
+  - "{% if _copier_operation != 'update' %}.env.production{% endif %}"
 
 _exclude:
   - 'copier.yml'
