@@ -9,7 +9,9 @@ export default defineConfig({
 	retries: process.env.CI ? 3 : 0,
 	reporter: [['html', { open: 'never', outputFolder: '.playwright/report' }]],
 	use: {
-		baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
+		baseURL:
+			process.env.BASE_URL ??
+			`http://localhost:${process.env.APP_PORT ?? '3000'}`,
 		trace: 'retain-on-first-failure',
 		screenshot: 'on',
 		video: 'retain-on-failure',
