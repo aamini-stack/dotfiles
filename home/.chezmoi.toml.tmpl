@@ -1,0 +1,7 @@
+sourceDir = {{ .chezmoi.workingTree | quote }}
+
+[data]
+isWSL = {{ if and (eq .chezmoi.os "linux") (output "uname" "-r" | lower | contains "microsoft") }}true{{ else }}false{{ end }}
+isLima = {{ if and (eq .chezmoi.os "linux") (stat "/usr/local/bin/lima-guestagent") }}true{{ else }}false{{ end }}
+wslHostAddress = "192.168.88.7"
+entraLoginAddress = "20.190.152.19"

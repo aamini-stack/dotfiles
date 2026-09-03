@@ -98,9 +98,8 @@ ensure_sudo() {
 section "System"
 ensure_sudo
 run_task "Updating package index" sudo apt-get update
-run_command "Installing system packages" sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common stow xz-utils zsh
+run_command "Installing system packages" sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common xz-utils zsh
 show_command_version "APT" 1 apt-get --version
-show_command_version "Stow" 4 stow --version
 show_command_version "Zsh" 1 zsh --version
 show_command_version "XZ" 3 xz --version
 
@@ -120,13 +119,11 @@ if [ ! -d "$HOME/dotfiles" ]; then
 fi
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
-if [ -f "$HOME/.zshrc" ]; then
-  rm "$HOME/.zshrc"
+if ! command -v chezmoi &> /dev/null; then
+  run_command "Installing chezmoi" sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 fi
-run_command "Applying dotfiles" bash -c "
-  cd \"$HOME/dotfiles\"
-  stow --restow --target=\"$HOME\" .
-"
+show_command_version "Chezmoi" 2 chezmoi --version
+run_task "Applying dotfiles" chezmoi init --source "$HOME/dotfiles" --apply
 
 if ! command -v nix &> /dev/null; then
   run_command "Installing Nix" bash -c "sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon"

@@ -83,7 +83,6 @@ make = "latest"
 
 # misc
 "nix:postgresql_18" = "latest"
-"nix:stow" = "latest"
 # images
 imagemagick = "latest"
 "github:danielgatis/imgcat" = "latest"
@@ -133,7 +132,7 @@ sqlite = "latest"
 description = "Scaffold a new TanStack Start app from the dotfiles template"
 dir = "{{cwd}}"
 usage = 'arg "<target>" help="Destination directory for the new app"'
-run = 'copier copy --trust "$HOME/dotfiles" "$usage_target"'
+run = 'copier copy --trust "$DOTFILES" "$usage_target"'
 
 [tasks.setup-pitchfork]
 description = "One-time Pitchfork proxy setup: TLD, bind host, boot service, CA trust"

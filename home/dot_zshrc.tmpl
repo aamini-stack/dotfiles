@@ -13,6 +13,7 @@ if (( ! $+commands[infocmp] )) || [[ -z "$TERM" ]] || ! infocmp "$TERM" >/dev/nu
 fi
 export OPENCODE_EXPERIMENTAL_OXFMT=1
 export OLLAMA_HOST="http://127.0.0.1:11434"
+export DOTFILES={{ .chezmoi.workingTree | quote }}
 # Global-only mise setting (kept out of .config/mise/config.toml so jj
 # workspace copies of that file loaded as project configs don't warn).
 export MISE_TRUSTED_CONFIG_PATHS="$HOME/.herdr/worktrees/:$HOME/.herdr/workspaces/"
@@ -21,7 +22,9 @@ export MISE_TRUSTED_CONFIG_PATHS="$HOME/.herdr/worktrees/:$HOME/.herdr/workspace
 export PATH="$PATH:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$HOME/.nix-profile/bin"
+{{ if eq .chezmoi.os "linux" -}}
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+{{ end -}}
 
 # ── Initialization ────────────────────────────────────────────
 eval "$(mise activate zsh)"
@@ -105,53 +108,19 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+{{ if eq .chezmoi.os "darwin" -}}
 # ── Platform: macOS ────────────────────────────────────────────
-#
-# Lima host setup notes:
-#
-# Delete existing default instance:
-#   limactl stop default
-#   limactl remove default
-#
-# Create and start a Docker-template default instance:
-#   limactl create --name default template:docker -y
-#   limactl start --mount-none
-#
-# Reconnect manually:
-#   ssh -F ~/.lima/default/ssh.config lima-default
-#
-# Resize the default instance:
-#   limactl edit default --memory 12
-#   limactl edit default --cpus 8
-#   limactl edit default --disk 100
-#
-# Recreate with preferred resources:
-#   limactl stop default && limactl remove default && limactl create --mount-none --cpus=4 --disk=100 --memory=12 default -y && limactl start && lima
-#
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 
-  # Keep Lima reconnects as plain SSH instead of going through `limactl shell`.
-  lima() {
-    local instance="${LIMA_INSTANCE:-default}"
-    ssh -F "$HOME/.lima/$instance/ssh.config" "lima-$instance" "$@"
-  }
-
-fi
-
+lima() {
+  local instance="${LIMA_INSTANCE:-default}"
+  ssh -F "$HOME/.lima/$instance/ssh.config" "lima-$instance" "$@"
+}
+{{ end }}
+{{ if .isLima -}}
 # ── Platform: Lima Guest ───────────────────────────────────────
-if [[ "$(uname -s)" == "Linux" ]] && getent hosts host.lima.internal >/dev/null 2>&1; then
-  export OLLAMA_HOST="http://host.lima.internal:11434"
-
-  # Make sure iptables and mount.fuse3 are available.
-  export PATH="$PATH:/usr/sbin:/sbin"
-
-fi
-
-# Lima BEGIN
-PATH="$PATH:/usr/sbin:/sbin" # Make sure iptables and mount.fuse3 are available
-export PATH
-# Lima END
+export OLLAMA_HOST="http://host.lima.internal:11434"
+{{ end }}
 
 # ── Completion ────────────────────────────────────────────────
 autoload -Uz compinit

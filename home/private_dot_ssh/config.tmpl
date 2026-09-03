@@ -1,11 +1,13 @@
 Include ~/.ssh/devboxes.d/*.conf
+{{ if eq .chezmoi.os "darwin" -}}
 Include ~/.lima/*/ssh.config
 
 Host lima
   HostName 127.0.0.1
   Port 60022
-  User aamini
+  User {{ .chezmoi.username }}
   IdentityFile ~/.lima/_config/user
   IdentitiesOnly yes
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
+{{ end -}}

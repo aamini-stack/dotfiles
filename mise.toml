@@ -31,7 +31,6 @@ depends = ["//tools/...:install"]
 description = "Run all checks"
 depends = ["//tools/...:check"]
 
-[tasks.restow]
-description = "Restow dotfiles into $HOME"
-dir = "{{config_root}}"
-run = 'stow --restow -v --target="$HOME" .'
+[tasks.apply]
+description = "Apply dotfiles with chezmoi"
+run = "chezmoi apply"
