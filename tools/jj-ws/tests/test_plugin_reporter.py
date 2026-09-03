@@ -3,6 +3,7 @@ import json
 import os
 
 import pytest
+
 from jjws.herdr import reporter as reporter_module
 from jjws.herdr.state import state_dir
 from jjws.lib.herdr import HerdrError

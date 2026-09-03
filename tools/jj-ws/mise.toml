@@ -1,5 +1,6 @@
 [tools]
 python = "3.14"
+"github:herdrdev/herdr" = "0.8.2"
 
 [deps.uv]
 auto = true
@@ -37,6 +38,9 @@ description = "Run all checks"
 depends = [":lint", ":format:check", ":test"]
 
 [tasks.install]
-description = "Install as an editable uv tool"
-sources = ["pyproject.toml", "src/**/*.py"]
-run = 'uv tool install --python "$(command -v python)" --editable --reinstall .'
+description = "Install the CLIs and link the Herdr plugin"
+sources = ["pyproject.toml", "src/**/*.py", "herdr-plugin/**/*"]
+run = '''
+uv tool install --python "$(command -v python)" --editable --reinstall .
+herdr plugin link ./herdr-plugin
+'''

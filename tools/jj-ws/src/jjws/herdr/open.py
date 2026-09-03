@@ -20,9 +20,12 @@ from ..lib.herdr import (
     workspace_label,
 )
 
+# Exiting the shell closes the setup pane, so only exit on success; a failed
+# hook leaves the shell (and its scrollback) for diagnosis.
 SETUP_COMMAND = (
     "wt hook post-start; start=$?; wt hook post-switch; "
-    "switch=$?; [ $start -eq 0 ] && exit $switch; exit $start"
+    "switch=$?; if [ $start -eq 0 ] && [ $switch -eq 0 ]; then exit 0; "
+    "else echo 'wt hooks failed (post-start='$start' post-switch='$switch')'; fi"
 )
 
 

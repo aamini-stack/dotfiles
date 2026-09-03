@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from jjws.herdr import adopt as adopt_module
 from jjws.lib.jj import JjError, Workspace
 

@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from jjws.lib import jj as jj_module
 from jjws.lib.jj import JjError
 

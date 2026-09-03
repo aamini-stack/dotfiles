@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+
 from jjws.lib.jj import Workspace
 from jjws.wt import lifecycle
 
