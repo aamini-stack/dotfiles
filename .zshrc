@@ -3,8 +3,13 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export EDITOR='nvim'
 export VISUAL='nvim'
-if [[ -z "$TERM" ]] || ! infocmp "$TERM" >/dev/null 2>&1; then
-  export TERM=xterm-256color
+export POSH_VI_MODE=viins
+if (( ! $+commands[infocmp] )) || [[ -z "$TERM" ]] || ! infocmp "$TERM" >/dev/null 2>&1; then
+  if (( $+commands[infocmp] )) && infocmp xterm-256color >/dev/null 2>&1; then
+    export TERM=xterm-256color
+  else
+    export TERM=dumb
+  fi
 fi
 export OPENCODE_EXPERIMENTAL_OXFMT=1
 export OLLAMA_HOST="http://127.0.0.1:11434"
@@ -173,5 +178,33 @@ eval "$(zoxide init zsh)"
 # ── Theme ─────────────────────────────────────────────────────
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/theme.toml)"
 
-# ── Line editing ──────────────────────────────────────────────
-bindkey -e
+# ── Vim mode ──────────────────────────────────────────────────
+bindkey -v
+
+typeset -g _cursor_block=''
+typeset -g _cursor_beam=''
+if (( $+commands[tput] )); then
+  _cursor_block=$(tput Ss 1 2>/dev/null)
+  _cursor_beam=$(tput Ss 5 2>/dev/null)
+fi
+
+_set_cursor_shape() {
+  [[ -t 1 ]] || return
+  printf '%s' "$1"
+}
+
+zle-keymap-select() {
+  (( $+widgets[_dotfiles_zle_keymap_select] )) &&
+    zle _dotfiles_zle_keymap_select
+  export POSH_VI_MODE=${KEYMAP:-main}
+  case "$KEYMAP" in
+    vicmd) _set_cursor_shape "$_cursor_block" ;;
+    viins|main) _set_cursor_shape "$_cursor_beam" ;;
+  esac
+  (( $+functions[omp_repaint_prompt] )) && omp_repaint_prompt
+}
+if (( $+widgets[zle-keymap-select] )); then
+  zle -A zle-keymap-select _dotfiles_zle_keymap_select
+fi
+zle -N zle-keymap-select
+_set_cursor_shape "$_cursor_beam"
