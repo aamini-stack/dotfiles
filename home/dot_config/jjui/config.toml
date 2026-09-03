@@ -2,7 +2,7 @@
 "selected" = { bg = "#313244" }
 
 [revisions]
-revset = "trunk() | (trunk()..@) | @::"
+revset = ""
 
 [preview]
 revision_command = [
