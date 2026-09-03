@@ -197,6 +197,27 @@ else
   gum style --foreground 245 "  no systemd, skipping"
 fi
 
+if [ -d /run/systemd/system ]; then
+  pitchfork_host="${PITCHFORK_PROXY_HOST:-}"
+  if [[ -z "$pitchfork_host" && -t 0 ]]; then
+    pitchfork_access="$(gum choose \
+      --header "Where will you open local app URLs?" \
+      "On this machine" \
+      "From another machine")"
+    if [[ "$pitchfork_access" == "From another machine" ]]; then
+      pitchfork_host="0.0.0.0"
+    else
+      pitchfork_host="127.0.0.1"
+    fi
+  fi
+  pitchfork_host="${pitchfork_host:-127.0.0.1}"
+  gum style --foreground 245 \
+    "  Pitchfork installs a boot service and a local TLS certificate authority."
+  run_task "Configuring Pitchfork URLs" mise run setup-pitchfork "$pitchfork_host"
+else
+  gum style --foreground 245 "  no systemd, skipping Pitchfork URL setup"
+fi
+
 # Applications
 section "Applications"
 if [ ! -d /run/systemd/system ]; then

@@ -23,6 +23,12 @@ Error monitoring is wired through Sentry (`@sentry/tanstackstart-react`).
 Product analytics run through PostHog behind a `/api/ingest` proxy.
 {%- endif %}
 
+## Local URLs
+
+Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
+worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from root
+directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+
 ## Commands
 
 - `vp dev` — start development (usually managed by pitchfork instead)
