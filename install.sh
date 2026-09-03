@@ -24,7 +24,7 @@ gum style \
   "$(gum style --bold --foreground 212 'dotfiles')" \
   "github.com/aria-amini/dotfiles"
 
-section_total=5
+section_total=6
 section_current=0
 current_section="bootstrap"
 verbose=false
@@ -170,6 +170,35 @@ run_task "Installing managed tools" mise install --quiet
 run_task "Installing repository tools" mise -C "$HOME/dotfiles" install --quiet --monorepo
 run_task "Configuring repository tools" mise -C "$HOME/dotfiles" --quiet //:install
 
+# Docker
+section "Docker"
+docker_group_changed=false
+if command -v docker &> /dev/null; then
+  show_command_version "Docker" 2 docker --version
+else
+  run_command "Installing Docker" bash -c '
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    . /etc/os-release
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  '
+  show_command_version "Docker" 2 docker --version
+fi
+if id -nG "$USER" | grep -qw docker; then
+  complete_task "Docker group"
+else
+  run_task "Adding user to docker group" sudo usermod -aG docker "$USER"
+  docker_group_changed=true
+fi
+if [ -d /run/systemd/system ]; then
+  run_task "Enabling Docker" sudo systemctl enable --now docker
+else
+  gum style --foreground 245 "  no systemd, start dockerd manually (use: sudo dockerd)"
+fi
+
 # Connectivity
 section "Connectivity"
 if [ -d /run/systemd/system ]; then
@@ -273,6 +302,12 @@ if command -v tailscale &> /dev/null && ! sudo tailscale status &> /dev/null; th
     "$(gum style --bold --foreground 214 'One manual step:')" \
     "run: sudo tailscale up" \
     "then open the login link it prints"
+fi
+if [ "$docker_group_changed" = true ]; then
+  gum style \
+    --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
+    "$(gum style --bold --foreground 214 'Docker group:')" \
+    "log out and back in to run docker without sudo"
 fi
 if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
   gum style \
