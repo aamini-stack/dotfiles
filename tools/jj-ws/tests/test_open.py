@@ -102,7 +102,7 @@ class OpenWorkspaceTests(unittest.TestCase):
         self.assertEqual(calls, [("workspace", "list"), ("workspace", "focus", "w2")])
         arm.assert_called_once_with("w2", path, {"w2"})
 
-    def test_existing_workspace_runs_requested_setup_once(self):
+    def test_existing_workspace_focused_without_rerunning_hooks(self):
         calls = []
         path = Path("/home/u/.herdr/workspaces/dotfiles/plugin")
 
@@ -118,8 +118,6 @@ class OpenWorkspaceTests(unittest.TestCase):
                         }
                     ]
                 }
-            if args[:2] == ("tab", "create"):
-                return {"root_pane": {"pane_id": "p3"}}
             return {}
 
         with (
@@ -127,12 +125,10 @@ class OpenWorkspaceTests(unittest.TestCase):
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(open_module.guard, "arm"),
         ):
-            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
+            self.assertEqual(open_module.open_workspace(path), 0)
 
-        self.assertIn(("pane", "run", "p3", open_module.SETUP_COMMAND), calls)
-        self.assertEqual(
-            len([call for call in calls if call[:2] == ("pane", "run")]), 1
-        )
+        self.assertEqual([call for call in calls if call[:2] == ("pane", "run")], [])
+        self.assertIn(("workspace", "focus", "w2"), calls)
 
     def test_label_collision_does_not_focus_wrong_path(self):
         path = Path("/workspaces/repo/feature-auth")
@@ -271,13 +267,14 @@ class OpenWorkspaceTests(unittest.TestCase):
                     "--no-focus",
                 ),
                 ("pane", "split", "p1", "--direction", "right", "--no-focus"),
-                ("pane", "run", "p2", "opencode"),
+                ("pane", "run", "p1", "opencode"),
+                ("pane", "run", "p2", open_module.SETUP_COMMAND),
                 ("workspace", "focus", "w9"),
             ],
         )
         arm.assert_called_once_with("w9", path, {"w9"})
 
-    def test_runs_setup_hooks_when_requested(self):
+    def test_runs_setup_hooks_alongside_agent(self):
         calls = []
 
         def fake_herdr(*args):
@@ -299,19 +296,19 @@ class OpenWorkspaceTests(unittest.TestCase):
             patch.object(herdr_module, "herdr", side_effect=fake_herdr),
             patch.object(open_module.guard, "arm"),
         ):
-            self.assertEqual(open_module.open_workspace(path, run_setup=True), 0)
+            self.assertEqual(open_module.open_workspace(path), 0)
 
         run_calls = [call for call in calls if call[:2] == ("pane", "run")]
         self.assertEqual(
             run_calls,
             [
+                ("pane", "run", "p1", "opencode"),
                 (
                     "pane",
                     "run",
-                    "p1",
+                    "p2",
                     open_module.SETUP_COMMAND,
                 ),
-                ("pane", "run", "p2", "opencode"),
             ],
         )
 

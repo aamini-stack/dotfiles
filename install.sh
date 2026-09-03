@@ -123,7 +123,9 @@ if ! command -v chezmoi &> /dev/null; then
   run_command "Installing chezmoi" sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 fi
 show_command_version "Chezmoi" 2 chezmoi --version
-run_task "Applying dotfiles" chezmoi init --source "$HOME/dotfiles" --apply
+task "Applying dotfiles"
+chezmoi init --source "$HOME/dotfiles" --apply
+complete_task "Applying dotfiles"
 
 if ! command -v nix &> /dev/null; then
   run_command "Installing Nix" bash -c "sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon"
@@ -211,6 +213,9 @@ if [ -d /run/systemd/system ]; then
       pitchfork_host="127.0.0.1"
     fi
   fi
+  if [[ -z "$pitchfork_host" ]] && sudo tailscale status &> /dev/null; then
+    pitchfork_host="0.0.0.0"
+  fi
   pitchfork_host="${pitchfork_host:-127.0.0.1}"
   gum style --foreground 245 \
     "  Pitchfork installs a boot service and a local TLS certificate authority."
@@ -273,7 +278,7 @@ if [ -f "$HOME/.config/systemd/user/t3code.service" ]; then
   gum style \
     --border rounded --border-foreground 214 --padding "0 3" --margin "1 0" \
     "$(gum style --bold --foreground 214 'Pair a device:')" \
-    "run: t3 pair --tailscale" \
+    "run: t3 pair --tailscale --tailscale-serve-port 8443" \
     "then scan the QR code from your phone"
 fi
 

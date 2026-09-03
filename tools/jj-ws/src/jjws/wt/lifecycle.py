@@ -181,12 +181,12 @@ def create_workspace(
     if original is not None:
         _delete_aside(original)
     created = Workspace(name=name, root=destination)
+    if not run_post_create:
+        return created
     try:
         run_hooks(config, "pre-start", name, destination, primary)
     except HookError as error:
         raise CreateHookError(created, str(error)) from error
-    if not run_post_create:
-        return created
     hook_error = None
     try:
         run_hooks(config, "post-start", name, destination, primary)

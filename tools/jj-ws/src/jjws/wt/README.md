@@ -124,7 +124,7 @@ String concatenation is supported for distinct ports:
 
 jj-ws maps a Worktrunk branch to a jj workspace. It does not create bookmarks,
 inspect Git branch state, query CI, or probe list URLs. All hooks run sequentially.
-CLI post hooks block. The herdr wizard defers creation post hooks into a setup pane.
+CLI post hooks block. The herdr wizard defers all start hooks into a setup pane.
 The limited template engine supports variables, one filter, parentheses, quoted
 strings, and `~` concatenation. It does not support general Jinja control syntax.
 Template values are quoted for one shell parse. Do not embed templates inside

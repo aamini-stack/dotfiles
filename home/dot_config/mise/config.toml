@@ -145,8 +145,16 @@ run = '''
 set -euo pipefail
 pitchfork settings set proxy.tld lvh.ariaamini.com --global
 pitchfork settings set proxy.host "$usage_host" --global
+pitchfork settings set proxy.sync_hosts false --global
 pitchfork settings set supervisor.user "$(id -un)" --global
-sudo "$(mise which pitchfork)" boot enable
+if systemctl is-enabled pitchfork.service &>/dev/null; then
+  sudo "$(mise which pitchfork)" boot disable
+fi
+if [ "$(sysctl -n net.ipv4.ip_unprivileged_port_start)" -gt 443 ]; then
+  sudo setcap cap_net_bind_service=+ep "$(mise which pitchfork)"
+fi
+sudo loginctl enable-linger "$(id -un)"
+pitchfork boot enable
 pitchfork proxy status | grep -q 'Trusted: yes' || pitchfork proxy trust
 echo "Setup complete. Reboot (or restart the supervisor) to run the boot service."
 '''

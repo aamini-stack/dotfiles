@@ -17,8 +17,8 @@ def run_wizard(monkeypatch, tmp_path, env, name="feat"):
         calls["create"] = (cwd, ws_name, revision, env, run_post_create)
         return Workspace(ws_name, dest)
 
-    def fake_open(path, project_path=None, workspace_name=None, run_setup=False):
-        calls["open"] = (path, project_path, workspace_name, run_setup)
+    def fake_open(path, project_path=None, workspace_name=None):
+        calls["open"] = (path, project_path, workspace_name)
         return 0
 
     monkeypatch.setattr(wizard_module, "create_workspace", fake_create)
@@ -43,7 +43,7 @@ class TestWizard:
         dest = tmp_path / "workspaces" / "dotfiles" / "feat"
         assert rc == 0
         assert calls["create"] == (tmp_path, "feat", None, env, False)
-        assert calls["open"] == (dest, repo, "feat", True)
+        assert calls["open"] == (dest, repo, "feat")
 
     def test_herdr_label_matches_herdr_ws_convention(self, monkeypatch, tmp_path):
         env = {

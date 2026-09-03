@@ -81,8 +81,7 @@ def test_create_skips_hooks_when_disabled(monkeypatch, tmp_path):
     assert created == Workspace("feat", destination)
     assert calls[0][0] == "hooks"
     assert calls[1] == ("add", destination, "feat", caller, "@")
-    assert calls[2][0] == "hooks"
-    assert len(calls) == 3
+    assert len(calls) == 2
 
 
 def test_run_configured_phase_runs_all_phase_hooks(monkeypatch, tmp_path):

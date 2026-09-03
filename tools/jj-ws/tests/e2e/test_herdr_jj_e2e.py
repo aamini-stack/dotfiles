@@ -70,9 +70,9 @@ class TestCreateFlow:
             "--no-focus",
         ] in log
         assert ["pane", "split", "p-e2e", "--direction", "right", "--no-focus"] in log
-        assert ["pane", "run", "p2", "opencode"] in log
+        assert ["pane", "run", "p-e2e", "opencode"] in log
         focus_idx = log.index(["workspace", "focus", "w-e2e"])
-        assert focus_idx > log.index(["pane", "run", "p2", "opencode"])
+        assert focus_idx > log.index(["pane", "run", "p-e2e", "opencode"])
 
 
 class TestRemoveFlow:

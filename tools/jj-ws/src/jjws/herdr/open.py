@@ -2,8 +2,8 @@
 
 Invoked by herdr-jj with the workspace path. If a herdr workspace labeled with
 the jj workspace name already exists it is focused; otherwise it is created
-with a vertical split: the left pane runs the project's post-start hooks
-(for freshly created workspaces) and the right pane runs opencode.
+with a vertical split: the left pane runs opencode and the right pane runs
+the project's start hooks.
 """
 
 import argparse
@@ -21,11 +21,14 @@ from ..lib.herdr import (
 )
 
 # Exiting the shell closes the setup pane, so only exit on success; a failed
-# hook leaves the shell (and its scrollback) for diagnosis.
+# hook leaves the shell (and its scrollback) for diagnosis. A pre-start
+# failure skips the post hooks, matching CLI create semantics.
 SETUP_COMMAND = (
-    "wt hook post-start; start=$?; wt hook post-switch; "
-    "switch=$?; if [ $start -eq 0 ] && [ $switch -eq 0 ]; then exit 0; "
-    "else echo 'wt hooks failed (post-start='$start' post-switch='$switch')'; fi"
+    "wt hook pre-start; pre=$?; start=0; switch=0; "
+    "if [ $pre -eq 0 ]; then wt hook post-start; start=$?; "
+    "wt hook post-switch; switch=$?; fi; "
+    "if [ $pre -eq 0 ] && [ $start -eq 0 ] && [ $switch -eq 0 ]; then exit 0; "
+    "else echo 'wt hooks failed (pre-start='$pre' post-start='$start' post-switch='$switch')'; fi"
 )
 
 
@@ -37,23 +40,11 @@ def open_workspace(
     path: Path,
     project_path: Path | None = None,
     workspace_name: str | None = None,
-    run_setup: bool = False,
 ) -> int:
     name = path.name if workspace_name is None else workspace_name
     created, is_new, workspaces = ensure_open(name, path, project_path=project_path)
     workspace_id = created["workspace"]["workspace_id"]
     if not is_new:
-        if run_setup:
-            setup = herdr(
-                "tab",
-                "create",
-                "--workspace",
-                workspace_id,
-                "--label",
-                "setup",
-                "--no-focus",
-            )
-            herdr("pane", "run", setup["root_pane"]["pane_id"], SETUP_COMMAND)
         focus_workspace(workspace_id)
         _arm(workspace_id, path, workspaces)
         return 0
@@ -63,9 +54,8 @@ def open_workspace(
         "pane_id"
     ]
 
-    if run_setup:
-        herdr("pane", "run", left, SETUP_COMMAND)
-    herdr("pane", "run", right, "opencode")
+    herdr("pane", "run", left, "opencode")
+    herdr("pane", "run", right, SETUP_COMMAND)
     _arm(workspace_id, path, workspaces)
     focus_workspace(workspace_id)
     return 0

@@ -177,3 +177,11 @@ if (( $+widgets[zle-keymap-select] )); then
 fi
 zle -N zle-keymap-select
 _set_cursor_shape "$_cursor_beam"
+
+{{ if .isLima -}}
+# Lima BEGIN
+# Make sure iptables and mount.fuse3 are available
+PATH="$PATH:/usr/sbin:/sbin"
+export PATH
+# Lima END
+{{ end -}}
