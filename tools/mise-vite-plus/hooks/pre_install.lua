@@ -14,13 +14,19 @@ function PLUGIN:PreInstall(ctx)
 
 	local metadata = json.decode(response.body)
 	local release = metadata.versions and metadata.versions[ctx.version]
-	if not release or not release.dist or not release.dist.tarball then
+	if
+		not release
+		or not release.dist
+		or not release.dist.tarball
+		or not release.dist.shasum
+	then
 		error(
-			"npm metadata has no tarball URL for "
-				.. package
-				.. "@"
-				.. ctx.version
+			"npm metadata is incomplete for " .. package .. "@" .. ctx.version
 		)
 	end
-	return { version = ctx.version, url = release.dist.tarball }
+	return {
+		version = ctx.version,
+		url = release.dist.tarball,
+		sha1 = release.dist.shasum,
+	}
 end
