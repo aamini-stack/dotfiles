@@ -240,9 +240,17 @@ class TestReporterLoop:
         write_scenario(
             tmp_path,
             {
-                "workspace list": {
-                    "workspaces": [{"workspace_id": "w1", "cwd": str(jj_repo)}]
-                }
+                "workspace list": {"workspaces": [{"workspace_id": "w1"}]},
+                "pane list": {
+                    "panes": [
+                        {
+                            "workspace_id": "w1",
+                            "cwd": str(jj_repo),
+                            "tab_id": "w1:t1",
+                            "pane_id": "w1:p1",
+                        }
+                    ]
+                },
             },
         )
         socket_server.queue_event({"type": "workspace.focused", "workspace_id": "w1"})

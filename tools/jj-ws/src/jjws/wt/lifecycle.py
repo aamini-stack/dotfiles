@@ -294,6 +294,12 @@ def _register_git_worktree(primary: Path, target: Workspace) -> None:
     # the workspace's @-, matching what the jj fork maintains from then on.
     admin = primary / ".git" / "worktrees" / sanitize(target.name)
     if admin.exists():
+        subprocess.run(
+            ["git", "-C", str(primary), "worktree", "prune"],
+            capture_output=True,
+            check=False,
+        )
+    if admin.exists():
         raise WtError(f"git worktree admin entry already exists for '{target.name}'")
     commit = commit_id(f"{target.name}@-", cwd=primary)
     result = subprocess.run(

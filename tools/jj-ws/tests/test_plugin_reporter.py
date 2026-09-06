@@ -113,6 +113,78 @@ WORKSPACES = [
     {"workspace_id": "w2", "cwd": "/b"},
 ]
 
+WORKSPACES_NO_CWD = [{"workspace_id": "w1"}, {"workspace_id": "w2"}]
+
+
+def make_panes(base):
+    for name in ("a", "b"):
+        (base / name).mkdir(parents=True, exist_ok=True)
+    return [
+        {
+            "workspace_id": "w1",
+            "cwd": str(base / "a"),
+            "tab_id": "w1:t1",
+            "pane_id": "w1:p1",
+        },
+        {
+            "workspace_id": "w2",
+            "cwd": str(base / "b"),
+            "tab_id": "w2:t1",
+            "pane_id": "w2:p1",
+        },
+    ]
+
+
+class TestWorkspaceCwds:
+    def test_picks_first_pane_per_workspace(self, tmp_path):
+        first, second, other = tmp_path / "1", tmp_path / "2", tmp_path / "3"
+        for path in (first, second, other):
+            path.mkdir()
+        panes = [
+            {"workspace_id": "w1", "cwd": str(second), "tab_id": "t1", "pane_id": "p2"},
+            {"workspace_id": "w1", "cwd": str(first), "tab_id": "t1", "pane_id": "p1"},
+            {"workspace_id": "w2", "cwd": str(other), "tab_id": "t1", "pane_id": "p1"},
+        ]
+
+        assert reporter_module.workspace_cwds(lambda *a: {"panes": panes}) == {
+            "w1": str(first),
+            "w2": str(other),
+        }
+
+    def test_skips_panes_without_cwd_or_workspace(self):
+        panes = [{"cwd": "/x"}, {"workspace_id": "w1"}]
+
+        assert reporter_module.workspace_cwds(lambda *a: {"panes": panes}) == {}
+
+    def test_skips_deleted_cwd_markers(self, tmp_path):
+        panes = [
+            {
+                "workspace_id": "w1",
+                "cwd": f"{tmp_path}/gone (deleted)",
+                "tab_id": "t1",
+                "pane_id": "p1",
+            },
+            {
+                "workspace_id": "w2",
+                "cwd": str(tmp_path),
+                "tab_id": "t1",
+                "pane_id": "p1",
+            },
+        ]
+
+        assert reporter_module.workspace_cwds(lambda *a: {"panes": panes}) == {
+            "w2": str(tmp_path)
+        }
+
+    def test_attach_cwds_fills_missing_only(self):
+        workspaces = [{"workspace_id": "w1", "cwd": "/keep"}, {"workspace_id": "w2"}]
+
+        reporter_module.attach_cwds(workspaces, {"w2": "/b", "w3": "/c"})
+        assert workspaces == [
+            {"workspace_id": "w1", "cwd": "/keep"},
+            {"workspace_id": "w2", "cwd": "/b"},
+        ]
+
 
 def token_for(mapping):
     def token_fn(cwd):
@@ -152,6 +224,15 @@ class TestComputeReports:
         token_fn = token_for({"/a": "abc ●", "/b": JjError("not a repo")})
         reports = reporter_module.compute_reports(WORKSPACES, cache, token_fn)
         assert [r.workspace_id for r in reports] == ["w1"]
+
+    def test_skips_unreachable_cwds(self):
+        cache = {}
+
+        def token_fn(cwd):
+            raise FileNotFoundError(cwd)
+
+        reports = reporter_module.compute_reports(WORKSPACES, cache, token_fn)
+        assert reports == []
 
 
 class TestPublish:
@@ -267,11 +348,14 @@ class TestRunLoop:
             stop_at=5.0,
         )
         calls = []
+        panes = make_panes(tmp_path)
 
         def fake_herdr(*args):
             calls.append(args)
             if args[:2] == ("workspace", "list"):
-                return {"workspaces": WORKSPACES}
+                return {"workspaces": WORKSPACES_NO_CWD}
+            if args[:2] == ("pane", "list"):
+                return {"panes": panes}
             return {}
 
         with pytest.raises(StopLoop):
@@ -281,7 +365,12 @@ class TestRunLoop:
                 clock=clock,
                 sleep=lambda s: None,
                 herdr_fn=fake_herdr,
-                token_fn=token_for({"/a": "abc ●", "/b": JjError("no")}),
+                token_fn=token_for(
+                    {
+                        str(tmp_path / "a"): "abc ●",
+                        str(tmp_path / "b"): JjError("no"),
+                    }
+                ),
             )
 
         reports = [c for c in calls if c[:2] == ("workspace", "report-metadata")]
@@ -297,7 +386,8 @@ class TestRunLoop:
             scripted=[{"type": "workspace.focused", "workspace_id": "w1"}],
             stop_at=65.0,
         )
-        token_calls = {"/a": 0, "/b": 0}
+        panes = make_panes(tmp_path)
+        token_calls = {str(tmp_path / "a"): 0, str(tmp_path / "b"): 0}
 
         def counting_token(cwd):
             token_calls[str(cwd)] += 1
@@ -305,7 +395,9 @@ class TestRunLoop:
 
         def fake_herdr(*args):
             if args[:2] == ("workspace", "list"):
-                return {"workspaces": WORKSPACES}
+                return {"workspaces": WORKSPACES_NO_CWD}
+            if args[:2] == ("pane", "list"):
+                return {"panes": panes}
             return {}
 
         with pytest.raises(StopLoop):
@@ -318,24 +410,32 @@ class TestRunLoop:
                 token_fn=counting_token,
             )
 
-        assert token_calls["/a"] >= 12
-        assert token_calls["/b"] <= 4
+        assert token_calls[str(tmp_path / "a")] >= 12
+        assert token_calls[str(tmp_path / "b")] <= 4
 
 
 class TestRefreshOnce:
     def test_reports_all_jj_workspaces(self, tmp_path):
         calls = []
+        panes = make_panes(tmp_path)
 
         def fake_herdr(*args):
             calls.append(args)
             if args[:2] == ("workspace", "list"):
-                return {"workspaces": WORKSPACES}
+                return {"workspaces": WORKSPACES_NO_CWD}
+            if args[:2] == ("pane", "list"):
+                return {"panes": panes}
             return {}
 
         rc = reporter_module.refresh_once(
             run_loop_env(tmp_path),
             herdr_fn=fake_herdr,
-            token_fn=token_for({"/a": "abc ●", "/b": JjError("no")}),
+            token_fn=token_for(
+                {
+                    str(tmp_path / "a"): "abc ●",
+                    str(tmp_path / "b"): JjError("no"),
+                }
+            ),
         )
 
         assert rc == 0

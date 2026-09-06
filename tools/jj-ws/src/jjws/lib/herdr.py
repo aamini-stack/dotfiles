@@ -3,6 +3,7 @@
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 from typing import NotRequired, TypedDict, cast
 
@@ -78,22 +79,6 @@ def find_by_worktree_path(
     )
 
 
-def find_by_workspace_path(
-    path: Path, workspaces: list[Workspace] | None = None
-) -> Workspace | None:
-    items = list_workspaces() if workspaces is None else workspaces
-    target = str(path)
-    return next(
-        (
-            item
-            for item in items
-            if (item.get("worktree") or {}).get("checkout_path") == target
-            or item.get("cwd") == target
-        ),
-        None,
-    )
-
-
 def focus_workspace(workspace_id: str) -> None:
     herdr("workspace", "focus", workspace_id)
 
@@ -107,7 +92,7 @@ def ensure_open(
     # Never focuses: callers lay out panes first and focus last, because
     # switching focus closes the modal popup the plugin runs inside.
     items = list_workspaces() if workspaces is None else workspaces
-    existing = find_by_workspace_path(cwd, items)
+    existing = find_by_worktree_path(cwd, items)
     label = workspace_label(name)
     if existing is None:
         labeled = find_for_jj(name, items)
@@ -140,14 +125,21 @@ def _worktree_open(
     project_path: Path, cwd: Path, label: str | None = None
 ) -> dict | None:
     # Fails when cwd is not a git worktree of the repo at project_path (e.g.
-    # jj workspaces created before colocated worktree registration).
+    # jj workspaces created before colocated worktree registration). Silent
+    # degradation here stranded workspaces flat for days once already, so the
+    # failure stays visible on stderr.
     args = ["worktree", "open", "--cwd", str(project_path), "--path", str(cwd)]
     if label is not None:
         args.extend(["--label", label])
     args.append("--no-focus")
     try:
         return herdr(*args)
-    except HerdrError:
+    except HerdrError as error:
+        print(
+            f"herdr-jj: worktree open failed for {cwd} "
+            f"(workspace will not nest): {error}",
+            file=sys.stderr,
+        )
         return None
 
 

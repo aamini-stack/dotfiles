@@ -96,6 +96,34 @@ class Report:
     seq: int
 
 
+def workspace_cwds(herdr_fn: Callable[..., dict] = herdr) -> dict[str, str]:
+    """One cwd per workspace, taken from its first pane.
+
+    workspace list stopped returning cwd in herdr 0.8.2; pane list still
+    carries it. The first pane by (tab, pane) id approximates the root pane.
+    """
+    panes = herdr_fn("pane", "list").get("panes", [])
+    chosen: dict[str, tuple[tuple[str, str], str]] = {}
+    for pane in panes:
+        workspace_id = pane.get("workspace_id")
+        cwd = pane.get("cwd")
+        # herdr appends " (deleted)" to cwd strings whose directory is gone.
+        if not workspace_id or not cwd or not Path(cwd).is_dir():
+            continue
+        key = (pane.get("tab_id") or "", pane.get("pane_id") or "")
+        if workspace_id not in chosen or key < chosen[workspace_id][0]:
+            chosen[workspace_id] = (key, cwd)
+    return {workspace_id: cwd for workspace_id, (_, cwd) in chosen.items()}
+
+
+def attach_cwds(workspaces: list[dict], cwds: dict[str, str]) -> None:
+    for ws in workspaces:
+        workspace_id = ws.get("workspace_id")
+        cwd = cwds.get(workspace_id) if workspace_id else None
+        if cwd:
+            ws["cwd"] = cwd
+
+
 def compute_reports(
     workspaces: list[dict],
     cache: dict,
@@ -109,7 +137,7 @@ def compute_reports(
             continue
         try:
             token = token_fn(Path(cwd))
-        except JjError:
+        except (JjError, OSError):
             continue
         entry = cache.get(ws["workspace_id"])
         if entry is not None and entry["token"] == token:
@@ -208,6 +236,8 @@ def run_loop(
             sleep(1)
             continue
 
+        attach_cwds(workspaces, workspace_cwds(herdr_fn))
+
         now = clock()
         due = []
         for ws in workspaces:
@@ -244,6 +274,7 @@ def refresh_once(
 ) -> int:
     env = os.environ if env is None else env
     workspaces = herdr_fn("workspace", "list").get("workspaces", [])
+    attach_cwds(workspaces, workspace_cwds(herdr_fn))
     publish(herdr_fn, compute_reports(workspaces, {}, token_fn))
     return 0
 

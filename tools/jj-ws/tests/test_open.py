@@ -45,18 +45,22 @@ class FindWorkspaceTests(unittest.TestCase):
         with patch.object(herdr_module, "herdr", return_value={"workspaces": []}):
             self.assertIsNone(herdr_module.find_workspace("nope"))
 
-    def test_find_by_workspace_path_checks_cwd_and_checkout_path(self):
-        path = Path("/workspaces/repo/feature-auth-abc123")
-        by_cwd = {"workspace_id": "cwd", "cwd": str(path)}
+    def test_find_by_worktree_path_matches_checkout_path(self):
+        path = Path("/workspaces/repo/feature-auth")
         by_checkout = {
             "workspace_id": "checkout",
             "worktree": {"checkout_path": str(path)},
         }
+        other = {
+            "workspace_id": "other",
+            "worktree": {"checkout_path": "/elsewhere"},
+        }
 
-        self.assertEqual(herdr_module.find_by_workspace_path(path, [by_cwd]), by_cwd)
         self.assertEqual(
-            herdr_module.find_by_workspace_path(path, [by_checkout]), by_checkout
+            herdr_module.find_by_worktree_path(path, [other, by_checkout]),
+            by_checkout,
         )
+        self.assertIsNone(herdr_module.find_by_worktree_path(path, [other]))
 
 
 class OpenWorkspaceTests(unittest.TestCase):
@@ -92,7 +96,9 @@ class OpenWorkspaceTests(unittest.TestCase):
                         {
                             "label": "plugin",
                             "workspace_id": "w2",
-                            "cwd": "/home/u/.herdr/workspaces/dotfiles/plugin",
+                            "worktree": {
+                                "checkout_path": "/home/u/.herdr/workspaces/dotfiles/plugin"
+                            },
                         }
                     ]
                 }
@@ -121,7 +127,7 @@ class OpenWorkspaceTests(unittest.TestCase):
                         {
                             "label": "plugin",
                             "workspace_id": "w2",
-                            "cwd": str(path),
+                            "worktree": {"checkout_path": str(path)},
                         }
                     ]
                 }
@@ -149,7 +155,7 @@ class OpenWorkspaceTests(unittest.TestCase):
                         {
                             "label": "feature-auth",
                             "workspace_id": "wrong",
-                            "cwd": "/other/repo/feature-auth",
+                            "worktree": {"checkout_path": "/other/repo/feature-auth"},
                         }
                     ]
                 }
@@ -174,12 +180,12 @@ class OpenWorkspaceTests(unittest.TestCase):
         self.assertNotIn(("workspace", "focus", "wrong"), calls)
         self.assertIn(("workspace", "focus", "right"), calls)
 
-    def test_reopens_collision_suffixed_workspace_by_cwd(self):
+    def test_reopens_collision_suffixed_workspace_by_checkout_path(self):
         path = Path("/workspaces/repo/feature-auth-abc123")
         existing = {
             "label": "feature-auth-abc123",
             "workspace_id": "existing",
-            "cwd": str(path),
+            "worktree": {"checkout_path": str(path)},
         }
         calls = []
 
@@ -213,12 +219,12 @@ class OpenWorkspaceTests(unittest.TestCase):
                         {
                             "label": "feature-auth",
                             "workspace_id": "wrong",
-                            "cwd": "/repos/two/feature-auth",
+                            "worktree": {"checkout_path": "/repos/two/feature-auth"},
                         },
                         {
                             "label": "feature-auth-abc123",
                             "workspace_id": "right",
-                            "cwd": str(path),
+                            "worktree": {"checkout_path": str(path)},
                         },
                     ]
                 }

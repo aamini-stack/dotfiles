@@ -47,27 +47,13 @@ def primary_root(cwd: Path) -> Path:
 def add_workspace(
     dest: Path, name: str, cwd: Path, revision: str | None = None
 ) -> None:
+    # No --colocate here: the active jj fork rejects the flag, and
+    # lifecycle._ensure_git_worktree registers the worktree afterwards.
     args = ["workspace", "add", str(dest), "--name", name]
     if revision is not None:
         args.extend(["--revision", revision])
-    if _colocate_add_supported(cwd):
-        args.append("--colocate")
     jj(*args, cwd=cwd)
     _absolutize_repo_pointer(dest)
-
-
-def _colocate_add_supported(cwd: Path) -> bool:
-    # The fork's auto-register only fires when the invoking workspace is
-    # colocated, but wt usually runs from secondary workspaces (which aren't),
-    # so force --colocate whenever the repo's primary is colocated. Stock jj
-    # rejects the flag, so gate on help output.
-    try:
-        primary = primary_root(cwd)
-    except (JjError, OSError):
-        return False
-    if not (primary / ".git").exists():
-        return False
-    return "--colocate" in jj("workspace", "add", "--help", cwd=cwd)
 
 
 def _absolutize_repo_pointer(workspace_root: Path) -> None:
