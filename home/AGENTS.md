@@ -27,13 +27,12 @@ This document outlines global rules for Aria's agents to follow.
    filler: simply, robust, seamlessly, leverage. Code and identifiers stay
    exact.
 
-7. Treat immutable jj commits as shared history. Never rewrite, rebase, squash,
-   abandon, or bypass jj's immutable-commit protection without the user's
-   explicit permission for that exact operation. Do not use
-   `--ignore-immutable` based on an assumption that it is needed to finish the
-   task.
+7. Treat commits protected by the local jj `immutable_heads()` revset as shared
+   history. Never rewrite, rebase, squash, abandon, or bypass that protection
+   without the user's explicit permission for that exact operation. Do not add
+   `remote_bookmarks()` to `immutable_heads()`; a remote bookmark alone does not
+   make a commit immutable.
 8. Before an approved immutable-commit operation, identify the affected
-   commits and explain the impact. Rewriting can move shared bookmarks,
-   invalidate stacked PRs, make parallel workspaces stale or divergent, and
-   discard reviewable history. Prefer a new descendant commit and a forward
-   bookmark move.
+   commits and explain the impact. Rewriting can make parallel workspaces stale
+   or divergent and discard reviewable history. Prefer a new descendant commit
+   and a forward bookmark move when that preserves the intended stack.

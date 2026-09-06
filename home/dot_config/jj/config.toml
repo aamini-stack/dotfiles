@@ -19,6 +19,9 @@ auto-update-stale = false
 [remotes.origin]
 auto-track-bookmarks = "*"
 
+[revset-aliases]
+"immutable_heads()" = "builtin_immutable_heads()"
+
 # Only honored by sjawhar/jj fork (colocated-workspaces stack); ignored by stock jj.
 [git]
 auto-register-worktrees = true
