@@ -8537,10 +8537,6 @@ backend = "npm:oxfmt"
 version = "1.69.0"
 backend = "npm:oxlint"
 
-[[tools."npm:playwriter"]]
-version = "0.4.0"
-backend = "npm:playwriter"
-
 [[tools."npm:pnpm"]]
 version = "11.17.0"
 backend = "npm:pnpm"

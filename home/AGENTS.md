@@ -2,6 +2,17 @@
 
 This document outlines global rules for Aria's agents to follow.
 
+## Architecture
+
+Agents run on a Linux devbox. The devbox is the server: the code, dev
+servers, the reverse proxy, the private CA, and agent tooling live there.
+Clients are any device the user drives — Mac host, PC desktop. A client
+never runs the agent's tooling. Browser
+automation connects from the server to a browser on a client over CDP, or
+falls back to a headless browser on the server. URLs that a client must
+load stay reachable from the client network (Tailscale or published DNS),
+never server-side localhost.
+
 ## Rules
 
 1. **DO NOT USE GIT**. Prefer the jujutsu (jj) version control system.

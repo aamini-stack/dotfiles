@@ -71,7 +71,6 @@ shellcheck = "latest"
 # AI
 "opencode" = "latest"
 claude = "latest"
-"npm:playwriter" = "latest"
 "npm:lavish-axi" = "latest"
 
 # nvim
