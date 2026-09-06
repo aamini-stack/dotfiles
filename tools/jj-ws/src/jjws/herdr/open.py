@@ -20,14 +20,14 @@ from ..lib.herdr import (
     workspace_label,
 )
 
-# Exiting the shell closes the setup pane, so only exit on success; a failed
-# hook leaves the shell (and its scrollback) for diagnosis. A pre-start
-# failure skips the post hooks, matching CLI create semantics.
+# herdr closes a pane the moment its shell exits, so the setup shell never
+# exits: the closing echo states the outcome and the pane stays usable. A
+# pre-start failure skips the post hooks, matching CLI create semantics.
 SETUP_COMMAND = (
     "wt hook pre-start; pre=$?; start=0; switch=0; "
     "if [ $pre -eq 0 ]; then wt hook post-start; start=$?; "
     "wt hook post-switch; switch=$?; fi; "
-    "if [ $pre -eq 0 ] && [ $start -eq 0 ] && [ $switch -eq 0 ]; then exit 0; "
+    "if [ $pre -eq 0 ] && [ $start -eq 0 ] && [ $switch -eq 0 ]; then echo 'wt hooks ok'; "
     "else echo 'wt hooks failed (pre-start='$pre' post-start='$start' post-switch='$switch')'; fi"
 )
 

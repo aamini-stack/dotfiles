@@ -181,6 +181,7 @@ def create_workspace(
     if original is not None:
         _delete_aside(original)
     created = Workspace(name=name, root=destination)
+    _ensure_git_worktree(primary, created)
     if not run_post_create:
         return created
     try:
@@ -250,6 +251,22 @@ def remove_workspace(
         cwd=primary,
     )
     return target
+
+
+def _ensure_git_worktree(primary: Path, target: Workspace) -> None:
+    # The aria jj fork dropped `workspace add --colocate`, so fresh workspaces
+    # no longer arrive as git worktrees. herdr only nests workspaces with git
+    # worktree provenance, so register them by hand; registration failure must
+    # not fail a creation that already succeeded.
+    if not (primary / ".git").exists() or (target.root / ".git").exists():
+        return
+    try:
+        _register_git_worktree(primary, target)
+    except (JjError, OSError, WtError) as error:
+        print(
+            f"wt: git worktree registration skipped for '{target.name}': {error}",
+            file=sys.stderr,
+        )
 
 
 def colocate_workspaces(cwd: Path, name: str | None = None) -> list[Workspace]:

@@ -50,6 +50,94 @@ def test_create_runs_worktrunk_hooks_in_order(monkeypatch, tmp_path):
     ]
 
 
+def test_create_registers_git_worktree_when_primary_is_colocated(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    (primary / ".git").mkdir()
+    caller = tmp_path / "workspaces" / "repo" / "parent"
+    registered = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(lifecycle, "workspaces", lambda cwd: [])
+    monkeypatch.setattr(lifecycle, "add_workspace", lambda *args, **kwargs: None)
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        lifecycle,
+        "_register_git_worktree",
+        lambda primary, target: registered.append(target),
+    )
+
+    created = lifecycle.create_workspace(
+        caller,
+        "feat",
+        env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+    )
+
+    assert registered == [created]
+
+
+def test_create_skips_registration_when_destination_already_colocated(
+    monkeypatch, tmp_path
+):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    (primary / ".git").mkdir()
+    caller = tmp_path / "workspaces" / "repo" / "parent"
+    destination = tmp_path / "workspaces" / "repo" / "feat"
+    registered = []
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(lifecycle, "workspaces", lambda cwd: [])
+    monkeypatch.setattr(
+        lifecycle,
+        "add_workspace",
+        lambda *args, **kwargs: (
+            destination.mkdir(parents=True),
+            (destination / ".git").write_text("gitdir: x\n"),
+        ),
+    )
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        lifecycle,
+        "_register_git_worktree",
+        lambda primary, target: registered.append(target),
+    )
+
+    lifecycle.create_workspace(
+        caller,
+        "feat",
+        env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+    )
+
+    assert registered == []
+
+
+def test_create_survives_git_worktree_registration_failure(monkeypatch, tmp_path):
+    primary = tmp_path / "repo"
+    primary.mkdir()
+    (primary / ".git").mkdir()
+    caller = tmp_path / "workspaces" / "repo" / "parent"
+    destination = tmp_path / "workspaces" / "repo" / "feat"
+    monkeypatch.setattr(lifecycle, "primary_root", lambda cwd: primary)
+    monkeypatch.setattr(lifecycle.config_module, "load", lambda primary, env: Config())
+    monkeypatch.setattr(lifecycle, "workspaces", lambda cwd: [])
+    monkeypatch.setattr(lifecycle, "add_workspace", lambda *args, **kwargs: None)
+    monkeypatch.setattr(lifecycle, "run_hooks", lambda *args, **kwargs: None)
+
+    def explode(primary, target):
+        raise WtError("no git store")
+
+    monkeypatch.setattr(lifecycle, "_register_git_worktree", explode)
+
+    created = lifecycle.create_workspace(
+        caller,
+        "feat",
+        env={"JJ_WORKSPACE_ROOT": str(tmp_path / "workspaces")},
+    )
+
+    assert created == Workspace("feat", destination)
+
+
 def test_create_skips_hooks_when_disabled(monkeypatch, tmp_path):
     primary = tmp_path / "repo"
     caller = tmp_path / "workspaces" / "repo" / "parent"

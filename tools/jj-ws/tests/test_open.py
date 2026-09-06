@@ -20,6 +20,13 @@ class LabelTests(unittest.TestCase):
         self.assertEqual(open_module.herdr_label(path), "plugin")
 
 
+class SetupCommandTests(unittest.TestCase):
+    def test_setup_shell_never_exits(self):
+        self.assertNotIn("exit 0", open_module.SETUP_COMMAND)
+        self.assertIn("wt hooks ok", open_module.SETUP_COMMAND)
+        self.assertIn("wt hooks failed", open_module.SETUP_COMMAND)
+
+
 class FindWorkspaceTests(unittest.TestCase):
     def test_matches_by_label(self):
         payload = {
