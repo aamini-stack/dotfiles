@@ -20,7 +20,9 @@ auto-update-stale = false
 auto-track-bookmarks = "*"
 
 [revset-aliases]
-"immutable_heads()" = "builtin_immutable_heads()"
+# Everything reachable from another workspace's @ is off-limits to this one;
+# prevents parallel agents from rewriting each other's commits.
+"immutable_heads()" = "builtin_immutable_heads() | (working_copies() ~ @)"
 
 # Only honored by sjawhar/jj fork (colocated-workspaces stack); ignored by stock jj.
 [git]
