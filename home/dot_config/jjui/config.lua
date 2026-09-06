@@ -363,4 +363,18 @@ function setup(config)
     key = "e",
     scope = "revisions.details",
   })
+
+  config.action("open file in yazi", function()
+    local file = context.file()
+    if not file or file == "" then
+      flash({ text = "No file selected", error = true })
+      return
+    end
+
+    exec_shell(string.format("yazi %q", file))
+  end, {
+    desc = "open file in yazi",
+    key = "y",
+    scope = "revisions.details",
+  })
 end
